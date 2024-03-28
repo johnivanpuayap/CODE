@@ -16,8 +16,19 @@ class Parser {
             error("Expected BEGIN CODE");
         }
 
+        // Parse the content between BEGIN CODE and END CODE
+        parseCodeBlock();
+
         if (!match(Token.Type.END_CODE)) {
             error("Expected END CODE");
+        }
+    }
+
+    private void parseCodeBlock() {
+        while (currentTokenIndex < tokens.size() && tokens.get(currentTokenIndex).getType() != Token.Type.END_CODE) {
+            // Parse individual statements or tokens within the code block
+            // Implement your logic here to handle different types of statements or tokens
+            currentTokenIndex++;
         }
     }
 

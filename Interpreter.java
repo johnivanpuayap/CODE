@@ -3,8 +3,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-// To run the code go to the terminal and type:
-// java Interpreter inputfile (should end in code)
+
+// To run the interpreter
+// Compile the code using: javac Interpreter.java
+// Run the code: java Interpreter inputfile (should end in code)
 
 public class Interpreter {
     public static void main(String[] args) {
@@ -31,12 +33,17 @@ public class Interpreter {
             String input = sb.toString();
             Lexer lexer = new Lexer(input);
             List<Token> tokens = lexer.tokenize();
+
+            for (Token token : tokens) {
+                System.out.println(token);
+            }
+
             Parser parser = new Parser(tokens);
             parser.parse();
             System.out.println("Program parsed successfully!");
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
             System.exit(1);
-        }        
+        }     
     }
 }
