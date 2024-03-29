@@ -1,4 +1,7 @@
-class DeclarationNode {
+package src.nodes;
+import src.utils.Position;
+
+public class DeclarationNode {
     private String dataType;
     private String variableName;
     private String value;

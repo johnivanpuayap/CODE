@@ -3,6 +3,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import src.analyzer.SemanticsAnalyzer;
+import src.lexer.Lexer;
+import src.nodes.ProgramNode;
+import src.parser.Parser;
+import src.utils.Token;
+
 
 // To run the interpreter
 // Compile the code using: javac Interpreter.java

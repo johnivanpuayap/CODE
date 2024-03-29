@@ -1,9 +1,12 @@
-import java.util.List;
+package src.parser;
 import java.util.ArrayList;
+import java.util.List;
+import src.utils.Token;
+import src.nodes.ProgramNode;
+import src.nodes.DeclarationNode;
 
 // Syntax Analyzer or Parser class to generate Abstract Syntax Tree (AST) from tokens
-
-class Parser {
+public class Parser {
     private List<Token> tokens;
     private int currentTokenIndex;
 

@@ -1,6 +1,7 @@
+package src.nodes;
 import java.util.List;
 
-class ProgramNode extends ASTNode {
+public class ProgramNode extends ASTNode {
     private List<DeclarationNode> declarations;
     private List<StatementNode> statements;
 

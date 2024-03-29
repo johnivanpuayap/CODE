@@ -1,6 +1,6 @@
-// Token class to represent individual tokens from the input
+package src.utils;
 
-class Token {
+public class Token {
     public enum Type {
         BEGIN_CODE, END_CODE, DATA_TYPE, VARIABLE, ASSIGNMENT, VALUE
     }

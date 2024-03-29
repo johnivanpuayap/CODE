@@ -1,8 +1,12 @@
+package src.analyzer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class SemanticsAnalyzer {
+import src.nodes.DeclarationNode;
+import src.nodes.ProgramNode;
+
+public class SemanticsAnalyzer {
     private ProgramNode program;
     private Set<String> reservedWords = new HashSet<>();
 
