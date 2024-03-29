@@ -2,17 +2,21 @@
 
 class Token {
     public enum Type {
-        BEGIN_CODE, END_CODE, INT
+        BEGIN_CODE, END_CODE, DATA_TYPE, VARIABLE, ASSIGNMENT, VALUE
     }
 
     private Type type;
     private String value;
-    private int line;
+    private Position position;
 
-    public Token(Type type, String value, int line) {
+    public Token(Type type, String value, Position position) {
         this.type = type;
         this.value = value;
-        this.line = line;
+        this.position = position;
+    }
+
+    public Position getPosition() {
+        return position;
     }
 
     public Type getType() {
@@ -21,10 +25,6 @@ class Token {
 
     public String getValue() {
         return value;
-    }
-
-    public int getLine() {
-        return line;
     }
 
     @Override

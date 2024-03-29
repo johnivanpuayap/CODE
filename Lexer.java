@@ -1,19 +1,45 @@
 import java.util.List;
 import java.util.ArrayList;
 
+class Position {
+    private int line;
+    private int position;
+
+    public Position(int line, int position) {
+        this.line = line;
+        this.position = position;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+}
+
 // Lexer or Lexical Analyzer class to tokenize the input program
 class Lexer {
     private String input;
-    private int position;
-    private int line;
     private int counter;
     private int currentIndent;
+
+    private Position position;
 
     public Lexer(String input) {
         this.input = input;
         this.counter = 0;
-        this.position = 1;
-        this.line = 1;
+        this.position = new Position(1, 1);
         this.currentIndent = 0;
     }
 
@@ -23,16 +49,14 @@ class Lexer {
             while (counter < input.length()) {
                 
                 char currentChar = input.charAt(counter);
-                
-                System.out.println("Current Char: " + currentChar + " at LINE: " + line + " at POSITION: " + position);
 
                 // Skip whitespaces
                 if (Character.isWhitespace(currentChar)) {
                     if (currentChar == '\n') {
-                        line++;
-                        position = 1;
+                        position.setLine(position.getLine() + 1);
+                        position.setPosition(1);
                     } else {
-                        position++;
+                        position.setPosition(position.getPosition() + 1);
                     }
 
                     counter++;    
@@ -43,84 +67,141 @@ class Lexer {
                 if (currentChar == '#') {
                     while (counter < input.length() && input.charAt(counter) != '\n') {
                         counter++;
+                        position.setPosition(position.getPosition() + 1);
                     }
 
                     if (counter < input.length() && input.charAt(counter) == '\n') {
-                        line++;
-                        position = 1;
+                        position.setLine(position.getLine() + 1);
+                        position.setPosition(1);
+                        counter++;
                     }
 
-                    counter++;
                     continue;
                 }
 
                 if (input.startsWith("BEGIN CODE", counter)) {
-                    System.out.println("Token found: " + Token.Type.BEGIN_CODE + " at position: " + position + " at line: " + line);
-                    tokens.add(new Token(Token.Type.BEGIN_CODE, "BEGIN CODE", line));
-                    position += "BEGIN CODE".length();
+                    tokens.add(new Token(Token.Type.BEGIN_CODE, "BEGIN CODE", position));
+                    position.setPosition(position.getPosition() + "BEGIN CODE".length());
                     counter += "BEGIN CODE".length();
                     
+                    // Will be used to check for indentation inside BEGIN CODE and END CODE block
                     int counterForIndentation = counter;
+                    Position indentCheck = new Position(position.getLine(), position.getPosition());
 
                     // Check if there is a newline after "BEGIN CODE"
                     if (input.charAt(counterForIndentation) != '\n') {
-                        throw new RuntimeException("Newline required after BEGIN CODE at Line " + line + ", Position " + position);
+                        throw new RuntimeException("Newline required after BEGIN CODE at Line " + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
                     }
-                    counterForIndentation = moveToNextLine(counterForIndentation);
-
+                    
+                    int[] result = moveToNextLine(counterForIndentation, indentCheck.getLine(), indentCheck.getPosition());
+                    
+                    counterForIndentation = result[0];
+                    indentCheck.setLine(result[1]);
+                    indentCheck.setPosition(result[2]);
+                    
                     // Ensure proper indentation after "BEGIN CODE"
                     if (counterForIndentation < input.length() && Character.isWhitespace(input.charAt(counter))) {
                         currentIndent = findIndentLevel(counterForIndentation);
-                        if (currentIndent == 0) {
-                            throw new RuntimeException("Indentation error after BEGIN CODE at Line " + line + ", Position " + position);
+
+                        if (currentIndent == 0 && input.charAt(counterForIndentation) != '#'){
+                            throw new RuntimeException("Indentation error after BEGIN CODE at Line " + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
                         }
                     } else {
-                        throw new RuntimeException("Indentation required after BEGIN CODE at Line " + line + ", Position " + position);
+                        throw new RuntimeException("Indentation required after BEGIN CODE at Line "  + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
                     }
 
                     // Check indentation for subsequent lines until "END CODE"
                     while (!input.startsWith("END CODE", counterForIndentation)) {
                         int indentLevel = findIndentLevel(counterForIndentation);
-                        if (indentLevel != currentIndent) {
-                            throw new RuntimeException("Improper indentation inside BEGIN CODE at Line " + line + ", Position " + position);
+
+                        if (indentLevel != currentIndent && input.charAt(counterForIndentation) != '#') {
+                            throw new RuntimeException("Improper indentation inside BEGIN CODE at Line "  + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
                         }
-                        counterForIndentation = moveToNextLine(counterForIndentation); // Move to the next line
+                        
+                        result = moveToNextLine(counterForIndentation, indentCheck.getLine(), indentCheck.getPosition());
+
+                        counterForIndentation = result[0];
+                        indentCheck.setLine(result[1]);
+                        indentCheck.setPosition(result[2]);
                     }
 
                 }
 
                 if (input.startsWith("END CODE", counter)) {
-                    tokens.add(new Token(Token.Type.END_CODE, "END CODE", line));
-                    position += "END CODE".length();
+                    tokens.add(new Token(Token.Type.END_CODE, "END CODE", position));
+                    position.setPosition(position.getPosition() + "END CODE".length());
                     counter += "END CODE".length();
                     continue;
                 }
-
-                // Tokenize reserved words using regular expressions with word boundaries
-                for (Token.Type type : Token.Type.values()) {
-
-                    // Skip BEGIN_CODE and END_CODE tokens
-                    if (type == Token.Type.BEGIN_CODE || type == Token.Type.END_CODE) {
-                        continue;
-                    }
-
-                    int tokenIndex = input.indexOf(type.toString(), counter); // Find the index of the token
-                    
-                    if (tokenIndex == counter) {
-                        // Token found starting at the current position
-                        System.out.println("Token found: " + type + " at LINE: " + line + " at POSITION: " + position);
-                        tokens.add(new Token(type, type.toString(), line));
-                        position += type.toString().length();
-                        counter += type.toString().length();
-
-                        System.out.print(input.charAt(counter));
-                        break;
-                    }
-                }
                 
+
+                if (input.startsWith("INT", counter)) {
+                    // Tokenize INT declaration
+                    tokens.add(new Token(Token.Type.DATA_TYPE, "INT", position));
+                    position.setPosition(position.getPosition() + "INT".length());
+                    counter += "INT".length();
+                
+                    // Parse variable names and values
+                    while (counter < input.length() && input.charAt(counter) != '\n') {
+                
+                        // Skip whitespace
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+                
+                        // Parse variable name
+                        StringBuilder variableName = new StringBuilder();
+                        while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
+                            variableName.append(input.charAt(counter));
+                            counter++;
+                        }
+                
+                        // Add variable token
+                        tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
+                        System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+                
+                        // Check for optional initialization
+                        if (counter < input.length() && input.charAt(counter) == '=') {
+                            // Tokenize assignment operator
+                            System.out.println("Assignment operator found at Line " + position.getLine() + ", Position " + position.getPosition());
+                            tokens.add(new Token(Token.Type.ASSIGNMENT, "=", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                
+                            // Parse value
+                            StringBuilder value = new StringBuilder();
+                            while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
+                                value.append(input.charAt(counter));
+                                position.setPosition(position.getPosition() + 1);
+                                counter++;
+                            }
+                            tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
+                        }
+                
+                        // Skip trailing whitespace and comma
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+                
+                        if (counter < input.length() && input.charAt(counter) == ',') {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                            
+                            // Since there is a comma, we expect another variable name so we create a new data type token
+                            tokens.add(new Token(Token.Type.DATA_TYPE, "INT", position));
+                        } else {
+                            break;
+                        }
+                    }
+                    continue;
+                }                
+
+
                 // If none of the above conditions match, it's an invalid token
                 if (input.charAt(counter) != '\n' && input.charAt(counter) != ' ' && input.charAt(counter) != '#') {
-                    throw new RuntimeException("Invalid token at Line " + line + ", Position " + position);
+                    throw new RuntimeException("Invalid token " + input.charAt(counter) + " at Line " + position.getLine() + ", Position " + position.getPosition());
                 }
                 
             }
@@ -159,13 +240,13 @@ class Lexer {
         if (spaceCount % 4 == 0) {
             return spaceCount / 4;
         } else if (spaceCount > 0 && spaceCount % 4 != 0) {
-            throw new RuntimeException("Indentation with space should be 4 lines at Line " + line + ", Position " + position);
+            throw new RuntimeException("Indentation with space should be 4 lines at Line " + position.getLine() + ", Position " + position.getPosition());
         }
 
         return 0;
     }
 
-    private int moveToNextLine(int startIndex) {
+    private int[] moveToNextLine(int startIndex, int line, int position) {
         int i = startIndex;
         
         while (i < input.length() && input.charAt(i) != '\n') {
@@ -176,6 +257,7 @@ class Lexer {
             line++;
             position = 1;
         }
-        return i + 1; // Move to the next character after newline
+
+        return new int[]{(i + 1), line, position};
     }
 }

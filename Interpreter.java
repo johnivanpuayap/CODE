@@ -39,9 +39,10 @@ public class Interpreter {
             }
 
             Parser parser = new Parser(tokens);
-            parser.parse();
-            
-            
+            ProgramNode programNode = parser.parse();
+
+            SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
+            analyzer.analyze();
 
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
