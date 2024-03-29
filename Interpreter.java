@@ -9,11 +9,6 @@ import src.nodes.ProgramNode;
 import src.parser.Parser;
 import src.utils.Token;
 
-
-// To run the interpreter
-// Compile the code using: javac Interpreter.java
-// Run the code: java Interpreter inputfile (should end in code)
-
 public class Interpreter {
     public static void main(String[] args) {
 
