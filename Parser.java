@@ -28,6 +28,7 @@ class Parser {
         while (currentTokenIndex < tokens.size() && tokens.get(currentTokenIndex).getType() != Token.Type.END_CODE) {
             // Parse individual statements or tokens within the code block
             // Implement your logic here to handle different types of statements or tokens
+
             currentTokenIndex++;
         }
     }

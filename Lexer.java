@@ -7,12 +7,14 @@ class Lexer {
     private int position;
     private int line;
     private int counter;
+    private int currentIndent;
 
     public Lexer(String input) {
         this.input = input;
         this.counter = 0;
         this.position = 1;
         this.line = 1;
+        this.currentIndent = 0;
     }
 
     public List<Token> tokenize() {
@@ -57,7 +59,34 @@ class Lexer {
                     tokens.add(new Token(Token.Type.BEGIN_CODE, "BEGIN CODE", line));
                     position += "BEGIN CODE".length();
                     counter += "BEGIN CODE".length();
-                    continue;
+                    
+                    int counterForIndentation = counter;
+
+                    // Check if there is a newline after "BEGIN CODE"
+                    if (input.charAt(counterForIndentation) != '\n') {
+                        throw new RuntimeException("Newline required after BEGIN CODE at Line " + line + ", Position " + position);
+                    }
+                    counterForIndentation = moveToNextLine(counterForIndentation);
+
+                    // Ensure proper indentation after "BEGIN CODE"
+                    if (counterForIndentation < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                        currentIndent = findIndentLevel(counterForIndentation);
+                        if (currentIndent == 0) {
+                            throw new RuntimeException("Indentation error after BEGIN CODE at Line " + line + ", Position " + position);
+                        }
+                    } else {
+                        throw new RuntimeException("Indentation required after BEGIN CODE at Line " + line + ", Position " + position);
+                    }
+
+                    // Check indentation for subsequent lines until "END CODE"
+                    while (!input.startsWith("END CODE", counterForIndentation)) {
+                        int indentLevel = findIndentLevel(counterForIndentation);
+                        if (indentLevel != currentIndent) {
+                            throw new RuntimeException("Improper indentation inside BEGIN CODE at Line " + line + ", Position " + position);
+                        }
+                        counterForIndentation = moveToNextLine(counterForIndentation); // Move to the next line
+                    }
+
                 }
 
                 if (input.startsWith("END CODE", counter)) {
@@ -104,4 +133,49 @@ class Lexer {
     }
 
     // Helper methods for lexer
+
+    private int findIndentLevel(int startIndex) {
+        
+        int i = startIndex;
+        int indentLevel = 0;
+        int spaceCount = 0;
+
+        // Check for tabs
+        while (i < input.length() && input.charAt(i) == '\t') {
+            indentLevel++;
+            i++;
+        }
+
+        if (indentLevel > 0) {
+            return indentLevel;
+        }
+
+        // Check for spaces
+        while (i < input.length() && input.charAt(i) == ' ') {
+            spaceCount++;
+            i++;
+        }
+
+        if (spaceCount % 4 == 0) {
+            return spaceCount / 4;
+        } else if (spaceCount > 0 && spaceCount % 4 != 0) {
+            throw new RuntimeException("Indentation with space should be 4 lines at Line " + line + ", Position " + position);
+        }
+
+        return 0;
+    }
+
+    private int moveToNextLine(int startIndex) {
+        int i = startIndex;
+        
+        while (i < input.length() && input.charAt(i) != '\n') {
+            i++;
+        }
+        
+        if (i < input.length() && input.charAt(i) == '\n') {
+            line++;
+            position = 1;
+        }
+        return i + 1; // Move to the next character after newline
+    }
 }

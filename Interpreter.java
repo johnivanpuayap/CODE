@@ -40,7 +40,9 @@ public class Interpreter {
 
             Parser parser = new Parser(tokens);
             parser.parse();
-            System.out.println("Program parsed successfully!");
+            
+            
+
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
             System.exit(1);
