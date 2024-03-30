@@ -23,8 +23,6 @@ public class LiteralNode extends ExpressionNode {
     public Type getDataType() {
         String lexeme = value.getLexeme();
 
-        System.out.println("Lexeme: " + lexeme);
-
         if (lexeme.matches("[0-9]+")) {
             return Type.INT;
         } else if (lexeme.matches("[0-9]+\\.[0-9]+")) {

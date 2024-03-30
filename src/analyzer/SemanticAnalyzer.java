@@ -7,7 +7,10 @@ import src.utils.SymbolTable;
 import src.utils.Token;
 import src.utils.Type;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +30,14 @@ public class SemanticAnalyzer {
         for (VariableDeclarationNode declaration : programNode.getDeclarations()) {
 
             Symbol symbol = new Symbol(declaration.getType(), declaration.getName(), declaration.getValue());
+
+            checkUsingReservedKeyword(declaration.getName(), declaration.getPosition());
+            checkValidVariableName(declaration.getName(), declaration.getPosition());
+
+            if (declaration.getValue() != null) {
+                checkValidDataType(declaration.getType(), declaration.getValue(), declaration.getPosition());
+            }
+
             if (!symbolTable.insert(symbol)) {
                 error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
             }
@@ -51,6 +62,8 @@ public class SemanticAnalyzer {
             visitIfNode((IfNode) node);
         } else if (node instanceof WhileNode) {
             visitWhileNode((WhileNode) node);
+        } else if (node instanceof ForNode) {
+            visitForNode((ForNode) node);
         }
     }
 
@@ -62,13 +75,13 @@ public class SemanticAnalyzer {
 
         // We pass the type of the variable to the visitVariableNode method since we
         // don't need to check the type of the variable
-        visitVariableNode(variableNode, null);
+        visitVariableNode(variableNode, null, false);
 
         Symbol leftSymbol = symbolTable.lookup(node.getVariable().getName());
 
         if (expressionNode instanceof VariableNode) {
 
-            visitVariableNode((VariableNode) expressionNode, leftSymbol.getType());
+            visitVariableNode((VariableNode) expressionNode, leftSymbol.getType(), true);
 
             Symbol rightSymbol = symbolTable.lookup(((VariableNode) expressionNode).getName());
 
@@ -86,34 +99,21 @@ public class SemanticAnalyzer {
         }
     }
 
-    private String evaluate(ExpressionNode node) {
-        return null;
-    }
-
     // Visit a variable node
-    private void visitVariableNode(VariableNode node, Type type) {
+    private void visitVariableNode(VariableNode node, Type type, boolean checkInitialized) {
 
         String name = node.getName();
 
-        String regex = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+        checkUsingReservedKeyword(name, node.getPosition());
 
-        // Compile the regular expression
-        Pattern pattern = Pattern.compile(regex);
-
-        // Create a matcher to match the input string with the pattern
-        Matcher matcher = pattern.matcher(name);
-
-        // Return true if the input string matches the pattern, otherwise false
-        if (!matcher.matches()) {
-            error("Variable '" + name + "' is not a valid variable", node.getPosition());
-        }
+        checkValidVariableName(name, node.getPosition());
 
         Symbol symbol = symbolTable.lookup(name);
 
         if (symbol == null) {
             error("Variable '" + name + "' is not declared", node.getPosition());
         }
-        if (!symbol.isInitialized()) {
+        if (checkInitialized && !symbol.isInitialized()) {
             error("Variable '" + name + "' is not initialized", node.getPosition());
         }
 
@@ -134,7 +134,7 @@ public class SemanticAnalyzer {
 
             if (argument.getType() == Type.IDENTIFIER) {
 
-                visitVariableNode(new VariableNode(argument), null);
+                visitVariableNode(new VariableNode(argument), null, true);
             }
         }
     }
@@ -149,6 +149,9 @@ public class SemanticAnalyzer {
             if (symbol == null) {
                 error("Variable '" + identifier + "' is not declared", node.getPosition());
             }
+
+            symbol.setInitialized(true);
+
         }
     }
 
@@ -168,19 +171,10 @@ public class SemanticAnalyzer {
 
             Type left = evaluateCondition(binaryNode.getLeft());
             Type right = evaluateCondition(binaryNode.getRight());
+            if (left != right) {
 
-            if (binaryNode.getOperator().getType() == Type.EQUAL
-                    || binaryNode.getOperator().getType() == Type.NOT_EQUAL) {
-
-                if (left != right) {
-
-                    error("Invalid types in condition. Left is " + left + " and right is " + right,
-                            condition.getPosition());
-                }
-            } else {
-                if (left != Type.INT || right != Type.INT) {
-                    error("Invalid types in condition", condition.getPosition());
-                }
+                error("Invalid types in condition. Left is " + left + " and right is " + right,
+                        condition.getPosition());
             }
 
         } else if (condition instanceof VariableNode) {
@@ -191,17 +185,50 @@ public class SemanticAnalyzer {
 
             // We pass the type of the variable to the visitVariableNode method since we
             // don't need to check the type of the variable
-            visitVariableNode(variableNode, null);
+            visitVariableNode(variableNode, null, true);
 
             Symbol symbol = symbolTable.lookup(variableNode.getName());
 
             return symbol.getType();
 
         } else if (condition instanceof LiteralNode) {
-
-            System.out.println("Literal: " + ((LiteralNode) condition).getValue().getLexeme());
-
             return ((LiteralNode) condition).getDataType();
+        } else if (condition instanceof UnaryNode) {
+            UnaryNode unaryNode = (UnaryNode) condition;
+
+            if (unaryNode.getOperator().getType() == Type.NOT) {
+
+                if (unaryNode.getOperand() instanceof VariableNode) {
+                    visitVariableNode((VariableNode) unaryNode.getOperand(), Type.BOOL, true);
+
+                    Symbol symbol = symbolTable.lookup(((VariableNode) unaryNode.getOperand()).getName());
+
+                    return symbol.getType();
+
+                } else if (unaryNode.getOperand() instanceof LiteralNode) {
+
+                    System.out.println("Literal: " + ((LiteralNode) unaryNode.getOperand()).getValue().getLexeme());
+
+                    return ((LiteralNode) unaryNode.getOperand()).getDataType();
+                } else {
+                    error("Invalid Unary Node", condition.getPosition());
+                }
+
+            } else {
+
+                if (unaryNode.getOperand() instanceof VariableNode) {
+
+                    visitVariableNode((VariableNode) unaryNode.getOperand(), null, true);
+
+                    Symbol symbol = symbolTable.lookup(((VariableNode) unaryNode.getOperand()).getName());
+
+                    return symbol.getType();
+
+                } else if (unaryNode.getOperand() instanceof LiteralNode) {
+                    return ((LiteralNode) unaryNode.getOperand()).getDataType();
+                }
+            }
+
         } else {
             error("Invalid condition", condition.getPosition());
         }
@@ -212,6 +239,17 @@ public class SemanticAnalyzer {
     // Visit a while node
     private void visitWhileNode(WhileNode node) {
         evaluateCondition(node.getCondition());
+
+        for (StatementNode statement : node.getStatements()) {
+            visit(statement);
+        }
+    }
+
+    // Visit a for node
+    private void visitForNode(ForNode node) {
+        visitAssignmentNode(node.getInitialization());
+        evaluateCondition(node.getCondition());
+        visitAssignmentNode((AssignmentNode) node.getUpdate());
 
         for (StatementNode statement : node.getStatements()) {
             visit(statement);
@@ -230,5 +268,56 @@ public class SemanticAnalyzer {
 
     public SymbolTable getInitialSymbolTable() {
         return initialSymbolTable;
+    }
+
+    private void checkValidVariableName(String name, Position position) {
+        String regex = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
+        // Compile the regular expression
+        Pattern pattern = Pattern.compile(regex);
+
+        // Create a matcher to match the input string with the pattern
+        Matcher matcher = pattern.matcher(name);
+
+        // Return true if the input string matches the pattern, otherwise false
+        if (!matcher.matches()) {
+            error("Variable '" + name + "' is not a valid variable name", position);
+        }
+    }
+
+    private void checkUsingReservedKeyword(String name, Position position) {
+
+        Set<String> reservedKeywords = new HashSet<>(
+                Arrays.asList("IF", "ELSE", "FOR", "WHILE", "BEGIN", "END", "DISPLAY", "SCAN", "INT", "CHAR", "BOOL",
+                        "FLOAT", "AND", "OR", "NOT", "TRUE", "FALSE"));
+
+        if (reservedKeywords.contains(name)) {
+            error("Variable name: '" + name + "' can't be used because it is a reserved keyword", position);
+        }
+    }
+
+    private void checkValidDataType(Type type, String value, Position position) {
+
+        if (type == Type.INT) {
+            try {
+                Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                error("Invalid value for INT datatype", position);
+            }
+        } else if (type == Type.FLOAT) {
+            try {
+                Float.parseFloat(value);
+            } catch (NumberFormatException e) {
+                error("Invalid value for FLOAT datatype", position);
+            }
+        } else if (type == Type.CHAR) {
+            if (value.length() != 3 || value.charAt(0) != '\'' || value.charAt(2) != '\'') {
+                error("Invalid value for CHAR datatype", position);
+            }
+        } else if (type == Type.BOOL) {
+            if (!value.equals("\"TRUE\"") && !value.equals("\"FALSE\"")) {
+                error("Invalid value for BOOL datatype", position);
+            }
+        }
     }
 }

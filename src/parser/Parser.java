@@ -37,8 +37,11 @@ public class Parser {
         if (!match(Type.INDENT)) {
 
             if (match(Type.END_CODE)) {
-                match(Type.NEWLINE);
-                match(Type.EOF);
+
+                System.out.println("Was here" + peek().getPosition());
+
+                consume(Type.NEWLINE, "Expected NEWLINE AFTER END CODE");
+                consume(Type.EOF, "Expected EOF after END CODE but found " + peek().getType());
                 return new ProgramNode(declarations, programStatements);
             }
 
@@ -86,7 +89,7 @@ public class Parser {
         }
 
         System.out.println("Parsing Statements");
-        programStatements.addAll(parseStatements(false));
+        programStatements.addAll(parseStatements(false, false));
     }
 
     private List<VariableDeclarationNode> parseVariableDeclaration() {
@@ -129,7 +132,7 @@ public class Parser {
         return variables;
     }
 
-    private List<StatementNode> parseStatements(boolean isIfStatement) {
+    private List<StatementNode> parseStatements(boolean isIfStatement, boolean isLoopStatement) {
 
         List<StatementNode> statements = new ArrayList<>();
 
@@ -140,24 +143,46 @@ public class Parser {
             }
 
             if (match(Type.IDENTIFIER)) {
-                if (peek().getType() == Type.ASSIGNMENT &&
-                        (peekNext(2).getType() == Type.ADD ||
-                                peekNext(2).getType() == Type.SUBTRACT ||
-                                peekNext(2).getType() == Type.MULTIPLY ||
-                                peekNext(2).getType() == Type.DIVIDE ||
-                                peekNext(2).getType() == Type.MODULO)) {
 
-                    statements.add(parseArithmeticStatement());
-                    checkForNewline();
+                int counter = 1;
+                boolean isAssignment = true;
 
-                } else if (peek().getType() == Type.ASSIGNMENT &&
-                        (peekNext(1).getType() == Type.LEFT_PARENTHESIS)) {
+                while (currentTokenIndex + counter < tokens.size() && peekNext(counter).getType() != Type.NEWLINE) {
 
-                    statements.add(parseArithmeticStatement());
-                    checkForNewline();
+                    if (peekNext(counter).getType() == Type.ADD
+                            || peekNext(counter).getType() == Type.SUBTRACT
+                            || peekNext(counter).getType() == Type.MULTIPLY
+                            || peekNext(counter).getType() == Type.DIVIDE
+                            || peekNext(counter).getType() == Type.MODULO) {
 
-                } else {
+                        System.out.println("Currnet Token: " + peek());
 
+                        statements.add(parseArithmeticStatement());
+                        checkForNewline();
+                        isAssignment = false;
+                        break;
+
+                    } else if (peekNext(counter).getType() == Type.LESS ||
+                            peekNext(counter).getType() == Type.GREATER ||
+                            peekNext(counter).getType() == Type.LESS_EQUAL ||
+                            peekNext(counter).getType() == Type.GREATER_EQUAL ||
+                            peekNext(counter).getType() == Type.NOT_EQUAL ||
+                            peekNext(counter).getType() == Type.EQUAL ||
+                            peekNext(counter).getType() == Type.AND ||
+                            peekNext(counter).getType() == Type.OR ||
+                            peekNext(counter).getType() == Type.NOT) {
+                        statements.add(parseLogicalStatement());
+
+                        System.out.println("Currnet Token: " + peek());
+
+                        checkForNewline();
+                        isAssignment = false;
+                        break;
+                    }
+                    counter++;
+                }
+
+                if (isAssignment) {
                     statements.addAll(parseAssignmentStatement());
                     checkForNewline();
                 }
@@ -179,7 +204,6 @@ public class Parser {
 
             if (match(Type.IF)) {
                 statements.addAll(parseIfStatement());
-                System.out.println(statements.getLast());
                 continue;
             }
 
@@ -197,12 +221,42 @@ public class Parser {
                 error("Found an ELSE_IF block without an IF block", previous());
             }
 
+            if (match(Type.FOR)) {
+                statements.add(parseForStatement());
+                checkForNewline();
+                continue;
+            }
+
+            if (match(Type.CONTINUE)) {
+
+                if (!isLoopStatement) {
+                    error("Continue statement can only be used inside a loop", previous());
+                }
+
+                statements.add(new ContinueNode(previous().getPosition()));
+                checkForNewline();
+                continue;
+            }
+
+            if (match(Type.BREAK)) {
+
+                if (!isLoopStatement) {
+                    error("Break statement can only be used inside a loop", previous());
+                }
+
+                statements.add(new BreakNode(previous().getPosition()));
+
+                checkForNewline();
+                continue;
+            }
+
             if (peek().getType() == Type.DEDENT) {
-                if (isIfStatement) {
-                    if (peekNext(1).getType() == Type.END_IF || peekNext(1).getType() == Type.END_WHILE) {
+                if (isIfStatement || isLoopStatement) {
+                    if (peekNext(1).getType() == Type.END_IF || peekNext(1).getType() == Type.END_WHILE
+                            || peekNext(1).getType() == Type.END_FOR) {
                         return statements;
                     } else {
-                        error("Expected END IF after DEDENTION", peek());
+                        error("Expected END IF/END WHILE/ END FOR after DEDENTION", peek());
                     }
                 } else {
                     if (peekNext(1).getType() == Type.END_CODE) {
@@ -219,6 +273,10 @@ public class Parser {
 
             if (match(Type.END_CODE)) {
                 error("Unexpected END CODE", peek());
+            }
+
+            if (match(Type.BEGIN_CODE)) {
+                error("Unexpected BEGIN CODE", peek());
             }
         }
 
@@ -308,12 +366,7 @@ public class Parser {
         return assignments;
     }
 
-    private StatementNode parseArithmeticStatement() {
-        // Ensure that there are enough tokens to represent an assignment statement
-        if (currentTokenIndex + 4 >= tokens.size()) {
-            error("Invalid arithmetic statement", peek());
-        }
-
+    private AssignmentNode parseArithmeticStatement() {
         Token variableName = previous();
 
         if (!match(Type.ASSIGNMENT)) {
@@ -327,29 +380,87 @@ public class Parser {
         return new AssignmentNode(variable, expression);
     }
 
+    private AssignmentNode parseLogicalStatement() {
+
+        Token variableName = previous();
+
+        System.out.println("Variable Name: " + variableName);
+
+        System.out.println("Peek: " + peek());
+
+        if (!match(Type.ASSIGNMENT)) {
+            error("Invalid logical statement", peek());
+            return null;
+        }
+
+        VariableNode variable = new VariableNode(variableName);
+        ExpressionNode expression = parseExpression();
+
+        return new AssignmentNode(variable, expression);
+    }
+
     private ExpressionNode parseExpression() {
+        return parseLogicalOr();
+    }
+
+    private ExpressionNode parseLogicalOr() {
+        ExpressionNode left = parseLogicalAnd();
+
+        while (match(Type.OR)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseLogicalAnd();
+            left = new BinaryNode(left, operatorToken, right);
+        }
+
+        return left;
+    }
+
+    private ExpressionNode parseLogicalAnd() {
+        ExpressionNode left = parseComparisonExpression();
+
+        while (match(Type.AND)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseComparisonExpression();
+            left = new BinaryNode(left, operatorToken, right);
+        }
+
+        return left;
+    }
+
+    private ExpressionNode parseComparisonExpression() {
         ExpressionNode left = parseAdditionSubtraction();
+
+        while (match(Type.GREATER) || match(Type.LESS) || match(Type.GREATER_EQUAL) || match(Type.LESS_EQUAL)
+                || match(Type.NOT_EQUAL) || match(Type.EQUAL)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseAdditionSubtraction();
+            left = new BinaryNode(left, operatorToken, right);
+        }
 
         return left;
     }
 
     private ExpressionNode parseAdditionSubtraction() {
         ExpressionNode left = parseMultiplicationDivision();
+
         while (match(Type.ADD) || match(Type.SUBTRACT)) {
             Token operatorToken = previous();
             ExpressionNode right = parseMultiplicationDivision();
             left = new BinaryNode(left, operatorToken, right);
         }
+
         return left;
     }
 
     private ExpressionNode parseMultiplicationDivision() {
         ExpressionNode left = parsePrimary();
+
         while (match(Type.MULTIPLY) || match(Type.DIVIDE) || match(Type.MODULO)) {
             Token operatorToken = previous();
             ExpressionNode right = parsePrimary();
             left = new BinaryNode(left, operatorToken, right);
         }
+
         return left;
     }
 
@@ -367,37 +478,15 @@ public class Parser {
 
             return expression;
 
-        } else if (match(Type.POSITIVE) || match(Type.NEGATIVE)) {
-
+        } else if (match(Type.POSITIVE) || match(Type.NEGATIVE) || match(Type.NOT)) {
             Token operatorToken = previous();
-            ExpressionNode expression = null;
-
-            if (match(Type.LITERAL)) {
-                expression = new LiteralNode(previous());
-            } else if (match(Type.IDENTIFIER)) {
-                expression = new VariableNode(previous());
-            }
+            ExpressionNode expression = parsePrimary();
             return new UnaryNode(operatorToken, expression);
         } else {
             error("Expect primary expression.", peek());
         }
 
         return null;
-    }
-
-    private ExpressionNode parseConditionalExpression() {
-        ExpressionNode left = parseExpression();
-
-        if (match(Type.EQUAL) || match(Type.NOT_EQUAL) || match(Type.GREATER) ||
-                match(Type.GREATER_EQUAL) || match(Type.LESS) || match(Type.LESS_EQUAL)) {
-
-            Token operatorToken = previous();
-            ExpressionNode right = parseExpression();
-
-            return new BinaryNode(left, operatorToken, right);
-        }
-
-        return left;
     }
 
     private StatementNode parseDisplayStatement() {
@@ -551,7 +640,7 @@ public class Parser {
         // Expect '('
         consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'IF' keyword");
         // Parse the conditional expression
-        ExpressionNode ifCondition = parseConditionalExpression();
+        ExpressionNode ifCondition = parseExpression();
 
         // Expect ')'
         consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
@@ -565,7 +654,7 @@ public class Parser {
         consume(Type.INDENT, "Expected INDENT after the BEGIN IF statement");
 
         // Parse the body of the if statement
-        List<StatementNode> body = parseStatements(true);
+        List<StatementNode> body = parseStatements(true, false);
 
         consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
 
@@ -581,7 +670,7 @@ public class Parser {
 
             consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'ELSE IF' keyword");
             // Parse the conditional expression
-            ExpressionNode elseIfCondition = parseConditionalExpression();
+            ExpressionNode elseIfCondition = parseExpression();
 
             // Expect ')'
             consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
@@ -595,7 +684,7 @@ public class Parser {
             consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE IF statement");
 
             // Parse the body of the if statement
-            List<StatementNode> elseIfBody = parseStatements(true);
+            List<StatementNode> elseIfBody = parseStatements(true, false);
 
             consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
 
@@ -618,7 +707,7 @@ public class Parser {
             consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE statement");
 
             // Parse the body of the if statement
-            List<StatementNode> elseBody = parseStatements(true);
+            List<StatementNode> elseBody = parseStatements(true, false);
 
             consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
 
@@ -639,7 +728,7 @@ public class Parser {
 
         consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'WHILE' keyword");
 
-        ExpressionNode condition = parseConditionalExpression();
+        ExpressionNode condition = parseExpression();
 
         consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
 
@@ -651,13 +740,70 @@ public class Parser {
 
         consume(Type.INDENT, "Expected INDENT after the BEGIN WHILE statement");
 
-        List<StatementNode> body = parseStatements(true);
+        List<StatementNode> body = parseStatements(false, true);
 
         consume(Type.DEDENT, "Expected DEDENTION after the body of the while statement");
 
         consume(Type.END_WHILE, "Expected 'END WHILE' after the body of the while statement");
 
+        System.out.println(body);
+
         return new WhileNode(condition, body, token.getPosition());
+    }
+
+    private StatementNode parseForStatement() {
+        Token token = previous();
+
+        consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'FOR' keyword");
+
+        AssignmentNode initialization = null;
+
+        if (!match(Type.DELIMITER)) {
+
+            System.out.println("Parsing FOR LOOP initialization");
+
+            match(Type.IDENTIFIER); // Consume the identifier token (variable name
+
+            List<StatementNode> initializations = parseAssignmentStatement();
+
+            if (initializations.size() > 1) {
+                error("Expected a single assignment inside the FOR LOOP initialization", token);
+            }
+
+            initialization = (AssignmentNode) initializations.get(0);
+
+            System.out.println("Initialization: " + initialization);
+
+            System.out.println("Peek: " + peek());
+        }
+
+        consume(Type.DELIMITER, "Expected a SEMI-COLON after the initialization statement");
+
+        ExpressionNode condition = parseExpression();
+
+        consume(Type.DELIMITER, "Expected a SEMI-COLON after the conditional expression");
+
+        consume(Type.IDENTIFIER, "Expected an identifier after the conditional expression");
+
+        AssignmentNode update = parseArithmeticStatement();
+
+        consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
+
+        consume(Type.NEWLINE, "Expected new line before the BEGIN LOOP statement");
+
+        consume(Type.BEGIN_FOR, "Expected 'BEGIN LOOP' after the conditional expression");
+
+        consume(Type.NEWLINE, "Expected new line after the BEGIN LOOP statement");
+
+        consume(Type.INDENT, "Expected INDENT after the BEGIN LOOP statement");
+
+        List<StatementNode> body = parseStatements(false, true);
+
+        consume(Type.DEDENT, "Expected DEDENTION after the body of the loop statement");
+
+        consume(Type.END_FOR, "Expected 'END LOOP' after the body of the loop statement");
+
+        return new ForNode(initialization, condition, update, body, token.getPosition());
     }
 
     private void checkForNewline() {
@@ -668,8 +814,11 @@ public class Parser {
     }
 
     private void error(String message, Token token) {
-        System.err.println("Syntax error " + token + ": " + message);
-        System.exit(1);
+        // System.err.println("Syntax error " + token + ": " + message);
+        // System.exit(1);
+
+        throw new RuntimeException("Syntax error " + token + ": " + message);
+
     }
 
     private Token peek() {

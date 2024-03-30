@@ -36,25 +36,20 @@ public class App {
             String input = sb.toString();
             Lexer lexer = new Lexer(input);
 
-            System.out.println("Tokenizing...");
             List<Token> tokens = lexer.tokenize();
             for (Token token : tokens) {
                 System.out.println(token);
             }
 
-            System.out.println("Parsing...");
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
             System.out.println(programNode);
-
-            System.out.println("Analyzing...");
 
             SemanticAnalyzer analyzer = new SemanticAnalyzer(programNode);
             analyzer.analyze();
 
             SymbolTable symbolTable = analyzer.getInitialSymbolTable();
 
-            System.out.println("Interpreting...");
             Interpreter interpreter = new Interpreter(programNode, symbolTable);
             interpreter.interpret();
 
