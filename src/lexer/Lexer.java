@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import src.utils.Token;
 import src.utils.Position;
 
+import static java.lang.Character.*;
+
 // Lexer or Lexical Analyzer class to tokenize the input program
 public class Lexer {
     private String input;
@@ -27,7 +29,7 @@ public class Lexer {
                 char currentChar = input.charAt(counter);
 
                 // Skip whitespaces
-                if (Character.isWhitespace(currentChar)) {
+                if (isWhitespace(currentChar)) {
                     if (currentChar == '\n') {
                         position.setLine(position.getLine() + 1);
                         position.setPosition(1);
@@ -76,7 +78,7 @@ public class Lexer {
                     indentCheck.setPosition(result[2]);
                     
                     // Ensure proper indentation after "BEGIN CODE"
-                    if (counterForIndentation < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                    if (counterForIndentation < input.length() && isWhitespace(input.charAt(counter))) {
                         currentIndent = findIndentLevel(counterForIndentation);
 
                         if (currentIndent == 0 && input.charAt(counterForIndentation) != '#'){
@@ -110,7 +112,7 @@ public class Lexer {
                     continue;
                 }
                 
-
+                //added the INT Datatype
                 if (input.startsWith("INT", counter)) {
                     // Tokenize INT declaration
                     tokens.add(new Token(Token.Type.DATA_TYPE, "INT", position));
@@ -121,7 +123,7 @@ public class Lexer {
                     while (counter < input.length() && input.charAt(counter) != '\n') {
                 
                         // Skip whitespace
-                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                        while (counter < input.length() && isWhitespace(input.charAt(counter))) {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
                         }
@@ -147,7 +149,7 @@ public class Lexer {
                 
                             // Parse value
                             StringBuilder value = new StringBuilder();
-                            while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
+                            while (counter < input.length() && !isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
                                 value.append(input.charAt(counter));
                                 position.setPosition(position.getPosition() + 1);
                                 counter++;
@@ -156,7 +158,7 @@ public class Lexer {
                         }
                 
                         // Skip trailing whitespace and comma
-                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                        while (counter < input.length() && isWhitespace(input.charAt(counter))) {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
                         }
@@ -165,15 +167,272 @@ public class Lexer {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
                             
-                            // Since there is a comma, we expect another variable name so we create a new data type token
+                            // Since there is a comma, we expect another variable name, so we create a new data type token
                             tokens.add(new Token(Token.Type.DATA_TYPE, "INT", position));
                         } else {
                             break;
                         }
                     }
                     continue;
-                }                
+                }
 
+                //added the FLOAT Datatype
+                if (input.startsWith("FLOAT", counter)) {
+                    // Tokenize FLOAT declaration
+                    tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
+                    position.setPosition(position.getPosition() + "FLOAT".length());
+                    counter += "FLOAT".length();
+
+
+                    // Parse variable names and values
+                    while (counter < input.length() && input.charAt(counter) != '\n') {
+
+                        // Skip whitespace
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        // Parse variable name
+                        StringBuilder variableName = new StringBuilder();
+                        while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
+                            variableName.append(input.charAt(counter));
+                            counter++;
+                        }
+
+                        // Add variable token
+                        tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
+                        System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+
+                        // Check for optional initialization
+                        if (counter < input.length() && input.charAt(counter) == '=') {
+                            // Tokenize assignment operator
+                            System.out.println("Assignment operator found at Line " + position.getLine() + ", Position " + position.getPosition());
+                            tokens.add(new Token(Token.Type.ASSIGNMENT, "=", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            // Parse value
+                            StringBuilder value = new StringBuilder();
+                            boolean isDecimal = false; // Flag to track if a decimal point has been encountered
+                            int byteCount = 0; // Track the number of bytes appended
+                            while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
+                                char currChar = input.charAt(counter);
+                                if (Character.isDigit(currChar) || (currChar == '.' && !isDecimal)) {
+                                    if (currChar == '.') {
+                                        isDecimal = true;
+                                    }
+                                    // Check if appending the current character will exceed 4 bytes
+                                    if (byteCount < 4) {
+                                        value.append(currChar);
+                                        byteCount++; // Increment byte count
+                                    } else {
+                                        throw new RuntimeException("Float value exceeds 4 bytes at Line " + position.getLine() + ", Position " + position.getPosition());
+                                    }
+                                } else {
+                                    // Invalid character in float literal
+                                    throw new RuntimeException("Invalid character in float literal at Line " + position.getLine() + ", Position " + position.getPosition());
+                                }
+                                position.setPosition(position.getPosition() + 1);
+                                counter++;
+                            }
+                            // Add the float value token
+                            tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
+                        }
+
+
+
+                        // Skip trailing whitespace and comma
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        if (counter < input.length() && input.charAt(counter) == ',') {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            // Since there is a comma, we expect another variable name, so we create a new data type token
+                            tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
+                        } else {
+                            break;
+                        }
+                    }
+                    continue;
+                }
+
+                //added the CHAR datatype
+                if (input.startsWith("CHAR", counter)) {
+                    // Tokenize CHAR declaration
+                    tokens.add(new Token(Token.Type.DATA_TYPE, "CHAR", position));
+                    position.setPosition(position.getPosition() + "CHAR".length());
+                    counter += "CHAR".length();
+
+                    // Similarly, parse variable names and values as done for INT
+                    // You'd follow the same pattern as for INT, but with "CHAR" instead
+                    // Parse variable names and values
+                    while (counter < input.length() && input.charAt(counter) != '\n') {
+
+                        // Skip whitespace
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        // Parse variable name
+                        StringBuilder variableName = new StringBuilder();
+                        while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
+                            variableName.append(input.charAt(counter));
+                            counter++;
+                        }
+
+                        // Add variable token
+                        tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
+                        System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+
+                        // Check for optional initialization
+                        if (counter < input.length() && input.charAt(counter) == '=') {
+                            // Tokenize assignment operator
+                            System.out.println("Assignment operator found at Line " + position.getLine() + ", Position " + position.getPosition());
+                            tokens.add(new Token(Token.Type.ASSIGNMENT, "=", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            // Parse value
+                            StringBuilder value = new StringBuilder();
+                            if (input.charAt(counter) == '\'') { // Check if the value starts with a single quote
+                                value.append(input.charAt(counter)); // Append the single quote to the value
+                                position.setPosition(position.getPosition() + 1);
+                                counter++;
+
+                                // Parse the character
+                                if (counter < input.length()) {
+                                    value.append(input.charAt(counter));
+                                    position.setPosition(position.getPosition() + 1);
+                                    counter++;
+                                } else {
+                                    throw new RuntimeException("Invalid character literal at Line " + position.getLine() + ", Position " + position.getPosition());
+                                }
+
+                                // Check if the character literal is closed with a single quote
+                                if (counter < input.length() && input.charAt(counter) == '\'') {
+                                    value.append(input.charAt(counter)); // Append the closing single quote to the value
+                                    position.setPosition(position.getPosition() + 1);
+                                    counter++;
+                                } else {
+                                    throw new RuntimeException("Unclosed character literal at Line " + position.getLine() + ", Position " + position.getPosition());
+                                }
+
+                                // Ensure that the value is only one character
+                                if (value.length() != 3) { // A single-character literal should have length 3 (including the single quotes)
+                                    throw new RuntimeException("Invalid character literal at Line " + position.getLine() + ", Position " + position.getPosition());
+                                }
+
+                                // Add the CHAR value token
+                                tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
+                            } else {
+                                throw new RuntimeException("Invalid character literal at Line " + position.getLine() + ", Position " + position.getPosition());
+                            }
+                        }
+
+
+                        // Skip trailing whitespace and comma
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        if (counter < input.length() && input.charAt(counter) == ',') {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            // Since there is a comma, we expect another variable name, so we create a new data type token
+                            tokens.add(new Token(Token.Type.DATA_TYPE, "CHAR", position));
+                        } else {
+                            break;
+                        }
+                    }
+                    continue;
+                }
+
+                //added the BOOLEAN Datatype
+                if (input.startsWith("BOOLEAN", counter)) {
+                    // Tokenize BOOLEAN declaration
+                    tokens.add(new Token(Token.Type.DATA_TYPE, "BOOLEAN", position));
+                    position.setPosition(position.getPosition() + "BOOLEAN".length());
+                    counter += "BOOLEAN".length();
+
+                    // Parse variable names and values
+                    while (counter < input.length() && input.charAt(counter) != '\n') {
+
+                        // Skip whitespace
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        // Parse variable name
+                        StringBuilder variableName = new StringBuilder();
+                        while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
+                            variableName.append(input.charAt(counter));
+                            counter++;
+                        }
+
+                        // Add variable token
+                        tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
+                        System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+
+                        // Check for optional initialization
+                        if (counter < input.length() && input.charAt(counter) == '=') {
+                            // Tokenize assignment operator
+                            System.out.println("Assignment operator found at Line " + position.getLine() + ", Position " + position.getPosition());
+                            tokens.add(new Token(Token.Type.ASSIGNMENT, "=", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            // Parse value
+                            StringBuilder value = new StringBuilder();
+                            // Skip leading whitespace
+                            while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                                position.setPosition(position.getPosition() + 1);
+                                counter++;
+                            }
+                            // Check if the boolean value starts with either 'true' or 'false'
+                            if (input.startsWith("TRUE", counter)) {
+                                // Tokenize boolean value true
+                                tokens.add(new Token(Token.Type.VALUE, "TRUE", position));
+                                position.setPosition(position.getPosition() + "TRUE".length());
+                                counter += "TRUE".length();
+                            } else if (input.startsWith("FALSE", counter)) {
+                                // Tokenize boolean value false
+                                tokens.add(new Token(Token.Type.VALUE, "FALSE", position));
+                                position.setPosition(position.getPosition() + "FALSE".length());
+                                counter += "FALSE".length();
+                            } else {
+                                // Invalid boolean value
+                                throw new RuntimeException("Invalid boolean value at Line " + position.getLine() + ", Position " + position.getPosition());
+                            }
+                        }
+
+
+                        // Skip trailing whitespace and comma
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        if (counter < input.length() && input.charAt(counter) == ',') {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            // Since there is a comma, we expect another variable name, so we create a new data type token
+                            tokens.add(new Token(Token.Type.DATA_TYPE, "BOOLEAN", position));
+                        } else {
+                            break;
+                        }
+                    }
+                    continue;
+                }
 
                 // If none of the above conditions match, it's an invalid token
                 if (input.charAt(counter) != '\n' && input.charAt(counter) != ' ' && input.charAt(counter) != '#') {
