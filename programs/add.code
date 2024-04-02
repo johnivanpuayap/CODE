@@ -1,0 +1,5 @@
+BEGIN CODE
+    INT x, y=5, z=0
+    x=y+z
+    x=y="TRUE"
+END CODE

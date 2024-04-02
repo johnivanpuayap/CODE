@@ -8,7 +8,7 @@ import src.lexer.Lexer;
 import src.nodes.ProgramNode;
 import src.parser.Parser;
 import src.utils.Token;
-/*
+
 public class Interpreter {
     public static void main(String[] args) {
 
@@ -50,39 +50,39 @@ public class Interpreter {
             System.exit(1);
         }     
     }
-}*/
-
-public class Interpreter {
-    public static void main(String[] args) {
-        String input = "BEGIN CODE\n" +
-                "    INT aaa1=10, b=100, s2, a2=1\n" +
-                "    CHAR qa1='a'\n" +
-                "    FLOAT qw2=23.0f\n" +
-                "    BOOL oiew2=\"FALSE\", ewww=\"TRUE\"\n" +
-                "    [[]\n" +
-                "    [/]\n" +
-                "    []]\n" +
-                "    #This is a comment\n" +
-                "    SCAN var1, var2\n" +
-                "END CODE";
-
-        // Create a Lexer instance
-        Lexer lexer = new Lexer(input);
-
-        // Tokenize the input
-        List<Token> tokens = lexer.tokenize();
-        for (Token token : tokens) {
-            if(token.getType()==Token.Type.ESCAPE_CODE){
-                System.out.println("Escape Code: " + token.getValue());
-            }
-            if (token.getType() == Token.Type.VALUE) {
-                System.out.println("Input Value: " + token.getValue());
-            }
-
-            if (token.getType() == Token.Type.SCAN) {
-                System.out.println("Token Type: " + token.getValue());
-            }
-
-        }
-    }
 }
+
+// public class Interpreter {
+//     public static void main(String[] args) {
+//         String input = "BEGIN CODE\n" +
+//                 "    INT aaa1=10, b=100, s2, a2=1\n" +
+//                 "    CHAR qa1='a'\n" +
+//                 "    FLOAT qw2=23.0f\n" +
+//                 "    BOOL oiew2=\"FALSE\", ewww=\"TRUE\"\n" +
+//                 "    [[]\n" +
+//                 "    [/]\n" +
+//                 "    []]\n" +
+//                 "    #This is a comment\n" +
+//                 "    SCAN var1, var2\n" +
+//                 "END CODE";
+
+//         // Create a Lexer instance
+//         Lexer lexer = new Lexer(input);
+
+//         // Tokenize the input
+//         List<Token> tokens = lexer.tokenize();
+//         for (Token token : tokens) {
+//             if(token.getType()==Token.Type.ESCAPE_CODE){
+//                 System.out.println("Escape Code: " + token.getValue());
+//             }
+//             if (token.getType() == Token.Type.VALUE) {
+//                 System.out.println("Input Value: " + token.getValue());
+//             }
+
+//             if (token.getType() == Token.Type.SCAN) {
+//                 System.out.println("Token Type: " + token.getValue());
+//             }
+
+//         }
+//     }
+// }

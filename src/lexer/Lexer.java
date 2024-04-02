@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import src.utils.Token;
 import src.utils.Position;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.lang.Character.*;
 
@@ -18,7 +20,7 @@ public class Lexer {
     public Lexer(String input) {
         this.input = input;
         this.counter = 0;
-        this.position = new Position(1, 1);
+        this.position = new Position(1, 0);
         this.currentIndent = 0;
     }
 
@@ -29,6 +31,10 @@ public class Lexer {
                 scanner = new Scanner(System.in);
                 
                 char currentChar = input.charAt(counter);
+                
+                //Print Position Currently Checking
+                System.out.println("Currently Checking: " + position);
+                System.out.println("Current Char: " + currentChar);
 
                 // Skip whitespaces
                 if (isWhitespace(currentChar)) {
@@ -104,7 +110,6 @@ public class Lexer {
                         indentCheck.setLine(result[1]);
                         indentCheck.setPosition(result[2]);
                     }
-
                 }
 
                 if (input.startsWith("END CODE", counter)) {
@@ -134,6 +139,7 @@ public class Lexer {
                         StringBuilder variableName = new StringBuilder();
                         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
                             variableName.append(input.charAt(counter));
+                            position.setPosition(position.getPosition() + 1);
                             counter++;
                         }
 
@@ -141,6 +147,7 @@ public class Lexer {
                             System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
                             System.exit(1);
                         }
+
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
                         System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
@@ -161,12 +168,6 @@ public class Lexer {
                                 counter++;
                             }
                             tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
-                        }
-
-                        // Skip trailing whitespace and comma
-                        while (counter < input.length() && isWhitespace(input.charAt(counter))) {
-                            position.setPosition(position.getPosition() + 1);
-                            counter++;
                         }
 
                         if (counter < input.length() && input.charAt(counter) == ',') {
@@ -467,11 +468,7 @@ public class Lexer {
                     // Parse variable names and values
                     while (counter < input.length() && input.charAt(counter) != '\n') {
 
-                        // Skip whitespace
-                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
-                            position.setPosition(position.getPosition() + 1);
-                            counter++;
-                        }
+                        skipWhiteSpace();
                         // Parse variable name
                         StringBuilder variableName = new StringBuilder();
                         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
@@ -525,7 +522,6 @@ public class Lexer {
                     continue;
                 }
 
-
                 // Tokenize escape code with square brackets
                 if (input.charAt(counter) == '[') {
                     // Tokenize escape code
@@ -540,6 +536,124 @@ public class Lexer {
                     }
                     tokens.add(new Token(Token.Type.ESCAPE_CODE, escapeCode.toString(), position));
                     counter++; // Move past the closing square bracket
+                    continue;
+                }
+
+
+                // Tokenize statements, this should always be the last condition
+                if (Character.isLetter(input.charAt(counter))) {
+
+                    System.out.println("Found a Statement");
+                    // Tokenize variable name
+                    StringBuilder variableName = new StringBuilder();
+                    Position variablePosition = new Position(position.getLine(), position.getPosition());
+
+                    while (counter < input.length() && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
+                        variableName.append(input.charAt(counter));
+                        position.setPosition(position.getPosition() + 1);
+                        counter++;
+                    }
+
+                    System.out.println("Variable name " + variableName + " found at " + variablePosition);
+
+                    if (!isValidVariableName(variableName.toString())) {
+                        System.err.println("Invalid variable name " + position);
+                        System.exit(1);
+                    }
+
+                    
+                    System.out.println("Adding a variable token at " + variablePosition);
+                    tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), variablePosition));
+                    
+
+                    skipWhiteSpace();
+
+                    // Tokenize assignment operator
+                    if (counter < input.length() && input.charAt(counter) == '=') {
+                        
+                        System.out.println("Adding an assignment operator at " + position);
+                        tokens.add(new Token(Token.Type.ASSIGNMENT, "=", position));
+                        position.setPosition(position.getPosition() + 1);
+                        counter++;
+                    } else {
+                        throw new RuntimeException("Missing assignment operator at" + position);
+                    }
+
+                    skipWhiteSpace();
+
+                    // Examples 
+                    // x = 5 + 10
+                    // x = y = 5
+                    
+                    // Loop through the expression
+                    while(counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != '#'){
+                        
+                        // Store the value of expression or variable
+                        StringBuilder value = new StringBuilder();
+                        variablePosition.setLine(position.getLine());
+                        variablePosition.setPosition(position.getPosition());
+                        while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != '#' && input.charAt(counter) !=  '=') {
+                            value.append(input.charAt(counter));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        System.out.println("Value: " + value.toString());
+                        System.out.println(input.charAt(counter) == '\n');
+
+                        if(input.charAt(counter) == '\n') {
+                            
+                            System.out.println("Found an expression: " + value.toString());
+
+                            String numPattern = "-?\\d+";
+                            String operatorPattern = "[+\\-*/]";
+                            String variablePattern = "[a-zA-Z]+\\w*"; // Matches variable names (letters followed by optional alphanumeric characters or underscores)
+                            String parenthesesPattern = "[()]";
+
+                            Pattern pattern = Pattern.compile(numPattern + "|" + operatorPattern + "|" + variablePattern + "|" + parenthesesPattern);
+                            Matcher matcher = pattern.matcher(value.toString());
+                            int currentPosition = variablePosition.getPosition();
+
+                            while(matcher.find()) {
+                                String component = matcher.group();
+                                Position componentPosition = new Position(variablePosition.getLine(), currentPosition);
+
+                                if (component.matches(numPattern)) { // Match numerical values
+                                    System.out.println("Found a number: " + component);
+                                    tokens.add(new Token(Token.Type.VALUE, component, componentPosition));
+                                } else if (component.matches(operatorPattern)) { // Match arithmetic operators
+                                    System.out.println("Found an operator: " + component);
+                                    tokens.add(new Token(Token.Type.OPERATOR, component, componentPosition));
+                                } else if (component.matches(variablePattern)) { // Match variable names
+                                    System.out.println("Found a variable: " + component);
+                                    tokens.add(new Token(Token.Type.VARIABLE, component, componentPosition));
+                                } else if (component.matches(parenthesesPattern)) { // Match parentheses
+                                    System.out.println("Found a parentheses: " + component);
+                                    tokens.add(new Token(Token.Type.PARENTHESES, component, componentPosition));
+                                }    
+                                else {
+                                    throw new RuntimeException("Invalid token " + component + " in arithmetic expression at Line " + position.getLine() + ", Position " + position.getPosition());
+                                }
+
+                                currentPosition += component.length();
+                            }
+
+                            System.out.println("Current Char: " + input.charAt(counter));
+
+                        } else if(input.charAt(counter) == '=') {
+                            System.out.println("Found a variable: " + value.toString());
+                            //Tokenize variable name
+                            System.out.println("Adding a variable name " + value.toString() + " token at " + variablePosition);
+                            tokens.add(new Token(Token.Type.VARIABLE, value.toString(), variablePosition));
+
+                            // Tokenize assignment operator
+                            System.out.println("Adding an assignment operator at " + position);
+                            tokens.add(new Token(Token.Type.ASSIGNMENT, "=", position));
+                            counter++;
+                            position.setPosition(position.getPosition() + 1);
+                        }
+                    }
+
                     continue;
                 }
 
@@ -559,6 +673,13 @@ public class Lexer {
     }
 
     // Helper methods for lexer
+
+    private void skipWhiteSpace() {
+        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+            position.setPosition(position.getPosition() + 1);
+            counter++;
+        }
+    }
 
     private int findIndentLevel(int startIndex) {
         
@@ -605,7 +726,6 @@ public class Lexer {
 
         return new int[]{(i + 1), line, position};
     }
-
 
     private static boolean isValidVariableName(String variableName) {
         // Check if the variable name is not empty
