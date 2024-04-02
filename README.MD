@@ -63,3 +63,8 @@ Increment 2
     - [ ] Addition
     - [ ] Subtraction
 
+
+- [ ] Assignment Statements
+    - [ ] Single Assignment
+    - [ ] Multiple Assignment like x=y=z or x=y=5
+

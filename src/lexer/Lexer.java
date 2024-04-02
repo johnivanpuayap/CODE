@@ -548,7 +548,7 @@ public class Lexer {
                     StringBuilder variableName = new StringBuilder();
                     Position variablePosition = new Position(position.getLine(), position.getPosition());
 
-                    while (counter < input.length() && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
+                    while (counter < input.length() && input.charAt(counter) != '=' && input.charAt(counter) != '\n' && input.charAt(counter) != ' ') {
                         variableName.append(input.charAt(counter));
                         position.setPosition(position.getPosition() + 1);
                         counter++;
@@ -610,28 +610,27 @@ public class Lexer {
                             String variablePattern = "[a-zA-Z]+\\w*"; // Matches variable names (letters followed by optional alphanumeric characters or underscores)
                             String parenthesesPattern = "[()]";
 
-                            Pattern pattern = Pattern.compile(numPattern + "|" + operatorPattern + "|" + variablePattern + "|" + parenthesesPattern);
+                            Pattern pattern = Pattern.compile(operatorPattern + "|" + numPattern + "|" + variablePattern + "|" + parenthesesPattern);
                             Matcher matcher = pattern.matcher(value.toString());
                             int currentPosition = variablePosition.getPosition();
 
-                            while(matcher.find()) {
+                            while (matcher.find()) {
                                 String component = matcher.group();
                                 Position componentPosition = new Position(variablePosition.getLine(), currentPosition);
 
-                                if (component.matches(numPattern)) { // Match numerical values
-                                    System.out.println("Found a number: " + component);
-                                    tokens.add(new Token(Token.Type.VALUE, component, componentPosition));
-                                } else if (component.matches(operatorPattern)) { // Match arithmetic operators
+                                if (component.matches(operatorPattern)) { // Match arithmetic operators
                                     System.out.println("Found an operator: " + component);
                                     tokens.add(new Token(Token.Type.OPERATOR, component, componentPosition));
+                                } else if (component.matches(numPattern)) { // Match numerical values
+                                    System.out.println("Found a number: " + component);
+                                    tokens.add(new Token(Token.Type.VALUE, component, componentPosition));
                                 } else if (component.matches(variablePattern)) { // Match variable names
                                     System.out.println("Found a variable: " + component);
                                     tokens.add(new Token(Token.Type.VARIABLE, component, componentPosition));
                                 } else if (component.matches(parenthesesPattern)) { // Match parentheses
                                     System.out.println("Found a parentheses: " + component);
                                     tokens.add(new Token(Token.Type.PARENTHESES, component, componentPosition));
-                                }    
-                                else {
+                                } else {
                                     throw new RuntimeException("Invalid token " + component + " in arithmetic expression at Line " + position.getLine() + ", Position " + position.getPosition());
                                 }
 
