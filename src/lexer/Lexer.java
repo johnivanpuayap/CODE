@@ -188,7 +188,6 @@ public class Lexer {
                     position.setPosition(position.getPosition() + "FLOAT".length());
                     counter += "FLOAT".length();
 
-                    // Proceed normally without SCAN
                     while (counter < input.length() && input.charAt(counter) != '\n') {
                         // Skip whitespace
                         while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
@@ -220,35 +219,26 @@ public class Lexer {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
 
+                            // Parse value
                             StringBuilder value = new StringBuilder();
-                            int byteCount = 0;
-
-                            while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
-                                char currChar = input.charAt(counter);
-                                if (Character.isDigit(currChar) || currChar == '.') {
-                                    value.append(currChar);
-                                } else {
-                                    throw new RuntimeException("Invalid character in float literal at Line " + position.getLine() + ", Position " + position.getPosition());
-                                }
+                            // Skip leading whitespace
+                            while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
                                 position.setPosition(position.getPosition() + 1);
                                 counter++;
                             }
-
-                            // Parse the float value
-                            float floatValue;
-                            try {
-                                floatValue = Float.parseFloat(value.toString());
-                            } catch (NumberFormatException e) {
-                                throw new RuntimeException("Invalid float value at Line " + position.getLine() + ", Position " + position.getPosition());
+                            // Check if the value starts with a digit or '.'
+                            while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
+                                value.append(input.charAt(counter));
+                                counter++;
                             }
-
-                            // Check if the float value is within the range of a 4-byte floating-point number
-                            if (!Float.isFinite(floatValue)) {
-                                throw new RuntimeException("Float value is out of range at Line " + position.getLine() + ", Position " + position.getPosition());
+                            // Check if the value ends with 'f' suffix
+                            if (value.length() > 0 && value.charAt(value.length() - 1) == 'f') {
+                                // Add the float value token
+                                tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
+                            } else {
+                                // Throw an exception if 'f' suffix is missing
+                                throw new RuntimeException("Missing 'f' suffix for float literal at Line " + position.getLine() + ", Position " + position.getPosition());
                             }
-
-                            // Add the float value token
-                            tokens.add(new Token(Token.Type.VALUE, String.valueOf(floatValue), position));
                         }
 
                         // Skip trailing whitespace and comma
@@ -269,8 +259,6 @@ public class Lexer {
                     }
                     continue;
                 }
-
-
 
                 //added the CHAR datatype
                 if (input.startsWith("CHAR", counter)) {
@@ -469,7 +457,6 @@ public class Lexer {
                     continue;
                 }
 
-
                 if (input.startsWith("SCAN:", counter)) {
                     counter += "SCAN:".length();
                     position.setPosition(position.getPosition() + "SCAN:".length());
@@ -514,6 +501,25 @@ public class Lexer {
                     }
                     continue;
                 }
+
+
+                // Tokenize escape code with square brackets
+                if (input.charAt(counter) == '[') {
+                    // Tokenize escape code
+                    StringBuilder escapeCode = new StringBuilder();
+                    counter++; // Move past the opening square bracket
+                    while (counter < input.length() && input.charAt(counter) != '\n') {
+                        escapeCode.append(input.charAt(counter));
+                        counter += 2;
+                    }
+                    if (counter == input.length()) {
+                        throw new RuntimeException("Missing closing square bracket ']' for escape code at Line " + position.getLine() + ", Position " + position.getPosition());
+                    }
+                    tokens.add(new Token(Token.Type.ESCAPE_CODE, escapeCode.toString(), position));
+                    counter++; // Move past the closing square bracket
+                    continue;
+                }
+
 
                 // If none of the above conditions match, it's an invalid token
                 if (input.charAt(counter) != '\n' && input.charAt(counter) != ' ' && input.charAt(counter) != '#') {
