@@ -26,6 +26,7 @@ public class Lexer {
         List<Token> tokens = new ArrayList<>();
         try {
             while (counter < input.length()) {
+                scanner = new Scanner(System.in);
                 
                 char currentChar = input.charAt(counter);
 
@@ -119,16 +120,16 @@ public class Lexer {
                     tokens.add(new Token(Token.Type.DATA_TYPE, "INT", position));
                     position.setPosition(position.getPosition() + "INT".length());
                     counter += "INT".length();
-                
+
                     // Parse variable names and values
                     while (counter < input.length() && input.charAt(counter) != '\n') {
-                
+
                         // Skip whitespace
                         while (counter < input.length() && isWhitespace(input.charAt(counter))) {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
                         }
-                
+
                         // Parse variable name
                         StringBuilder variableName = new StringBuilder();
                         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
@@ -143,7 +144,7 @@ public class Lexer {
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
                         System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
-                
+
                         // Check for optional initialization
                         if (counter < input.length() && input.charAt(counter) == '=') {
                             // Tokenize assignment operator
@@ -151,7 +152,7 @@ public class Lexer {
                             tokens.add(new Token(Token.Type.ASSIGNMENT, "=", position));
                             position.setPosition(position.getPosition() + 1);
                             counter++;
-                
+
                             // Parse value
                             StringBuilder value = new StringBuilder();
                             while (counter < input.length() && !isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
@@ -161,17 +162,17 @@ public class Lexer {
                             }
                             tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
                         }
-                
+
                         // Skip trailing whitespace and comma
                         while (counter < input.length() && isWhitespace(input.charAt(counter))) {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
                         }
-                
+
                         if (counter < input.length() && input.charAt(counter) == ',') {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
-                            
+
                             // Since there is a comma, we expect another variable name, so we create a new data type token
                             tokens.add(new Token(Token.Type.DATA_TYPE, "INT", position));
                         } else {
@@ -457,19 +458,23 @@ public class Lexer {
                     continue;
                 }
 
-                if (input.startsWith("SCAN:", counter)) {
-                    counter += "SCAN:".length();
-                    position.setPosition(position.getPosition() + "SCAN:".length());
+                //Tokenize SCAN
+                if (input.startsWith("SCAN", counter)) {
+                    counter += "SCAN".length();
+                    tokens.add(new Token(Token.Type.SCAN, "SCAN", position));
+                    position.setPosition(position.getPosition() + "SCAN".length());
 
-                    while (Character.isWhitespace(input.charAt(counter))) {
-                        position.setPosition(position.getPosition() + 1);
-                        counter++;
-                    }
-
-                    // Parse variable names
+                    // Parse variable names and values
                     while (counter < input.length() && input.charAt(counter) != '\n') {
+
+                        // Skip whitespace
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+                        // Parse variable name
                         StringBuilder variableName = new StringBuilder();
-                        while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '\n') {
+                        while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
                             variableName.append(input.charAt(counter));
                             counter++;
                         }
@@ -478,12 +483,31 @@ public class Lexer {
                             System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
                             System.exit(1);
                         }
-                        if (variableName.length() > 0) {
-                            tokens.add(new Token(Token.Type.SCAN, variableName.toString(), position));
-                            System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+
+                        // Add variable token
+                        tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
+                        System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+
+                        // Get user input
+                        Scanner scanner = new Scanner(System.in);
+                        System.out.print("Enter value for " + variableName + ": ");
+                        String userInput = scanner.nextLine();
+                        scanner.close();
+
+                        // Determine data type of user input
+                        if (userInput.matches("^[a-zA-Z]$")) {
+                            tokens.add(new Token(Token.Type.VALUE, userInput, position));
+                        } else if (userInput.matches("^-?\\d+$")) {
+                            tokens.add(new Token(Token.Type.VALUE, userInput, position));
+                        } else if (userInput.matches("^-?\\d+\\.\\d+$")) {
+                            tokens.add(new Token(Token.Type.VALUE, userInput + "f", position));
+                        } else {
+                            System.err.println("Invalid input at Line " + position.getLine() + ", Position " + position.getPosition());
+                            System.exit(1);
                         }
 
-                        while (Character.isWhitespace(input.charAt(counter))) {
+                        // Skip whitespace
+                        while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
                         }
@@ -491,13 +515,12 @@ public class Lexer {
                         if (counter < input.length() && input.charAt(counter) == ',') {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
-                        }
-                    }
 
-                    System.out.println("Please input values for the variables:");
-                    String[] values = scanner.nextLine().split(",");
-                    for (int i = 0; i < values.length; i++) {
-                        tokens.add(new Token(Token.Type.SCAN_VALUE, values[i], position));
+                            // Since there is a comma, we expect another variable name, so we create a new data type token
+                            tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
+                        } else {
+                            break;
+                        }
                     }
                     continue;
                 }

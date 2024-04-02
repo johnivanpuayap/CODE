@@ -54,7 +54,6 @@ public class Interpreter {
 
 public class Interpreter {
     public static void main(String[] args) {
-        // Input containing escape codes
         String input = "BEGIN CODE\n" +
                 "    INT aaa1=10, b=100, s2, a2=1\n" +
                 "    CHAR qa1='a'\n" +
@@ -63,6 +62,8 @@ public class Interpreter {
                 "    [[]\n" +
                 "    [/]\n" +
                 "    []]\n" +
+                "    #This is a comment\n" +
+                "    SCAN var1, var2\n" +
                 "END CODE";
 
         // Create a Lexer instance
@@ -75,7 +76,11 @@ public class Interpreter {
                 System.out.println("Escape Code: " + token.getValue());
             }
             if (token.getType() == Token.Type.VALUE) {
-                System.out.println("Input value: " + token.getValue());
+                System.out.println("Input Value: " + token.getValue());
+            }
+
+            if (token.getType() == Token.Type.SCAN) {
+                System.out.println("Token Type: " + token.getValue());
             }
 
         }

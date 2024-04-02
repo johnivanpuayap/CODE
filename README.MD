@@ -57,8 +57,8 @@ Increment 1
 Increment 2
 - [ ] concatenation (&)
 - [ ] next line ($)
-- [ ] escape code
-- [ ] SCAN function
+- [X] escape code
+- [] SCAN function
 - [ ] arithmetic operation
     - [ ] Addition
     - [ ] Subtraction
