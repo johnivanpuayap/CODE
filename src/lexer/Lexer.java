@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.ArrayList;
 import src.utils.Token;
 import src.utils.Position;
+import java.util.Scanner;
 
 import static java.lang.Character.*;
 
@@ -11,8 +12,8 @@ public class Lexer {
     private String input;
     private int counter;
     private int currentIndent;
-
     private Position position;
+    private Scanner scanner;
 
     public Lexer(String input) {
         this.input = input;
@@ -134,7 +135,11 @@ public class Lexer {
                             variableName.append(input.charAt(counter));
                             counter++;
                         }
-                
+
+                        if (!isValidVariableName(variableName.toString())) {
+                            System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
+                            System.exit(1);
+                        }
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
                         System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
@@ -176,17 +181,15 @@ public class Lexer {
                     continue;
                 }
 
-                //added the FLOAT Datatype
+                // Tokenize FLOAT declaration
                 if (input.startsWith("FLOAT", counter)) {
                     // Tokenize FLOAT declaration
                     tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
                     position.setPosition(position.getPosition() + "FLOAT".length());
                     counter += "FLOAT".length();
 
-
-                    // Parse variable names and values
+                    // Proceed normally without SCAN
                     while (counter < input.length() && input.charAt(counter) != '\n') {
-
                         // Skip whitespace
                         while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
                             position.setPosition(position.getPosition() + 1);
@@ -198,6 +201,11 @@ public class Lexer {
                         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
                             variableName.append(input.charAt(counter));
                             counter++;
+                        }
+
+                        if (!isValidVariableName(variableName.toString())) {
+                            System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
+                            System.exit(1);
                         }
 
                         // Add variable token
@@ -212,35 +220,36 @@ public class Lexer {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
 
-                            // Parse value
                             StringBuilder value = new StringBuilder();
-                            boolean isDecimal = false; // Flag to track if a decimal point has been encountered
-                            int byteCount = 0; // Track the number of bytes appended
+                            int byteCount = 0;
+
                             while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != ',') {
                                 char currChar = input.charAt(counter);
-                                if (Character.isDigit(currChar) || (currChar == '.' && !isDecimal)) {
-                                    if (currChar == '.') {
-                                        isDecimal = true;
-                                    }
-                                    // Check if appending the current character will exceed 4 bytes
-                                    if (byteCount < 4) {
-                                        value.append(currChar);
-                                        byteCount++; // Increment byte count
-                                    } else {
-                                        throw new RuntimeException("Float value exceeds 4 bytes at Line " + position.getLine() + ", Position " + position.getPosition());
-                                    }
+                                if (Character.isDigit(currChar) || currChar == '.') {
+                                    value.append(currChar);
                                 } else {
-                                    // Invalid character in float literal
                                     throw new RuntimeException("Invalid character in float literal at Line " + position.getLine() + ", Position " + position.getPosition());
                                 }
                                 position.setPosition(position.getPosition() + 1);
                                 counter++;
                             }
+
+                            // Parse the float value
+                            float floatValue;
+                            try {
+                                floatValue = Float.parseFloat(value.toString());
+                            } catch (NumberFormatException e) {
+                                throw new RuntimeException("Invalid float value at Line " + position.getLine() + ", Position " + position.getPosition());
+                            }
+
+                            // Check if the float value is within the range of a 4-byte floating-point number
+                            if (!Float.isFinite(floatValue)) {
+                                throw new RuntimeException("Float value is out of range at Line " + position.getLine() + ", Position " + position.getPosition());
+                            }
+
                             // Add the float value token
-                            tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
+                            tokens.add(new Token(Token.Type.VALUE, String.valueOf(floatValue), position));
                         }
-
-
 
                         // Skip trailing whitespace and comma
                         while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
@@ -260,6 +269,8 @@ public class Lexer {
                     }
                     continue;
                 }
+
+
 
                 //added the CHAR datatype
                 if (input.startsWith("CHAR", counter)) {
@@ -284,6 +295,11 @@ public class Lexer {
                         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
                             variableName.append(input.charAt(counter));
                             counter++;
+                        }
+
+                        if (!isValidVariableName(variableName.toString())) {
+                            System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
+                            System.exit(1);
                         }
 
                         // Add variable token
@@ -355,12 +371,12 @@ public class Lexer {
                     continue;
                 }
 
-                //added the BOOLEAN Datatype
-                if (input.startsWith("BOOLEAN", counter)) {
+                // Tokenize BOOLEAN declaration
+                if (input.startsWith("BOOL", counter)) {
                     // Tokenize BOOLEAN declaration
-                    tokens.add(new Token(Token.Type.DATA_TYPE, "BOOLEAN", position));
-                    position.setPosition(position.getPosition() + "BOOLEAN".length());
-                    counter += "BOOLEAN".length();
+                    tokens.add(new Token(Token.Type.DATA_TYPE, "BOOL", position));
+                    position.setPosition(position.getPosition() + "BOOL".length());
+                    counter += "BOOL".length();
 
                     // Parse variable names and values
                     while (counter < input.length() && input.charAt(counter) != '\n') {
@@ -378,6 +394,11 @@ public class Lexer {
                             counter++;
                         }
 
+                        if (!isValidVariableName(variableName.toString())) {
+                            System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
+                            System.exit(1);
+                        }
+
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
                         System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
@@ -390,30 +411,44 @@ public class Lexer {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
 
-                            // Parse value
-                            StringBuilder value = new StringBuilder();
                             // Skip leading whitespace
                             while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
                                 position.setPosition(position.getPosition() + 1);
                                 counter++;
                             }
-                            // Check if the boolean value starts with either 'true' or 'false'
-                            if (input.startsWith("TRUE", counter)) {
-                                // Tokenize boolean value true
-                                tokens.add(new Token(Token.Type.VALUE, "TRUE", position));
-                                position.setPosition(position.getPosition() + "TRUE".length());
-                                counter += "TRUE".length();
-                            } else if (input.startsWith("FALSE", counter)) {
-                                // Tokenize boolean value false
-                                tokens.add(new Token(Token.Type.VALUE, "FALSE", position));
-                                position.setPosition(position.getPosition() + "FALSE".length());
-                                counter += "FALSE".length();
+
+                            // Check if the boolean value is enclosed in quotation marks
+                            if (input.charAt(counter) == '"') {
+                                counter++; // Move past the opening quotation mark
+                                int valueStart = counter;
+                                while (counter < input.length() && input.charAt(counter) != '"') {
+                                    counter++;
+                                }
+                                if (counter == input.length()) {
+                                    throw new RuntimeException("Missing closing quotation mark for boolean value at Line " + position.getLine() + ", Position " + position.getPosition());
+                                }
+                                // Tokenize the boolean value enclosed in quotation marks
+                                tokens.add(new Token(Token.Type.VALUE, input.substring(valueStart, counter), position));
+                                position.setPosition(position.getPosition() + counter - valueStart);
+                                counter++; // Move past the closing quotation mark
                             } else {
-                                // Invalid boolean value
-                                throw new RuntimeException("Invalid boolean value at Line " + position.getLine() + ", Position " + position.getPosition());
+                                // Parse value without quotation marks
+                                if (input.startsWith("TRUE", counter)) {
+                                    // Tokenize boolean value true
+                                    tokens.add(new Token(Token.Type.VALUE, "TRUE", position));
+                                    position.setPosition(position.getPosition() + "TRUE".length());
+                                    counter += "TRUE".length();
+                                } else if (input.startsWith("FALSE", counter)) {
+                                    // Tokenize boolean value false
+                                    tokens.add(new Token(Token.Type.VALUE, "FALSE", position));
+                                    position.setPosition(position.getPosition() + "FALSE".length());
+                                    counter += "FALSE".length();
+                                } else {
+                                    // Invalid boolean value
+                                    throw new RuntimeException("Invalid boolean value at Line " + position.getLine() + ", Position " + position.getPosition());
+                                }
                             }
                         }
-
 
                         // Skip trailing whitespace and comma
                         while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
@@ -426,10 +461,56 @@ public class Lexer {
                             counter++;
 
                             // Since there is a comma, we expect another variable name, so we create a new data type token
-                            tokens.add(new Token(Token.Type.DATA_TYPE, "BOOLEAN", position));
+                            tokens.add(new Token(Token.Type.DATA_TYPE, "BOOL", position));
                         } else {
                             break;
                         }
+                    }
+                    continue;
+                }
+
+
+                if (input.startsWith("SCAN:", counter)) {
+                    counter += "SCAN:".length();
+                    position.setPosition(position.getPosition() + "SCAN:".length());
+
+                    while (Character.isWhitespace(input.charAt(counter))) {
+                        position.setPosition(position.getPosition() + 1);
+                        counter++;
+                    }
+
+                    // Parse variable names
+                    while (counter < input.length() && input.charAt(counter) != '\n') {
+                        StringBuilder variableName = new StringBuilder();
+                        while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '\n') {
+                            variableName.append(input.charAt(counter));
+                            counter++;
+                        }
+
+                        if (!isValidVariableName(variableName.toString())) {
+                            System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
+                            System.exit(1);
+                        }
+                        if (variableName.length() > 0) {
+                            tokens.add(new Token(Token.Type.SCAN, variableName.toString(), position));
+                            System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+                        }
+
+                        while (Character.isWhitespace(input.charAt(counter))) {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+
+                        if (counter < input.length() && input.charAt(counter) == ',') {
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+                    }
+
+                    System.out.println("Please input values for the variables:");
+                    String[] values = scanner.nextLine().split(",");
+                    for (int i = 0; i < values.length; i++) {
+                        tokens.add(new Token(Token.Type.SCAN_VALUE, values[i], position));
                     }
                     continue;
                 }
@@ -495,4 +576,29 @@ public class Lexer {
 
         return new int[]{(i + 1), line, position};
     }
+
+
+    private static boolean isValidVariableName(String variableName) {
+        // Check if the variable name is not empty
+        if (variableName.isEmpty()) {
+            return false;
+        }
+
+        // Check if the first character is a letter
+        if (!Character.isLetter(variableName.charAt(0))) {
+            return false;
+        }
+
+        // Check if the rest of the characters are alphanumeric or underscore
+        for (int i = 1; i < variableName.length(); i++) {
+            char ch = variableName.charAt(i);
+            if (!Character.isLetterOrDigit(ch) && ch != '_') {
+                return false;
+            }
+        }
+
+        // If all checks pass, the variable name is valid
+        return true;
+    }
+
 }

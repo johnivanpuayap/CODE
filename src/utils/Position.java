@@ -25,5 +25,9 @@ public class Position {
         return position;
     }
 
+    @Override
+    public String toString() {
+        return "Line: " + line + ", Position: " + position;
+    }
 }
 

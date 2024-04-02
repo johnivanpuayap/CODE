@@ -42,13 +42,13 @@ Increment 1
     - [X] Check for Indentation
 - [X] Comments
     - [X] Comments Ignore Indentation
-- [ ] Variable Declaration and Initialization
-    - [ ] Check if the Variable Name is Valid
+- [X] Variable Declaration and Initialization
+    - [X] Check if the Variable Name is Valid
     - [X] INT
         - [X] Check if variable type is valid
-    - [ ] FLOAT
-    - [ ] CHAR
-    - [ ] BOOLEAN
+    - [X] FLOAT
+    - [X] CHAR
+    - [X] BOOLEAN
 - [X] Reserved words
     - [X] Check for variable names that are only similar in uppercase
 - [ ] DISPLAY function
