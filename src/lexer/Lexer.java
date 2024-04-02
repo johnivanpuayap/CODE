@@ -610,7 +610,7 @@ public class Lexer {
                             String variablePattern = "[a-zA-Z]+\\w*"; // Matches variable names (letters followed by optional alphanumeric characters or underscores)
                             String parenthesesPattern = "[()]";
 
-                            Pattern pattern = Pattern.compile(operatorPattern + "|" + numPattern + "|" + variablePattern + "|" + parenthesesPattern);
+                            Pattern pattern = Pattern.compile(numPattern + "|" + operatorPattern + "|" + variablePattern + "|" + parenthesesPattern);
                             Matcher matcher = pattern.matcher(value.toString());
                             int currentPosition = variablePosition.getPosition();
 
@@ -618,12 +618,12 @@ public class Lexer {
                                 String component = matcher.group();
                                 Position componentPosition = new Position(variablePosition.getLine(), currentPosition);
 
-                                if (component.matches(operatorPattern)) { // Match arithmetic operators
-                                    System.out.println("Found an operator: " + component);
-                                    tokens.add(new Token(Token.Type.OPERATOR, component, componentPosition));
-                                } else if (component.matches(numPattern)) { // Match numerical values
+                                if (component.matches(numPattern)) { // Match numerical values
                                     System.out.println("Found a number: " + component);
                                     tokens.add(new Token(Token.Type.VALUE, component, componentPosition));
+                                } else if (component.matches(operatorPattern)) { // Match arithmetic operators
+                                    System.out.println("Found an operator: " + component);
+                                    tokens.add(new Token(Token.Type.OPERATOR, component, componentPosition));
                                 } else if (component.matches(variablePattern)) { // Match variable names
                                     System.out.println("Found a variable: " + component);
                                     tokens.add(new Token(Token.Type.VARIABLE, component, componentPosition));

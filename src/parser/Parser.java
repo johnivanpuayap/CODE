@@ -51,6 +51,10 @@ public class Parser {
                     StatementNode statement = parseArithmeticStatement();
                     statements.add(statement);
                 }
+                if(tokens.get(currentTokenIndex + 1).getType() == Token.Type.ASSIGNMENT && tokens.get(currentTokenIndex + 2).getType() == Token.Type.PARENTHESES){
+                    StatementNode statement = parseArithmeticStatement();
+                    statements.add(statement);
+                }
             }
 
             currentTokenIndex++;

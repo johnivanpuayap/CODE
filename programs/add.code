@@ -1,4 +1,4 @@
 BEGIN CODE
-    INT x, y=5, z=0
-    xyz= 5+1*2
+    xyz= ((abc *5) + 10 / 10) * -1
+    x = 1 --1
 END CODE
