@@ -274,8 +274,6 @@ public class Lexer {
                     continue;
                 }
 
-
-
                 //added the CHAR datatype
                 if (input.startsWith("CHAR", counter)) {
                     // Tokenize CHAR declaration
@@ -480,7 +478,6 @@ public class Lexer {
                     position.setPosition(position.getPosition() + "SCAN".length());
 
                     // Parse variable names and values
-                    int variableCount = 0; // Track the number of variables scanned
                     while (counter < input.length() && input.charAt(counter) != '\n') {
 
                         // Skip whitespace
@@ -509,15 +506,14 @@ public class Lexer {
                         Scanner scanner = new Scanner(System.in);
                         System.out.print("Enter value for " + variableName + ": ");
                         String userInput = scanner.nextLine();
-                        //scanner.close();
 
                         // Determine data type of user input
-                        if (userInput.matches("^[a-zA-Z]$")) {
+                        if (userInput.matches("^[a-zA-Z]+$")) {
                             tokens.add(new Token(Token.Type.VALUE, userInput, position));
                         } else if (userInput.matches("^-?\\d+$")) {
                             tokens.add(new Token(Token.Type.VALUE, userInput, position));
                         } else if (userInput.matches("^-?\\d+\\.\\d+$")) {
-                            tokens.add(new Token(Token.Type.VALUE, userInput + "f", position));
+                            tokens.add(new Token(Token.Type.VALUE, userInput , position));
                         } else {
                             System.err.println("Invalid input at Line " + position.getLine() + ", Position " + position.getPosition());
                             System.exit(1);
@@ -529,12 +525,7 @@ public class Lexer {
                             counter++;
                         }
 
-                        // Increment variable count and check if we've scanned two variables
-                        variableCount++;
-                        if (variableCount >= 2) {
-                            break; // Exit the loop after scanning two variables
-                        }
-
+                        // Check if there are more variables
                         if (counter < input.length() && input.charAt(counter) == ',') {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
@@ -542,7 +533,7 @@ public class Lexer {
                             // Since there is a comma, we expect another variable name, so we create a new data type token
                             tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
                         } else {
-                            break;
+                            break; // Exit the loop if there are no more variables
                         }
                     }
                     continue;

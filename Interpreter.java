@@ -57,13 +57,13 @@ public class Interpreter {
         String input = "BEGIN CODE\n" +
                 "    INT aaa1=10, b=100, s2, a2=1\n" +
                 "    CHAR qa1='a'\n" +
-                "    FLOAT qw2=23.2\n" +
+                "    FLOAT qw2=23.22131724981264896129481824783891724162984712984612984619826498126391263981269831629461298462986198462\n" +
                 "    BOOL oiew2=\"FALSE\", ewww=\"TRUE\"\n" +
                 "    [[]\n" +
                 "    [/]\n" +
                 "    []]\n" +
                 "    #This is a comment\n" +
-                "    SCAN var1, var2\n" +
+                "    SCAN var1, var2, var5, vekl\n" +
                 "END CODE";
 
         // Create a Lexer instance
