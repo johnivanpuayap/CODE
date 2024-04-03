@@ -43,7 +43,7 @@ public class Token {
         if(type == Type.VALUE){
             return "<" + type + ", " + "Initial Value: "  + initialValue +  " Current Value: "  + currentValue + ">";   
         }
-        else if(type == Type.DATA_TYPE || type == Type.PARENTHESES || type == Type.OPERATOR) {
+        else if(type == Type.DATA_TYPE || type == Type.PARENTHESES || type == Type.OPERATOR || type == Type.STRING_LITERAL) {
             return "<" + type + ", " + "Value: "  + initialValue + ">";
         }
         else if(type == Type.VARIABLE) {

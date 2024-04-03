@@ -7,10 +7,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import src.nodes.ASTNode;
 import src.nodes.DeclarationNode;
 import src.nodes.ProgramNode;
+import src.nodes.SpecialCharacterNode;
 import src.nodes.StatementNode;
+import src.nodes.StringLiteralNode;
+import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
+import src.nodes.FunctionNode;
 import src.utils.Variable;
 import src.utils.Token;
 
@@ -19,11 +24,13 @@ public class Interpreter {
     private ProgramNode program;
     private List<DeclarationNode> declarations;
     private List<StatementNode> statements;
+    private List<FunctionNode> functions;
 
      public Interpreter(ProgramNode program) {
         this.program = program;
         declarations = this.program.getDeclarations();
         statements = this.program.getStatements();
+        functions = this.program.getFunctionCalls();
     }
 
     public void interpret() {
@@ -31,10 +38,14 @@ public class Interpreter {
         for(DeclarationNode declaration: declarations) {
             variables.put(declaration.getVariableName(), new Variable(declaration.getDataType(), declaration.getValue(), declaration.getPosition()));
         }
-        
 
         for (StatementNode statement : statements) {
             interpretStatement(statement);
+        }
+
+        for (FunctionNode function: functions) {
+            System.out.print(function.getArguments());
+            interpretFunction(function);
         }
     }
 
@@ -175,5 +186,32 @@ public class Interpreter {
             default:
                 throw new IllegalArgumentException("Invalid operator: " + operator);
         }
+    }
+
+    private void interpretFunction(FunctionNode function) {   
+        
+        if (function.getFunctionName() == "DISPLAY") {
+            for (ASTNode node : function.getArguments()) {
+                if (node instanceof StringLiteralNode) {
+                    StringLiteralNode stringLiteral = (StringLiteralNode) node;
+                    System.out.print(stringLiteral.getValue());
+                    continue;
+                }
+                if (node instanceof VariableNode) {
+                    VariableNode variable = (VariableNode) node;
+
+                    Variable var = variables.get(variable.getVariableName());
+                    System.out.print(var.getValue());
+                    continue;
+                }
+                if (node instanceof SpecialCharacterNode) {
+                    SpecialCharacterNode specialCharacter = (SpecialCharacterNode) node;
+                    System.out.print(specialCharacter.getValue());
+                }
+            }
+        } else if (function.getFunctionName() == "SCAN") {
+
+        }
+            
     }
 }

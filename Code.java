@@ -3,12 +3,13 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import src.Interpreter;
 import src.analyzer.SemanticsAnalyzer;
 import src.lexer.Lexer;
 import src.nodes.ProgramNode;
 import src.parser.Parser;
 import src.utils.Token;
-/*
+
 public class Code {
     public static void main(String[] args) {
 
@@ -45,44 +46,12 @@ public class Code {
             SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
             analyzer.analyze();
 
+            Interpreter interpreter = new Interpreter(programNode);
+            interpreter.interpret();
+
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
             System.exit(1);
         }     
-    }
-}*/
-
-public class Code {
-    public static void main(String[] args) {
-        String input = "BEGIN CODE\n" +
-                "    INT aaa1=10, b=100, s2, a2=1\n" +
-                "    CHAR qa1='a'\n" +
-                "    FLOAT qw2=23.0f\n" +
-                "    BOOL oiew2=\"FALSE\", ewww=\"TRUE\"\n" +
-                "    [[]\n" +
-                "    [/]\n" +
-                "    []]\n" +
-                "    #This is a comment\n" +
-                "    SCAN var1, var2\n" +
-                "END CODE";
-
-        // Create a Lexer instance
-        Lexer lexer = new Lexer(input);
-
-        // Tokenize the input
-        List<Token> tokens = lexer.tokenize();
-        for (Token token : tokens) {
-            if(token.getType()==Token.Type.ESCAPE_CODE){
-                System.out.println("Escape Code: " + token.getValue());
-            }
-            if (token.getType() == Token.Type.VALUE) {
-                System.out.println("Input Value: " + token.getValue());
-            }
-
-            if (token.getType() == Token.Type.SCAN) {
-                System.out.println("Token Type: " + token.getValue());
-            }
-
-        }
     }
 }

@@ -301,6 +301,7 @@ public class Parser {
                         tokens.get(currentTokenIndex + 2).getType() == Token.Type.DELIMITER) {
                             String value = tokens.get(currentTokenIndex + 1).getValue();
                             StringLiteralNode newNode = new StringLiteralNode(value, tokens.get(currentTokenIndex).getPosition());
+                            System.out.print("String Literal: " + value);
                             arguments.add(newNode);
                             currentTokenIndex += 3;
                     } else {
