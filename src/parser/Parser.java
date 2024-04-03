@@ -32,8 +32,7 @@ public class Parser {
             error("Expected END CODE");
         }
 
-        // You change return the statements later if needed
-        return new ProgramNode(declarations, null);
+        return new ProgramNode(declarations, statements);
     }
 
     private void parseCodeBlock(List<DeclarationNode> declarations, List<StatementNode> statements) {
@@ -51,8 +50,12 @@ public class Parser {
                     StatementNode statement = parseArithmeticStatement();
                     statements.add(statement);
                 }
-                if(tokens.get(currentTokenIndex + 1).getType() == Token.Type.ASSIGNMENT && tokens.get(currentTokenIndex + 2).getType() == Token.Type.PARENTHESES){
+                else if(tokens.get(currentTokenIndex + 1).getType() == Token.Type.ASSIGNMENT && tokens.get(currentTokenIndex + 2).getType() == Token.Type.PARENTHESES){
                     StatementNode statement = parseArithmeticStatement();
+                    statements.add(statement);
+                }
+                else {
+                    StatementNode statement = parseAssignmentStatement();
                     statements.add(statement);
                 }
             }
@@ -94,7 +97,7 @@ public class Parser {
             // Parse variable declaration with or without initialization
             String dataType = tokens.get(currentTokenIndex).getValue();
             String variableName = tokens.get(currentTokenIndex + 1).getValue();
-            String value = "";
+            String value = null;
     
             if (tokens.get(currentTokenIndex + 2).getType() == Token.Type.ASSIGNMENT) {
                 // Variable with initialization
@@ -106,7 +109,7 @@ public class Parser {
             }
 
             // Output or process the parsed variable declaration as needed
-            System.out.println("Variable Declaration: " + dataType + " " + variableName + (value.isEmpty() ? "" : " = " + value));
+            System.out.println("Variable Declaration: " + dataType + " " + variableName + (value == null ? "" : " = " + value));
     
             return new DeclarationNode(dataType, variableName, value, tokens.get(currentTokenIndex).getPosition());
     
@@ -129,15 +132,16 @@ public class Parser {
                 (tokens.get(currentTokenIndex + 2).getType() == Token.Type.VALUE || tokens.get(currentTokenIndex + 2).getType() == Token.Type.VARIABLE)){
     
             // Parse assignment statement
-            String variableName = tokens.get(currentTokenIndex).getValue();
-            String value = tokens.get(currentTokenIndex + 2).getValue();
+            Token leftSide = tokens.get(currentTokenIndex);
+            Token rightSide = tokens.get(currentTokenIndex + 2);
     
+            
+            // Output or process the parsed assignment statement as needed
+            System.out.println("Assignment Statement: " + leftSide.getValue() + " = " + rightSide.getValue());
+
             currentTokenIndex += 2; // Move to the token after the value
     
-            // Output or process the parsed assignment statement as needed
-            System.out.println("Assignment Statement: " + variableName + " = " + value);
-    
-            return new StatementNode(variableName, value, tokens.get(currentTokenIndex).getPosition());
+            return new StatementNode(leftSide, rightSide);
     
         } else {
             error("Invalid assignment statement at " + tokens.get(currentTokenIndex).getPosition());
@@ -174,10 +178,8 @@ public class Parser {
         // Output or process the parsed arithmetic statement as needed
         System.out.println("Arithmetic Statement: " + variableName + " = " + expression);
         System.out.println("Current Token: "  + tokens.get(currentTokenIndex));
-
         
-        
-        return new StatementNode(variableName, expression, tokens.get(currentTokenIndex).getPosition());
+        return new StatementNode(tokens.get(currentTokenIndex), expression);
     }
 
     private ExpressionNode parseExpression() {

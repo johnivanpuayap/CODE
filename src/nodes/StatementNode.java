@@ -1,28 +1,39 @@
 package src.nodes;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import src.utils.Position;
+import src.utils.Token;
+import src.nodes.ExpressionNode;
 
 public class StatementNode extends ASTNode {
-    private String variableName;
+    private Token leftSide;
+    private Token rightSide;
     private ExpressionNode expressionNode;
     private Position position;
     private String value;
 
-    public StatementNode(String variableName, ExpressionNode expressionNode, Position position) {
-        this.variableName = variableName;
+    public StatementNode(Token leftSide, ExpressionNode expressionNode) {
+        this.leftSide = leftSide;
         this.expressionNode = expressionNode;
-        this.position = position;
+        this.rightSide = null;
     }
 
-    public StatementNode(String variableName, String value, Position position) {
-        this.variableName = variableName;
+    public StatementNode(Token leftSide, Token rightSide) {
+        this.leftSide = leftSide;
         this.expressionNode = null;
-        this.value = value;
-        this.position = position;
+        this.rightSide = rightSide;
     }
 
     // Getters for variable name, expression, and position
-    public String getVariableName() {
-        return variableName;
+
+    public Token getLeftSide() {
+        return leftSide;
+    }
+
+    public Token getRightSide() {
+        return rightSide;
     }
 
     public ExpressionNode getExpressionNode() {
@@ -35,5 +46,20 @@ public class StatementNode extends ASTNode {
 
     public String getValue() {
         return value;
+    }
+
+    // Method to check if the statement contains an expression
+    public boolean hasExpression() {
+        return expressionNode != null;
+    }
+
+    public List<Token> getTokens() {
+        List<Token> tokens = new ArrayList<>();
+        if (hasExpression()) {
+            tokens.addAll(expressionNode.getTokens());
+        } else {
+            tokens.add(rightSide);
+        }
+        return tokens;
     }
 }

@@ -6,12 +6,14 @@ public class Token {
     }
 
     private Type type;
-    private String value;
+    private String initialValue;
+    private String currentValue;
     private Position position;
 
     public Token(Type type, String value, Position position) {
         this.type = type;
-        this.value = value;
+        this.initialValue = value;
+        this.currentValue = value;
         this.position = position;
     }
 
@@ -24,11 +26,30 @@ public class Token {
     }
 
     public String getValue() {
-        return value;
+        return initialValue;
+    }
+
+    public String getCurrentValue() {
+        return currentValue;
+    }
+
+    public void setCurrentValue(String currentValue) {
+        this.currentValue = currentValue;
     }
 
     @Override
     public String toString() {
-        return "<" + type + ", " + value + ">";
+        if(type == Type.VALUE){
+            return "<" + type + ", " + "Initial Value: "  + initialValue +  " Current Value: "  + currentValue + ">";   
+        }
+        else if(type == Type.DATA_TYPE || type == Type.PARENTHESES || type == Type.OPERATOR) {
+            return "<" + type + ", " + "Value: "  + initialValue + ">";
+        }
+        else if(type == Type.VARIABLE) {
+            return "<" + type + ", " + "Name: "  + initialValue + ">";
+        }
+        else {
+            return "<" + type + ">";
+        }
     }
 }

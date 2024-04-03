@@ -110,6 +110,8 @@ public class Lexer {
                         indentCheck.setLine(result[1]);
                         indentCheck.setPosition(result[2]);
                     }
+
+                    System.out.println("Position after checking BEGIN CODE" + position);
                 }
 
                 if (input.startsWith("END CODE", counter)) {
@@ -605,12 +607,12 @@ public class Lexer {
                             
                             System.out.println("Found an expression: " + value.toString());
 
-                            String numPattern = "-?\\d+";
+                            String valuePattern = "-?\\d+(\\.\\d+)?|'.'|\"TRUE\"|\"FALSE\"";
                             String operatorPattern = "[+\\-*/]";
                             String variablePattern = "[a-zA-Z]+\\w*"; // Matches variable names (letters followed by optional alphanumeric characters or underscores)
                             String parenthesesPattern = "[()]";
 
-                            Pattern pattern = Pattern.compile(numPattern + "|" + operatorPattern + "|" + variablePattern + "|" + parenthesesPattern);
+                            Pattern pattern = Pattern.compile(valuePattern + "|" + operatorPattern + "|" + variablePattern + "|" + parenthesesPattern);
                             Matcher matcher = pattern.matcher(value.toString());
                             int currentPosition = variablePosition.getPosition();
 
@@ -618,7 +620,7 @@ public class Lexer {
                                 String component = matcher.group();
                                 Position componentPosition = new Position(variablePosition.getLine(), currentPosition);
 
-                                if (component.matches(numPattern)) { // Match numerical values
+                                if (component.matches(valuePattern)) { // Match numerical values
                                     System.out.println("Found a number: " + component);
                                     tokens.add(new Token(Token.Type.VALUE, component, componentPosition));
                                 } else if (component.matches(operatorPattern)) { // Match arithmetic operators

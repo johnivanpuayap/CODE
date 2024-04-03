@@ -1,5 +1,4 @@
 package src.analyzer;
-import java.beans.Statement;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,22 +11,29 @@ import src.utils.Token;
 
 public class SemanticsAnalyzer {
     private ProgramNode program;
-    private Set<String> reservedWords = new HashSet<>();
+    private Set<String> reservedWords;
+    private List<DeclarationNode> declarations;
+    private List<StatementNode> statements;
 
     public SemanticsAnalyzer(ProgramNode program) {
         this.program = program;
+        reservedWords = new HashSet<>();
         initializeReservedWords();
+        declarations = this.program.getDeclarations();
+        statements = this.program.getStatements();
     }
 
     public void analyze() {
-        List<DeclarationNode> declarations = program.getDeclarations();
-        List<StatementNode> statements = program.getStatements();
-        
+       
         for (DeclarationNode declaration : declarations) {
             // Extract information from the DeclarationNode
             String dataType = declaration.getDataType();
             String variableName = declaration.getVariableName();
             String value = declaration.getValue();
+
+            System.out.println("Data Type: " + dataType);
+            System.out.println("Variable Name: " + variableName);
+            System.out.println("Value: " + value);
             
             // Check if the variable name is a reserved word
             if (isReservedWord(variableName)) {
@@ -43,36 +49,106 @@ public class SemanticsAnalyzer {
             if (!isValidValue(dataType, value)) {
                 error("Invalid value at line " + declaration.getPosition().getLine() + " for " + dataType + " variable " + variableName + ": " + value);
             }
-            
-            // Perform semantics analysis and execution logic for each declaration
-            // For example, you might evaluate expressions, check variable scopes, etc.
         }
 
         for (StatementNode statement : statements) {
-            // Start by evaluating expression
+            
+
+            if (statement.hasExpression()) {
+                ExpressionNode expression = statement.getExpressionNode();
+                List<Token> tokens = expression.getTokens();
+                for (Token token : tokens) {
+                    if (token.getType() == Token.Type.VARIABLE) {
+                        String variableName = token.getValue();
+                        if (!isDeclared(variableName)) {
+                            error("Use of undeclared variable " + variableName + " was not declared" + token.getPosition());
+                        }
+
+                        if(!isAssigned(variableName)){
+                            error("Variable " + variableName + " used before assignment of value at " + token.getPosition());
+                        }
+                    }
+                    
+                }
+            } else {
+
+                // Check for assignment operations
+                Token leftSide = statement.getLeftSide();
+                Token rightSide = statement.getRightSide();
+
+
+                System.out.println("Left Side: " + leftSide);
+                System.out.println("Right Side: " + rightSide);
+                
+
+                if(!isDeclared(leftSide.getValue())){
+                    error("Use of undeclared variable " + leftSide.getValue() + " was not declared " + leftSide.getPosition());
+                }
+
+                // First let's check if it's a value or a variable
+                if(statement.getRightSide().getType() == Token.Type.VALUE){
+                    System.out.println("The right is an INT");
+                    
+                    for (DeclarationNode declaration : declarations) {
+                        if (declaration.getVariableName().equals(leftSide.getValue())) {
+                            if(declaration.getDataType().equals("INT")){
+                                if(!isValidValue("INT", rightSide.getValue())){
+                                    error("Invalid value for INT data type. Expected an integer value, but got: " + rightSide.getValue());
+                                } else {
+                                    
+                                }
+                            } else if(declaration.getDataType().equals("FLOAT")){
+                                if(!isValidValue("FLOAT", rightSide.getValue())){
+                                    error("Invalid value for FLOAT data type. Expected a floating-point value, but got: " + rightSide.getValue());
+                                }
+                            } else if(declaration.getDataType().equals("CHAR")){
+                                if(!isValidValue("CHAR", rightSide.getValue())){
+                                    error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + rightSide.getValue());
+                                }
+                            } else if(declaration.getDataType().equals("BOOL")){
+                                if(!isValidValue("BOOL", rightSide.getValue())){
+                                    error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + rightSide.getValue());
+                                }
+                            }
+                        }
+                    }
+                
+                } else {
+                    
+                    if(!isDeclared(statement.getRightSide().getValue())){
+                        error("Use of undeclared variable " + statement.getRightSide().getValue() + " was not declared " + statement.getRightSide().getPosition());
+                    }
+                }
+                
+            }
 
         }
     }
     
+
+    // Initialization of Variables
+
     private boolean isReservedWord(String variableName) {
         return reservedWords.contains(variableName);
     }
     
     private boolean isValidVariableName(String variableName) {
-        // Check if the variable name matches the pattern
         return variableName.matches("[a-z_][a-zA-Z0-9_]*");
     }
     
     private boolean isValidValue(String dataType, String value) {
-        if (value.isEmpty()) {
+        if (value == null) {
             return true;
         }
         
         switch(dataType) {
             case "INT":
                 try {
-                    Integer.parseInt(value);
-                    return value.matches("-?\\d+"); // The value fits within 4 bytes
+                    if(value != null) {
+                        Integer.parseInt(value);
+                        return value.matches("-?\\d+"); // The value fits within 4 bytes
+                    }
+                   
                 } catch (NumberFormatException e) {
                     if (e.getMessage().contains("out of range")) {
                         error("Invalid value for INT data type. The number is too large to fit in 4 bytes: " + value);
@@ -82,8 +158,10 @@ public class SemanticsAnalyzer {
                 }
             case "FLOAT":
                 try {
-                    Float.parseFloat(value);
-                    return value.matches("-?\\d+(\\.\\d+)?");
+                    if(value != null) {
+                        Float.parseFloat(value);
+                        return true;
+                    }
                 } catch (NumberFormatException e) {
                     if (e.getMessage().contains("out of range")) {
                         error("Invalid value for FLOAT data type. The number is too large: " + value);
@@ -93,21 +171,50 @@ public class SemanticsAnalyzer {
                 }
                 
             case "CHAR":
-                if (value.matches("'.'")) {
-                    return true;
-                } else {
-                    error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + value);
+                if (value != null) {
+                    if (value.matches("'.'")) {
+                        return true;
+                    } else {
+                        error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + value);
+                    }
                 }
             case "BOOL":
-                if (value.equals("TRUE") || value.equals("FALSE")) {
-                    return true;
-                } else {
-                    error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + value);
+                if (value != null) {
+                    if (value.equals("TRUE") || value.equals("FALSE")) {
+                        return true;
+                    } else {
+                        error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + value);
+                    }
                 }
             default:
                 return false;
         }
     }
+
+
+    // Use of Variables
+    private boolean isDeclared(String variableName) {
+        for (DeclarationNode declaration : declarations) {
+            if (declaration.getVariableName().equals(variableName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Assignment of Variables
+    private boolean isAssigned(String variableName) {
+        for (DeclarationNode declaration : declarations) {
+            if (declaration.getVariableName().equals(variableName)) {
+                return declaration.getValue() != null;
+            }
+        }
+
+        return false;
+    }
+
+
 
     // Method to handle errors
     private void error(String message) {
@@ -130,14 +237,5 @@ public class SemanticsAnalyzer {
         reservedWords.add("WHILE");
         reservedWords.add("TRUE");
         reservedWords.add("FALSE");
-    }
-
-    private boolean isArithmeticExpression(ExpressionNode expression) {
-    for (Token token : expression.getTokens()) {
-        if (token.getType() == Token.Type.OPERATOR && "+-*/".contains(token.getValue())) {
-            return true;
-        }
-    }
-        return false;
     }
 }
