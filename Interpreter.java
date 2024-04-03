@@ -42,9 +42,9 @@ public class Interpreter {
             List<Token> tokens = lexer.tokenize();
 
             // Show all tokens
-            // for (Token token : tokens) {
-            //     System.out.println(token);
-            // }
+            for (Token token : tokens) {
+                System.out.println(token);
+            }
 
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();

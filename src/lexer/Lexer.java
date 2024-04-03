@@ -138,7 +138,7 @@ public class Lexer {
                 
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), variablePosition));
-                        // System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
+                        System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
                 
                         // Check for optional initialization
                         if (counter < input.length() && input.charAt(counter) == '=') {
@@ -207,7 +207,7 @@ public class Lexer {
                         }
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), variablePosition));
-                        // System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
+                        System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
                 
                         // Check for optional initialization
                         if (counter < input.length() && input.charAt(counter) == '=') {
@@ -277,7 +277,7 @@ public class Lexer {
                 
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), variablePosition));
-                        // System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
+                        System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
                 
                         // Check for optional initialization
                         if (counter < input.length() && input.charAt(counter) == '=') {
@@ -365,7 +365,7 @@ public class Lexer {
                 
                         // Add variable token
                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), variablePosition));
-                        // System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
+                        System.out.println("Variable name found at Line " + variablePosition.getLine() + ", Position " + variablePosition.getPosition());
                 
                         // Check for optional initialization
                         if (counter < input.length() && input.charAt(counter) == '=') {
@@ -509,12 +509,14 @@ public class Lexer {
                             }
                             // Parse the variable name
                             StringBuilder variableName = new StringBuilder();
+                            Position variablePosition =  new Position(position.getLine(), position.getPosition());
                             while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != '&') {
                                 variableName.append(input.charAt(counter));
                                 counter++;
                                 position.setPosition(position.getPosition() + 1);
                             }
-                            tokens.add(new Token(Token.Type.DISPLAY_VARIABLE, variableName.toString(), position));
+                            System.out.println("Found variable: " + variableName.toString() + " at line " + variablePosition.getLine() + " position " + variablePosition.getPosition());
+                            tokens.add(new Token(Token.Type.DISPLAY_VARIABLE, variableName.toString(), variablePosition));
                         }
                     }
                     continue;

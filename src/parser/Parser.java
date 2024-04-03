@@ -16,13 +16,13 @@ public class Parser {
     private List<Token> tokens;
     private int currentTokenIndex;
     private List<DeclarationNode> declarations;
-    private List<FunctionNode> functions;
+    private List<FunctionNode> functionCalls;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
         this.currentTokenIndex = 0;
         this.declarations = new ArrayList<>();
-        this.functions = new ArrayList<>();
+        this.functionCalls = new ArrayList<>();
     }
 
     public ProgramNode parse() {
@@ -39,7 +39,7 @@ public class Parser {
         }
 
         // You change return the statements later if needed
-        return new ProgramNode(declarations, null, functions);
+        return new ProgramNode(declarations, null, functionCalls);
     }
 
     private void parseCodeBlock() {
@@ -56,7 +56,7 @@ public class Parser {
             if (currentToken.getType() == Token.Type.FUNCTION) {
                 // System.out.println("Function Call: " + currentToken.getValue());
                 FunctionNode function = parseFunctionCall();
-                functions.add(function);
+                functionCalls.add(function);
                 currentTokenIndex--;
             }
 
@@ -194,7 +194,7 @@ public class Parser {
                         error("Cannot concatenate without any prior string literals or variables");
                     }
 
-                    if (tokens.get(currentTokenIndex + 1).getType() != Token.Type.STRING_LITERAL &&
+                    if (tokens.get(currentTokenIndex + 1).getType() != Token.Type.DELIMITER &&
                         tokens.get(currentTokenIndex + 1).getType() != Token.Type.DISPLAY_VARIABLE &&
                         tokens.get(currentTokenIndex + 1).getType() != Token.Type.SPECIAL_CHARACTER) {
                             error("Missing string literal/variable/special character in display concatenation");
@@ -217,7 +217,7 @@ public class Parser {
                         tokens.get(currentTokenIndex + 2).getType() == Token.Type.SPECIAL_CHARACTER) {
                             SpecialCharacterNode specialCharacter = new SpecialCharacterNode(tokens.get(currentTokenIndex + 1).getValue(), tokens.get(currentTokenIndex + 1).getPosition());
                             arguments.add(specialCharacter);
-                            currentTokenIndex++;
+                            currentTokenIndex += 3;
                             continue;
                         }
                     }

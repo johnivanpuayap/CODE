@@ -67,6 +67,7 @@ public class SemanticsAnalyzer {
                         VariableNode variable = (VariableNode) argument;
                         boolean variableFound = false;
                         for (DeclarationNode declaredVariable : declarations) {
+                            // System.out.println(variable.getVariableName());
                             if (declaredVariable.getVariableName().equals(variable.getVariableName())) {
                                 variableFound = true;
                             }
