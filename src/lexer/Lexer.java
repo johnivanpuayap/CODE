@@ -232,13 +232,26 @@ public class Lexer {
                                 value.append(input.charAt(counter));
                                 counter++;
                             }
-                            // Check if the value ends with 'f' suffix
-                            if (value.length() > 0 && value.charAt(value.length() - 1) == 'f') {
-                                // Add the float value token
-                                tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
-                            } else {
-                                // Throw an exception if 'f' suffix is missing
-                                throw new RuntimeException("Missing 'f' suffix for float literal at Line " + position.getLine() + ", Position " + position.getPosition());
+
+                            try {
+                                // Parse the float value
+                                float floatValue = Float.parseFloat(value.toString());
+
+                                // Check if the float value is within the range of a 4-byte float
+                                if (Float.isFinite(floatValue)) {
+                                    // Add the float value token
+                                    tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
+                                } else {
+                                    throw new NumberFormatException("out of range");
+                                }
+                            } catch (NumberFormatException e) {
+                                if (e.getMessage().contains("out of range")) {
+                                    System.err.println("Invalid value for FLOAT data type. The number is too large or too small: " + value);
+                                    System.exit(1);
+                                } else {
+                                    System.err.println("Invalid value for FLOAT data type. Expected a floating-point value, but got: " + value);
+                                    System.exit(1);
+                                }
                             }
                         }
 
@@ -260,6 +273,8 @@ public class Lexer {
                     }
                     continue;
                 }
+
+
 
                 //added the CHAR datatype
                 if (input.startsWith("CHAR", counter)) {
@@ -458,13 +473,14 @@ public class Lexer {
                     continue;
                 }
 
-                //Tokenize SCAN
+                // Tokenize SCAN
                 if (input.startsWith("SCAN", counter)) {
                     counter += "SCAN".length();
                     tokens.add(new Token(Token.Type.SCAN, "SCAN", position));
                     position.setPosition(position.getPosition() + "SCAN".length());
 
                     // Parse variable names and values
+                    int variableCount = 0; // Track the number of variables scanned
                     while (counter < input.length() && input.charAt(counter) != '\n') {
 
                         // Skip whitespace
@@ -472,6 +488,7 @@ public class Lexer {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
                         }
+
                         // Parse variable name
                         StringBuilder variableName = new StringBuilder();
                         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
@@ -492,7 +509,7 @@ public class Lexer {
                         Scanner scanner = new Scanner(System.in);
                         System.out.print("Enter value for " + variableName + ": ");
                         String userInput = scanner.nextLine();
-                        scanner.close();
+                        //scanner.close();
 
                         // Determine data type of user input
                         if (userInput.matches("^[a-zA-Z]$")) {
@@ -510,6 +527,12 @@ public class Lexer {
                         while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
+                        }
+
+                        // Increment variable count and check if we've scanned two variables
+                        variableCount++;
+                        if (variableCount >= 2) {
+                            break; // Exit the loop after scanning two variables
                         }
 
                         if (counter < input.length() && input.charAt(counter) == ',') {

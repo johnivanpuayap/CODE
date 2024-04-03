@@ -57,7 +57,7 @@ public class Interpreter {
         String input = "BEGIN CODE\n" +
                 "    INT aaa1=10, b=100, s2, a2=1\n" +
                 "    CHAR qa1='a'\n" +
-                "    FLOAT qw2=23.0f\n" +
+                "    FLOAT qw2=23.2\n" +
                 "    BOOL oiew2=\"FALSE\", ewww=\"TRUE\"\n" +
                 "    [[]\n" +
                 "    [/]\n" +
@@ -76,7 +76,7 @@ public class Interpreter {
                 System.out.println("Escape Code: " + token.getValue());
             }
             if (token.getType() == Token.Type.VALUE) {
-                System.out.println("Input Value: " + token.getValue());
+                System.out.println("Value: " + token.getValue());
             }
 
             if (token.getType() == Token.Type.SCAN) {
