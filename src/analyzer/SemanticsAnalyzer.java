@@ -1,10 +1,14 @@
 package src.analyzer;
+import java.beans.Statement;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import src.nodes.DeclarationNode;
+import src.nodes.ExpressionNode;
 import src.nodes.ProgramNode;
+import src.nodes.StatementNode;
+import src.utils.Token;
 
 public class SemanticsAnalyzer {
     private ProgramNode program;
@@ -17,6 +21,7 @@ public class SemanticsAnalyzer {
 
     public void analyze() {
         List<DeclarationNode> declarations = program.getDeclarations();
+        List<StatementNode> statements = program.getStatements();
         
         for (DeclarationNode declaration : declarations) {
             // Extract information from the DeclarationNode
@@ -41,6 +46,11 @@ public class SemanticsAnalyzer {
             
             // Perform semantics analysis and execution logic for each declaration
             // For example, you might evaluate expressions, check variable scopes, etc.
+        }
+
+        for (StatementNode statement : statements) {
+            // Start by evaluating expression
+
         }
     }
     
@@ -120,5 +130,14 @@ public class SemanticsAnalyzer {
         reservedWords.add("WHILE");
         reservedWords.add("TRUE");
         reservedWords.add("FALSE");
+    }
+
+    private boolean isArithmeticExpression(ExpressionNode expression) {
+    for (Token token : expression.getTokens()) {
+        if (token.getType() == Token.Type.OPERATOR && "+-*/".contains(token.getValue())) {
+            return true;
+        }
+    }
+        return false;
     }
 }

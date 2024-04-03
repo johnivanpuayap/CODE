@@ -1,10 +1,14 @@
 package src.nodes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import src.utils.Token;
 
 public abstract class ExpressionNode {
 
     public abstract int countTokens();
+    public abstract List<Token> getTokens();
 
     public static class Binary extends ExpressionNode {
         private final Token operator;
@@ -38,6 +42,15 @@ public abstract class ExpressionNode {
         public int countTokens() {
             return left.countTokens() + right.countTokens() + 1; // Add 1 for the operator token
         }
+
+        @Override
+        public List<Token> getTokens() {
+            List<Token> tokens = new ArrayList<>();
+            tokens.addAll(left.getTokens());
+            tokens.add(operator);
+            tokens.addAll(right.getTokens());
+            return tokens;
+        }
     }
 
     public static class Literal extends ExpressionNode {
@@ -54,6 +67,13 @@ public abstract class ExpressionNode {
         @Override
         public String toString() {
             return value.getValue();
+        }
+
+        @Override
+        public List<Token> getTokens() {
+            List<Token> tokens = new ArrayList<>();
+            tokens.add(value);
+            return tokens;
         }
 
         @Override
@@ -78,6 +98,13 @@ public abstract class ExpressionNode {
             return name.getValue();
         }
 
+        @Override
+        public List<Token> getTokens() {
+            List<Token> tokens = new ArrayList<>();
+            tokens.add(name);
+            return tokens;
+        }
+        
         @Override
         public int countTokens() {
             return 1; // Variable node has only one token
