@@ -52,14 +52,24 @@ public class SemanticsAnalyzer {
         }
 
         for (StatementNode statement : statements) {
-            
 
             if (statement.hasExpression()) {
                 ExpressionNode expression = statement.getExpressionNode();
                 List<Token> tokens = expression.getTokens();
+
+                System.out.println("Checking expression" + expression);
+
                 for (Token token : tokens) {
+
+                    System.out.println("Checking Token: " + token.getType() + " " + token.getValue());
+
+                    // Check if the variable used is okay
                     if (token.getType() == Token.Type.VARIABLE) {
+
+                        System.out.println("The token is a " + token.getType());
+
                         String variableName = token.getValue();
+
                         if (!isDeclared(variableName)) {
                             error("Use of undeclared variable " + variableName + " was not declared" + token.getPosition());
                         }
@@ -67,6 +77,50 @@ public class SemanticsAnalyzer {
                         if(!isAssigned(variableName)){
                             error("Variable " + variableName + " used before assignment of value at " + token.getPosition());
                         }
+
+                        
+                        String currDataType = "";
+                        String currValue = "";
+                        // Check for data type match
+                        for(DeclarationNode declaration : declarations) {
+                            if(declaration.getVariableName().equals(token.getValue())) {
+                                currDataType = declaration.getDataType();
+                                currValue = declaration.getValue();
+                            }
+                        }
+
+                        System.out.println("Data type: " + currDataType + "Value: " + currValue);
+                        
+                        if(currDataType == "INT" || currDataType == "FLOAT") {
+                            try {
+                                if(currValue != null) {
+                                    Integer.parseInt(currValue);
+                                }
+                            } catch (NumberFormatException e) {
+                                if (e.getMessage().contains("out of range")) {
+                                    error("Invalid value for INT/FLOAT data type. The number is too large: " + currValue);
+                                } else {
+                                    error("Invalid value for INT/FLOAT data type. Expected a number value, but got: " + currValue);
+                                }
+                            }
+                        } else {
+                            error("Invalid value for INT/FLOAT data type. Expected a number value, but got: " + currValue);
+                        }
+
+                    } else if(token.getType() == Token.Type.VALUE) {    
+                        String currValue = token.getCurrentValue();
+                        try {
+                            if(currValue != null) {
+                                Integer.parseInt(currValue);
+                            }
+                        } catch (NumberFormatException e) {
+                            if (e.getMessage().contains("out of range")) {
+                                error("Invalid value for INT/FLOAT data type. The number is too large: " + currValue);
+                            } else {
+                                error("Invalid value for INT/FLOAT data type. Expected a number value, but got: " + currValue);
+                            }
+                        }
+                        
                     }
                     
                 }
@@ -94,21 +148,26 @@ public class SemanticsAnalyzer {
                             if(declaration.getDataType().equals("INT")){
                                 if(!isValidValue("INT", rightSide.getValue())){
                                     error("Invalid value for INT data type. Expected an integer value, but got: " + rightSide.getValue());
-                                } else {
-                                    
                                 }
+                                statement.getLeftSide().setCurrentValue(rightSide.getValue());
+
+                                System.out.print("Assigning the value of the " + rightSide.getValue() + " to " + statement.getLeftSide().getCurrentValue());
+
                             } else if(declaration.getDataType().equals("FLOAT")){
                                 if(!isValidValue("FLOAT", rightSide.getValue())){
                                     error("Invalid value for FLOAT data type. Expected a floating-point value, but got: " + rightSide.getValue());
                                 }
+                                statement.getLeftSide().setCurrentValue(rightSide.getValue());
                             } else if(declaration.getDataType().equals("CHAR")){
                                 if(!isValidValue("CHAR", rightSide.getValue())){
                                     error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + rightSide.getValue());
                                 }
+                                statement.getLeftSide().setCurrentValue(rightSide.getValue());
                             } else if(declaration.getDataType().equals("BOOL")){
                                 if(!isValidValue("BOOL", rightSide.getValue())){
                                     error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + rightSide.getValue());
                                 }
+                                statement.getLeftSide().setCurrentValue(rightSide.getValue());
                             }
                         }
                     }
@@ -117,6 +176,40 @@ public class SemanticsAnalyzer {
                     
                     if(!isDeclared(statement.getRightSide().getValue())){
                         error("Use of undeclared variable " + statement.getRightSide().getValue() + " was not declared " + statement.getRightSide().getPosition());
+                    } else{
+                        // let's find the data types or left side then the right side
+                        String rightDataType = "1";
+                        String leftDataType = "2";
+                        String rightValue = " ";
+                        
+                        for(DeclarationNode declaration : declarations) {
+                            if(declaration.getVariableName().equals(leftSide.getValue())) {
+                                leftDataType = declaration.getDataType();
+                            }
+                            else if(declaration.getVariableName().equals(rightSide.getValue())) {
+                                rightDataType = declaration.getDataType();
+                                rightValue = declaration.getValue();
+                            }
+
+                        }
+   
+                        if( rightDataType == leftDataType) {
+                            System.out.println("Assigning value of " + rightValue + " to " + leftSide.getValue());
+                            
+                            
+                            statement.getLeftSide().setCurrentValue(rightValue);
+                            // Update the value in the declarations
+                            
+                            for(DeclarationNode declaration: declarations) {
+                                if(declaration.getVariableName().equals(leftSide.getValue())) {
+                                    declaration.setValue(rightValue);
+                                }
+                            }
+
+
+                        } else {
+                            error("Data type mismatch at assignment of variable " + leftSide.getPosition());
+                        }
                     }
                 }
                 

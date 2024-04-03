@@ -34,6 +34,10 @@ public class DeclarationNode {
         return value;
     }
 
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     public Position getPosition() {
         return position;
     }
