@@ -15,12 +15,14 @@ public class StatementNode extends ASTNode {
     private String value;
 
     public StatementNode(Token leftSide, ExpressionNode expressionNode) {
+        super(leftSide.getPosition());
         this.leftSide = leftSide;
         this.expressionNode = expressionNode;
         this.rightSide = null;
     }
 
     public StatementNode(Token leftSide, Token rightSide) {
+        super(leftSide.getPosition());
         this.leftSide = leftSide;
         this.expressionNode = null;
         this.rightSide = rightSide;

@@ -15,7 +15,6 @@ public class Lexer {
     private int counter;
     private int currentIndent;
     private Position position;
-    private Scanner scanner;
 
     public Lexer(String input) {
         this.input = input;
@@ -28,7 +27,6 @@ public class Lexer {
         List<Token> tokens = new ArrayList<>();
         try {
             while (counter < input.length()) {
-                scanner = new Scanner(System.in);
                 
                 char currentChar = input.charAt(counter);
                 
@@ -76,7 +74,7 @@ public class Lexer {
 
                     // Check if there is a newline after "BEGIN CODE"
                     if (input.charAt(counterForIndentation) != '\n') {
-                        throw new RuntimeException("Newline required after BEGIN CODE at Line " + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
+                        error("Newline required after BEGIN CODE at Line " + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
                     }
                     
                     int[] result = moveToNextLine(counterForIndentation, indentCheck.getLine(), indentCheck.getPosition());
@@ -90,10 +88,10 @@ public class Lexer {
                         currentIndent = findIndentLevel(counterForIndentation);
 
                         if (currentIndent == 0 && input.charAt(counterForIndentation) != '#'){
-                            throw new RuntimeException("Indentation error after BEGIN CODE at Line " + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
+                            error("Indentation error after BEGIN CODE at Line " + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
                         }
                     } else {
-                        throw new RuntimeException("Indentation required after BEGIN CODE at Line "  + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
+                        error("Indentation required after BEGIN CODE at Line "  + indentCheck.getLine() + ", Position " + indentCheck.getPosition());
                     }
 
                     // Check indentation for subsequent lines until "END CODE"
@@ -474,6 +472,100 @@ public class Lexer {
                     continue;
                 }
 
+                // Tokenize DISPLAY declaration with concatenation
+                if (input.startsWith("DISPLAY", counter)) {
+                    tokens.add(new Token(Token.Type.FUNCTION, "DISPLAY", position));
+                    position.setPosition(position.getPosition() + "DISPLAY".length());
+                    counter += "DISPLAY".length();
+
+                    // Parse the display string
+                    if (input.charAt(counter) == ':') {
+                        tokens.add(new Token(Token.Type.COLON, ":", position));
+                        position.setPosition(position.getPosition() + 1);
+                        counter++;
+                    }
+
+                    // Skip trailing whitespace
+                    while (counter < input.length() && input.charAt(counter) == ' ') {
+                        position.setPosition(position.getPosition() + 1);
+                        counter++;
+                    }
+
+                    // Parse the concatenated string and variables
+                    while (counter < input.length() && input.charAt(counter) != '\n') {
+
+                        // Tokenize the concatenation operator
+                        if (input.charAt(counter) == '&') {
+                            tokens.add(new Token(Token.Type.CONCATENATION, "&", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                        // Tokenize newline character
+                        } else if (input.charAt(counter) == '$') {
+                            tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "$", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        } else if (input.charAt(counter) == '[') {
+                            tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "[", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            while (input.charAt(counter) != ']') {
+
+                                // Skip trailing whitespace
+                                while (counter < input.length() && input.charAt(counter) == ' ') {
+                                    position.setPosition(position.getPosition() + 1);
+                                    counter++;
+                                }
+
+                                tokens.add(new Token(Token.Type.VALUE, Character.toString(input.charAt(counter)), position));
+                                position.setPosition(position.getPosition() + 1);
+                                counter++;
+                            }
+
+                            tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "]", position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+                        }
+                        // Tokenize quotation marks and string literal
+                        else if (input.charAt(counter) == '"') {
+                            tokens.add(new Token(Token.Type.DELIMITER, Character.toString('"'), position));
+                            position.setPosition(position.getPosition() + 1);
+                            counter++;
+
+                            // Parse and tokenize the string literal
+                            StringBuilder stringLiteral = new StringBuilder();
+                            while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != '&') {
+                                if (input.charAt(counter) == '"') {
+                                    tokens.add(new Token(Token.Type.STRING_LITERAL, stringLiteral.toString(), position));
+                                    tokens.add(new Token(Token.Type.DELIMITER, Character.toString('"'), position));
+                                    position.setPosition(position.getPosition() + 1);
+                                    counter++;
+                                    break;
+                                }
+                                stringLiteral.append(input.charAt(counter));
+                                counter++;
+                                position.setPosition(position.getPosition() + 1);
+                            }
+                        } else {
+                            if (Character.isWhitespace(input.charAt(counter))) {
+                                counter++;
+                                position.setPosition(position.getPosition() + 1);
+                                continue;
+                            }
+                            // Parse the variable name
+                            StringBuilder variableName = new StringBuilder();
+                            while (counter < input.length() && !Character.isWhitespace(input.charAt(counter)) && input.charAt(counter) != '&') {
+                                variableName.append(input.charAt(counter));
+                                counter++;
+                                position.setPosition(position.getPosition() + 1);
+                            }
+                            tokens.add(new Token(Token.Type.DISPLAY_VARIABLE, variableName.toString(), position));
+                        }
+                    }
+                    continue;
+                }
+
                 // Tokenize SCAN
                 if (input.startsWith("SCAN", counter)) {
                     counter += "SCAN".length();
@@ -764,4 +856,7 @@ public class Lexer {
         return true;
     }
 
+    private void error(String message) {
+        throw new RuntimeException("Lexer error: " + message);
+    }
 }

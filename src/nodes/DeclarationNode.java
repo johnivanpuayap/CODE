@@ -1,24 +1,24 @@
 package src.nodes;
 import src.utils.Position;
 
-public class DeclarationNode {
+public class DeclarationNode extends ASTNode {
     private String dataType;
     private String variableName;
     private String value;
     private Position position;
 
     public DeclarationNode(String dataType, String variableName, String value, Position position) {
+        super(position);
         this.dataType = dataType;
         this.variableName = variableName;
         this.value = value;
-        this.position = position;
     }
 
     public DeclarationNode(String dataType, String variableName, Position position) {
+        super(position);
         this.dataType = dataType;
         this.variableName = variableName;
         this.value = null;
-        this.position = position;
     }
 
     // Getters for data type, variable name, and value
@@ -39,6 +39,6 @@ public class DeclarationNode {
     }
 
     public Position getPosition() {
-        return position;
+        return super.getPosition();
     }
 }

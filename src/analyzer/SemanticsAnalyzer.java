@@ -3,28 +3,41 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import src.nodes.ASTNode;
 import src.nodes.DeclarationNode;
+import src.nodes.FunctionNode;
 import src.nodes.ExpressionNode;
 import src.nodes.ProgramNode;
 import src.nodes.StatementNode;
+import src.nodes.StringLiteralNode;
+import src.nodes.VariableNode;
+
+
 import src.utils.Token;
+
+
 
 public class SemanticsAnalyzer {
     private ProgramNode program;
     private Set<String> reservedWords;
+    private Set<String> declaredFunctions;
     private List<DeclarationNode> declarations;
     private List<StatementNode> statements;
 
     public SemanticsAnalyzer(ProgramNode program) {
         this.program = program;
         reservedWords = new HashSet<>();
+        declaredFunctions = new HashSet<>();
         initializeReservedWords();
+        initializeDeclaredFunctions();
         declarations = this.program.getDeclarations();
         statements = this.program.getStatements();
     }
 
     public void analyze() {
-       
+
+        List<FunctionNode> functionCalls = program.getFunctionCalls();
+        
         for (DeclarationNode declaration : declarations) {
             // Extract information from the DeclarationNode
             String dataType = declaration.getDataType();
@@ -49,6 +62,36 @@ public class SemanticsAnalyzer {
             if (!isValidValue(dataType, value)) {
                 error("Invalid value at line " + declaration.getPosition().getLine() + " for " + dataType + " variable " + variableName + ": " + value);
             }
+        }
+        
+        for (FunctionNode function: functionCalls) {
+            String functionName = function.getFunctionName();
+
+            // Check if function has been declared
+            if (!isFunctionDeclared(functionName)) {
+                error("Function " + functionName + " has not been declared yet at line " + function.getPosition().getLine() + " position " + function.getPosition().getPosition());
+            }
+
+            if (functionName == "DISPLAY") {
+                for (ASTNode argument : function.getArguments()) {
+                    if (argument instanceof StringLiteralNode) {
+                        StringLiteralNode stringLiteral = (StringLiteralNode) argument;
+
+                    } else if (argument instanceof VariableNode){
+                        VariableNode variable = (VariableNode) argument;
+                        boolean variableFound = false;
+                        for (DeclarationNode declaredVariable : declarations) {
+                            if (declaredVariable.getVariableName().equals(variable.getVariableName())) {
+                                variableFound = true;
+                            }
+                        }
+                        if (!variableFound) {
+                            error("Variable " + variable.getVariableName() + " has not been declared yet at line " + variable.getPosition().getLine() + " position " + variable.getPosition().getPosition());
+                        }
+                    }
+                }
+            }
+
         }
 
         for (StatementNode statement : statements) {
@@ -312,6 +355,10 @@ public class SemanticsAnalyzer {
         return false;
     }
 
+    private boolean isFunctionDeclared(String functionName) {
+        return declaredFunctions.contains(functionName);
+    }
+
     // Method to handle errors
     private void error(String message) {
         throw new RuntimeException(message);
@@ -333,5 +380,10 @@ public class SemanticsAnalyzer {
         reservedWords.add("WHILE");
         reservedWords.add("TRUE");
         reservedWords.add("FALSE");
+    }
+
+    private void initializeDeclaredFunctions() {
+        declaredFunctions.add("DISPLAY");
+        declaredFunctions.add("SCAN");
     }
 }

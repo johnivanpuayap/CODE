@@ -2,15 +2,24 @@ package src.parser;
 import java.util.ArrayList;
 import java.util.List;
 import src.utils.Token;
+import src.utils.Position;
+import src.nodes.ASTNode;
 import src.nodes.ProgramNode;
+import src.nodes.SpecialCharacterNode;
 import src.nodes.DeclarationNode;
 import src.nodes.StatementNode;
+import src.nodes.StringLiteralNode;
+import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
+import src.nodes.FunctionNode;
 
 // Syntax Analyzer or Parser class to generate Abstract Syntax Tree (AST) from tokens
 public class Parser {
     private List<Token> tokens;
     private int currentTokenIndex;
+    private List<FunctionNode> functions = new ArrayList<>();
+    private List<DeclarationNode> declarations = new ArrayList<>();
+    private List<StatementNode> statements = new ArrayList<>();
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -18,9 +27,6 @@ public class Parser {
     }
 
     public ProgramNode parse() {
-        List<DeclarationNode> declarations = new ArrayList<>();
-        List<StatementNode> statements = new ArrayList<>();
-
         if(!match(Token.Type.BEGIN_CODE)) {
             error("Expected BEGIN CODE");
         }
@@ -32,7 +38,7 @@ public class Parser {
             error("Expected END CODE");
         }
 
-        return new ProgramNode(declarations, statements);
+        return new ProgramNode(declarations, statements, functions);
     }
 
     private void parseCodeBlock(List<DeclarationNode> declarations, List<StatementNode> statements) {
@@ -58,6 +64,13 @@ public class Parser {
                     StatementNode statement = parseAssignmentStatement();
                     statements.add(statement);
                 }
+            }
+
+            if (currentToken.getType() == Token.Type.FUNCTION) {
+                // System.out.println("Function Call: " + currentToken.getValue());
+                FunctionNode function = parseFunctionCall();
+                functions.add(function);
+                currentTokenIndex--;
             }
 
             currentTokenIndex++;
@@ -223,6 +236,94 @@ public class Parser {
         }
     }
     
+    private FunctionNode parseFunctionCall() {
+        String functionName = tokens.get(currentTokenIndex).getValue();
+        List<ASTNode> arguments = new ArrayList<>();
+        Position currentFunctionPosition = tokens.get(currentTokenIndex).getPosition();
+        currentTokenIndex++;
+        
+        if (tokens.get(currentTokenIndex).getType() != Token.Type.COLON) {
+            error("Missing colon (:) after DISPLAY call at line " + tokens.get(currentTokenIndex).getPosition().getLine() + " position " + tokens.get(currentTokenIndex).getPosition().getPosition());
+        }
+
+        if (functionName == "DISPLAY") {
+            boolean start = true;
+
+            while (currentTokenIndex < (tokens.size() - 1) && (
+                    tokens.get(currentTokenIndex).getType() == Token.Type.COLON ||
+                    tokens.get(currentTokenIndex).getType() == Token.Type.DELIMITER ||
+                    tokens.get(currentTokenIndex).getType() == Token.Type.CONCATENATION ||
+                    tokens.get(currentTokenIndex).getType() == Token.Type.SPECIAL_CHARACTER ||
+                    tokens.get(currentTokenIndex).getType() == Token.Type.DISPLAY_VARIABLE)) {
+
+                if (tokens.get(currentTokenIndex).getType() == Token.Type.COLON) {
+                    start = false;
+                    currentTokenIndex++;
+                    continue;
+                }
+
+                if (tokens.get(currentTokenIndex).getType() == Token.Type.CONCATENATION) {
+                    if (start) {
+                        error("Cannot concatenate without any prior string literals or variables");
+                    }
+
+                    if (tokens.get(currentTokenIndex + 1).getType() != Token.Type.STRING_LITERAL &&
+                        tokens.get(currentTokenIndex + 1).getType() != Token.Type.DISPLAY_VARIABLE &&
+                        tokens.get(currentTokenIndex + 1).getType() != Token.Type.SPECIAL_CHARACTER) {
+                            error("Missing string literal/variable/special character in display concatenation");
+                    }
+                    currentTokenIndex++;
+                }
+
+                if (tokens.get(currentTokenIndex).getType() == Token.Type.SPECIAL_CHARACTER) {
+                    Token token = tokens.get(currentTokenIndex);
+
+                    if (tokens.get(currentTokenIndex).getValue() == "$") {
+                        SpecialCharacterNode specialCharacter = new SpecialCharacterNode(token.getValue(), token.getPosition());
+                        arguments.add(specialCharacter);
+                        currentTokenIndex++;
+                        continue;
+                    }
+
+                    if (tokens.get(currentTokenIndex).getValue() == "[") {
+                        if(tokens.get(currentTokenIndex + 1).getType() == Token.Type.VALUE &&
+                        tokens.get(currentTokenIndex + 2).getType() == Token.Type.SPECIAL_CHARACTER) {
+                            SpecialCharacterNode specialCharacter = new SpecialCharacterNode(tokens.get(currentTokenIndex + 1).getValue(), tokens.get(currentTokenIndex + 1).getPosition());
+                            arguments.add(specialCharacter);
+                            currentTokenIndex++;
+                            continue;
+                        }
+                    }
+                }
+
+                if (tokens.get(currentTokenIndex).getType() == Token.Type.DELIMITER) {
+                    if (tokens.get(currentTokenIndex + 1).getType() == Token.Type.STRING_LITERAL &&
+                        tokens.get(currentTokenIndex + 2).getType() == Token.Type.DELIMITER) {
+                            String value = tokens.get(currentTokenIndex + 1).getValue();
+                            StringLiteralNode newNode = new StringLiteralNode(value, tokens.get(currentTokenIndex).getPosition());
+                            arguments.add(newNode);
+                            currentTokenIndex += 3;
+                    } else {
+                        error("Missing delimiter in string literal");
+                    }
+                    continue;
+                }
+
+                if (tokens.get(currentTokenIndex).getType() == Token.Type.DISPLAY_VARIABLE) {
+                    String variableName = tokens.get(currentTokenIndex).getValue();
+                    VariableNode newNode  = new VariableNode(variableName, tokens.get(currentTokenIndex).getPosition());
+                    arguments.add(newNode);
+                    currentTokenIndex++;
+                    continue;
+                }
+                
+                // System.out.println("Found arguments: " + arguments.size());
+            }
+        }
+        
+        return new FunctionNode(functionName, arguments, currentFunctionPosition);
+    }
+
     // Helper methods for token handling
     private boolean match(Token... tokens) {
         for (Token token : tokens) {
