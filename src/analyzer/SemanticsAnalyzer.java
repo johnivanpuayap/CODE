@@ -54,7 +54,49 @@ public class SemanticsAnalyzer {
     }
     
     private boolean isValidValue(String dataType, String value) {
-        return value.isEmpty() || (dataType.equals("INT") && value.matches("-?\\d+"));
+        if (value.isEmpty()) {
+            return true;
+        }
+        
+        switch(dataType) {
+            case "INT":
+                try {
+                    Integer.parseInt(value);
+                    return value.matches("-?\\d+"); // The value fits within 4 bytes
+                } catch (NumberFormatException e) {
+                    if (e.getMessage().contains("out of range")) {
+                        error("Invalid value for INT data type. The number is too large to fit in 4 bytes: " + value);
+                    } else {
+                        error("Invalid value for INT data type. Expected an integer value, but got: " + value);
+                    }
+                }
+            case "FLOAT":
+                try {
+                    Float.parseFloat(value);
+                    return value.matches("-?\\d+(\\.\\d+)?");
+                } catch (NumberFormatException e) {
+                    if (e.getMessage().contains("out of range")) {
+                        error("Invalid value for FLOAT data type. The number is too large: " + value);
+                    } else {
+                        error("Invalid value for FLOAT data type. Expected a floating-point value, but got: " + value);
+                    }
+                }
+                
+            case "CHAR":
+                if (value.matches("'.'")) {
+                    return true;
+                } else {
+                    error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + value);
+                }
+            case "BOOL":
+                if (value.equals("TRUE") || value.equals("FALSE")) {
+                    return true;
+                } else {
+                    error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + value);
+                }
+            default:
+                return false;
+        }
     }
 
     // Method to handle errors
