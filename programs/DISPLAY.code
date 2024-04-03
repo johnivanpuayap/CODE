@@ -1,7 +1,8 @@
 BEGIN CODE
-    INT a1=10
+    INT a1=a2=10
     # INT TRUE
     FLOAT b=10.0
     CHAR c='1'
     BOOL d="TRUE"
+    DISPLAY: "HELLO" & a1 & b & c & d & $ & [#]
 END CODE

@@ -2,7 +2,9 @@ package src.utils;
 
 public class Token {
     public enum Type {
-        BEGIN_CODE, END_CODE, DATA_TYPE, VARIABLE, ASSIGNMENT, VALUE
+        BEGIN_CODE, END_CODE, DATA_TYPE, VARIABLE, ASSIGNMENT,
+        VALUE, DISPLAY_VARIABLE, DELIMITER, FUNCTION, CONCATENATION,
+        STRING_LITERAL, COLON, SPECIAL_CHARACTER
     }
 
     private Type type;

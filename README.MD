@@ -46,18 +46,18 @@ Increment 1
     - [ ] Check if the Variable Name is Valid
     - [X] INT
         - [X] Check if variable type is valid
-    - [ ] FLOAT
-    - [ ] CHAR
-    - [ ] BOOLEAN
+    - [X] FLOAT
+    - [X] CHAR
+    - [X] BOOLEAN
 - [X] Reserved words
     - [X] Check for variable names that are only similar in uppercase
-- [ ] DISPLAY function
+- [X] DISPLAY function
 
 
 Increment 2
-- [ ] concatenation (&)
-- [ ] next line ($)
-- [ ] escape code
+- [X] concatenation (&)
+- [X] next line ($)
+- [X] escape code ([])
 - [ ] SCAN function
 - [ ] arithmetic operation
     - [ ] Addition
