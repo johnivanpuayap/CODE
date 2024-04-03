@@ -1,8 +1,8 @@
 BEGIN CODE
-    INT xyz, a=0, abc=3
+    INT xyz, a=0, abc=3, x
     BOOL b="TRUE"
     a = 1 + 2
     abc = a
-    xyz= ((abc *5) + 10 / 10) * -1
+    xyz= ((3 *5) + 10 / 10) * -1
     x = 1 --1
 END CODE

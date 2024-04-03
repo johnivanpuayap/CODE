@@ -158,6 +158,7 @@ public class Parser {
     
         // Check token sequence for arithmetic statement
         String variableName = tokens.get(currentTokenIndex).getValue();
+        int startIndex = currentTokenIndex;
     
         if (tokens.get(currentTokenIndex + 1).getType() == Token.Type.ASSIGNMENT) {
             // Move to the next token after the assignment operator
@@ -179,7 +180,7 @@ public class Parser {
         System.out.println("Arithmetic Statement: " + variableName + " = " + expression);
         System.out.println("Current Token: "  + tokens.get(currentTokenIndex));
         
-        return new StatementNode(tokens.get(currentTokenIndex), expression);
+        return new StatementNode(tokens.get(startIndex), expression);
     }
 
     private ExpressionNode parseExpression() {

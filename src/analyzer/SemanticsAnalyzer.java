@@ -57,6 +57,13 @@ public class SemanticsAnalyzer {
                 ExpressionNode expression = statement.getExpressionNode();
                 List<Token> tokens = expression.getTokens();
 
+                Token leftSide = statement.getLeftSide();
+
+                if(!isDeclared(leftSide.getValue())){
+                    error("Use of undeclared variable " + leftSide.getValue() + " was not declared " + leftSide.getPosition());
+                }
+
+
                 System.out.println("Checking expression" + expression);
 
                 for (Token token : tokens) {
@@ -212,9 +219,7 @@ public class SemanticsAnalyzer {
                         }
                     }
                 }
-                
             }
-
         }
     }
     
@@ -306,8 +311,6 @@ public class SemanticsAnalyzer {
 
         return false;
     }
-
-
 
     // Method to handle errors
     private void error(String message) {

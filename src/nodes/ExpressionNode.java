@@ -3,6 +3,7 @@ package src.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import src.utils.Position;
 import src.utils.Token;
 
 public abstract class ExpressionNode {
@@ -46,9 +47,11 @@ public abstract class ExpressionNode {
         @Override
         public List<Token> getTokens() {
             List<Token> tokens = new ArrayList<>();
+            tokens.add(new Token(Token.Type.PARENTHESES, "(", new Position(0, 0))); // Add opening parenthesis
             tokens.addAll(left.getTokens());
             tokens.add(operator);
             tokens.addAll(right.getTokens());
+            tokens.add(new Token(Token.Type.PARENTHESES, ")", new Position(0, 0))); // Add closing parenthesis
             return tokens;
         }
     }

@@ -3,13 +3,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import src.Interpreter;
 import src.analyzer.SemanticsAnalyzer;
 import src.lexer.Lexer;
 import src.nodes.ProgramNode;
 import src.parser.Parser;
 import src.utils.Token;
 
-public class Interpreter {
+public class Code {
     public static void main(String[] args) {
 
         if (args.length != 1) {
@@ -45,6 +46,10 @@ public class Interpreter {
             SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
             analyzer.analyze();
 
+            Interpreter interpreter = new Interpreter(programNode);
+            interpreter.interpret();
+
+
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
             System.exit(1);
@@ -52,7 +57,7 @@ public class Interpreter {
     }
 }
 
-// public class Interpreter {
+// public class Code {
 //     public static void main(String[] args) {
 //         String input = "BEGIN CODE\n" +
 //                 "    INT aaa1=10, b=100, s2, a2=1\n" +
