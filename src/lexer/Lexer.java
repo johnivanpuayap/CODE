@@ -235,13 +235,26 @@ public class Lexer {
                                 value.append(input.charAt(counter));
                                 counter++;
                             }
-                            // Check if the value ends with 'f' suffix
-                            if (value.length() > 0 && value.charAt(value.length() - 1) == 'f') {
-                                // Add the float value token
-                                tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
-                            } else {
-                                // Throw an exception if 'f' suffix is missing
-                                throw new RuntimeException("Missing 'f' suffix for float literal at Line " + position.getLine() + ", Position " + position.getPosition());
+
+                            try {
+                                // Parse the float value
+                                float floatValue = Float.parseFloat(value.toString());
+
+                                // Check if the float value is within the range of a 4-byte float
+                                if (Float.isFinite(floatValue)) {
+                                    // Add the float value token
+                                    tokens.add(new Token(Token.Type.VALUE, value.toString(), position));
+                                } else {
+                                    throw new NumberFormatException("out of range");
+                                }
+                            } catch (NumberFormatException e) {
+                                if (e.getMessage().contains("out of range")) {
+                                    System.err.println("Invalid value for FLOAT data type. The number is too large or too small: " + value);
+                                    System.exit(1);
+                                } else {
+                                    System.err.println("Invalid value for FLOAT data type. Expected a floating-point value, but got: " + value);
+                                    System.exit(1);
+                                }
                             }
                         }
 
@@ -461,7 +474,7 @@ public class Lexer {
                     continue;
                 }
 
-                //Tokenize SCAN
+                // Tokenize SCAN
                 if (input.startsWith("SCAN", counter)) {
                     counter += "SCAN".length();
                     tokens.add(new Token(Token.Type.SCAN, "SCAN", position));
@@ -491,15 +504,14 @@ public class Lexer {
                         Scanner scanner = new Scanner(System.in);
                         System.out.print("Enter value for " + variableName + ": ");
                         String userInput = scanner.nextLine();
-                        scanner.close();
 
                         // Determine data type of user input
-                        if (userInput.matches("^[a-zA-Z]$")) {
+                        if (userInput.matches("^[a-zA-Z]+$")) {
                             tokens.add(new Token(Token.Type.VALUE, userInput, position));
                         } else if (userInput.matches("^-?\\d+$")) {
                             tokens.add(new Token(Token.Type.VALUE, userInput, position));
                         } else if (userInput.matches("^-?\\d+\\.\\d+$")) {
-                            tokens.add(new Token(Token.Type.VALUE, userInput + "f", position));
+                            tokens.add(new Token(Token.Type.VALUE, userInput , position));
                         } else {
                             System.err.println("Invalid input at Line " + position.getLine() + ", Position " + position.getPosition());
                             System.exit(1);
@@ -511,6 +523,7 @@ public class Lexer {
                             counter++;
                         }
 
+                        // Check if there are more variables
                         if (counter < input.length() && input.charAt(counter) == ',') {
                             position.setPosition(position.getPosition() + 1);
                             counter++;
@@ -518,7 +531,7 @@ public class Lexer {
                             // Since there is a comma, we expect another variable name, so we create a new data type token
                             tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
                         } else {
-                            break;
+                            break; // Exit the loop if there are no more variables
                         }
                     }
                     continue;
