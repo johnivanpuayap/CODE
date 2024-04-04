@@ -10,8 +10,9 @@ public class SpecialCharacterNode extends ASTNode {
 
     public SpecialCharacterNode(String character, Position position) {
         super(position);
+        System.out.println("CHA123:" + character);
         if (!checkIsSpecialCharacter(character)) {
-            throw new RuntimeException("Invalid special character: " + character + " at line " + position.getLine() + " position " + position.getPosition());
+            throw new RuntimeException("Invalid special character: " + character + " at " + position);
         }
         this.character = character;
     }
@@ -20,6 +21,12 @@ public class SpecialCharacterNode extends ASTNode {
         Set<String> specialCharacters = new HashSet<String>();
         specialCharacters.add("$");
         specialCharacters.add("#");
+        specialCharacters.add("[");
+        specialCharacters.add("]");
+
+        if(character.equals("[") ||  character.equals("]")) {
+            return true;
+        } 
 
         return specialCharacters.contains(character);
     }
@@ -40,6 +47,15 @@ public class SpecialCharacterNode extends ASTNode {
         if (character.equals("#")) {
             return "#";
         }
+
+        if (character.equals("[")) {
+            return "[";
+        }
+
+        if (character.equals("]")) {
+            return "]";
+        }
+
         return null;
     }
 }

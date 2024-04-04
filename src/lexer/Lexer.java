@@ -567,10 +567,10 @@ public class Lexer {
                 }
 
                 // Tokenize SCAN
-                if (input.startsWith("SCAN", counter)) {
-                    counter += "SCAN".length();
-                    tokens.add(new Token(Token.Type.SCAN, "SCAN", position));
-                    position.setPosition(position.getPosition() + "SCAN".length());
+                if (input.startsWith("SCAN:", counter)) {
+                    counter += "SCAN:".length();
+                    tokens.add(new Token(Token.Type.SCAN, "SCAN:", position));
+                    position.setPosition(position.getPosition() + "SCAN:".length());
 
                     // Parse variable names and values
                     while (counter < input.length() && input.charAt(counter) != '\n') {

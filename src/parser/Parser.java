@@ -249,12 +249,14 @@ public class Parser {
         if (functionName == "DISPLAY") {
             boolean start = true;
 
-            while (currentTokenIndex < (tokens.size() - 1) && (
+            while (currentTokenIndex < (tokens.size()) && (
                     tokens.get(currentTokenIndex).getType() == Token.Type.COLON ||
                     tokens.get(currentTokenIndex).getType() == Token.Type.DELIMITER ||
                     tokens.get(currentTokenIndex).getType() == Token.Type.CONCATENATION ||
                     tokens.get(currentTokenIndex).getType() == Token.Type.SPECIAL_CHARACTER ||
-                    tokens.get(currentTokenIndex).getType() == Token.Type.DISPLAY_VARIABLE)) {
+                    tokens.get(currentTokenIndex).getType() == Token.Type.DISPLAY_VARIABLE ||
+                    tokens.get(currentTokenIndex).getType() == Token.Type.STRING_LITERAL ))
+            {
 
                 if (tokens.get(currentTokenIndex).getType() == Token.Type.COLON) {
                     start = false;
@@ -286,8 +288,12 @@ public class Parser {
                     }
 
                     if (tokens.get(currentTokenIndex).getValue() == "[") {
+
+                        System.out.println(tokens.get(currentTokenIndex + 1).getValue() + " 2nd " + tokens.get(currentTokenIndex + 2).getValue()  + " 3rd");
+
                         if(tokens.get(currentTokenIndex + 1).getType() == Token.Type.VALUE &&
                         tokens.get(currentTokenIndex + 2).getType() == Token.Type.SPECIAL_CHARACTER) {
+                            
                             SpecialCharacterNode specialCharacter = new SpecialCharacterNode(tokens.get(currentTokenIndex + 1).getValue(), tokens.get(currentTokenIndex + 1).getPosition());
                             arguments.add(specialCharacter);
                             currentTokenIndex++;
@@ -300,7 +306,7 @@ public class Parser {
                     if (tokens.get(currentTokenIndex + 1).getType() == Token.Type.STRING_LITERAL &&
                         tokens.get(currentTokenIndex + 2).getType() == Token.Type.DELIMITER) {
                             String value = tokens.get(currentTokenIndex + 1).getValue();
-                            StringLiteralNode newNode = new StringLiteralNode(value, tokens.get(currentTokenIndex).getPosition());
+                            StringLiteralNode newNode = new StringLiteralNode(value, tokens.get(currentTokenIndex + 1).getPosition());
                             System.out.print("String Literal: " + value);
                             arguments.add(newNode);
                             currentTokenIndex += 3;
@@ -318,7 +324,7 @@ public class Parser {
                     continue;
                 }
                 
-                // System.out.println("Found arguments: " + arguments.size());
+                System.out.println("Found arguments: " + arguments.size());
             }
         }
         

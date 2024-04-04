@@ -59,12 +59,16 @@ Increment 2
 - [ ] next line ($)
 - [X] escape code
 - [X] SCAN function
-- [ ] arithmetic operation
-    - [ ] Addition
-    - [ ] Subtraction
+- [X] arithmetic operation
+    - [X] Operator Precendence
+    - [X] Parentheses
 
 
-- [ ] Assignment Statements
-    - [ ] Single Assignment
-    - [ ] Multiple Assignment like x=y=z or x=y=5
+
+- [X] Assignment Statements
+    - [X] Single Assignment
+    - [X] Multiple Assignment like x=y=z or x=y=5
+
+- [ ] Use Variable class in the Semantics Analyzer
+- [ ] 
 

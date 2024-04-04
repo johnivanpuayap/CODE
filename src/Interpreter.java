@@ -35,6 +35,9 @@ public class Interpreter {
 
     public void interpret() {
 
+        System.out.println("\n\n\n\n\nPROGRAM RESULTS");
+
+
         for(DeclarationNode declaration: declarations) {
             variables.put(declaration.getVariableName(), new Variable(declaration.getDataType(), declaration.getValue(), declaration.getPosition()));
         }
@@ -44,7 +47,6 @@ public class Interpreter {
         }
 
         for (FunctionNode function: functions) {
-            System.out.print(function.getArguments());
             interpretFunction(function);
         }
     }
@@ -75,12 +77,8 @@ public class Interpreter {
                 Variable right = variables.get(rightSide.getValue());
 
                 left.setValue(right.getValue());
-
-                System.out.println("Assign to " + leftSide.getValue() + " the number: " + right.getValue());
-
             } else {
                 left.setValue(rightSide.getValue());
-                System.out.println("Assign to " + leftSide.getValue() + " the number: " + rightSide.getValue());
             }
         }
     }
@@ -89,14 +87,6 @@ public class Interpreter {
         
         List<Token> prefixTokens = expression.getTokens();
         List<Token> postfixTokens = convertInfixToPostfix(prefixTokens);
-        
-        for (Token token : prefixTokens) {
-            System.out.println("Values: " + token.getValue());
-        }
-        
-        for (Token token: postfixTokens) {
-            System.out.println("Values: " + token.getValue());
-        }
 
         double result = evaluatePostfix(postfixTokens);
 
