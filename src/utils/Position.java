@@ -2,11 +2,11 @@ package src.utils;
 
 public class Position {
     private int line;
-    private int position;
+    private int column;
 
-    public Position(int line, int position) {
+    public Position(int line, int column) {
         this.line = line;
-        this.position = position;
+        this.column = column;
     }
 
     public void setLine(int line) {
@@ -17,26 +17,26 @@ public class Position {
         return line;
     }
 
-    public void setPosition(int position) {
-        this.position = position;
+    public void setColumn(int column) {
+        this.column = column;
     }
 
-    public int getPosition() {
-        return position;
+    public int getColumn() {
+        return column;
     }
 
     public void add(int value) {
-        position += value;
+        column += value;
     }
 
     public void newLine() {
         line++;
-        position = 1;
+        column = 1;
     }
 
     @Override
     public String toString() {
-        return " at Line: " + line + ", Position: " + position;
+        return " at Line: " + line + ", Column: " + column;
     }
 }
 

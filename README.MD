@@ -90,5 +90,5 @@ Increment 5
 - [ ] LOOPS
 
 Final Presentation
-- [ ]
+- [ ] Improve Error Handling
 

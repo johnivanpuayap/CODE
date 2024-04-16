@@ -40,8 +40,8 @@ public class App {
                 System.out.println(token);
             }
 
-            // Parser parser = new Parser(tokens);
-            // ProgramNode programNode = parser.parse();
+            Parser parser = new Parser(tokens);
+            ProgramNode programNode = parser.parse();
 
             // SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
             // analyzer.analyze();

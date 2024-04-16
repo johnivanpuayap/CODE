@@ -566,67 +566,67 @@
                 // }
 
 //                 // Tokenize SCAN
-//                 if (input.startsWith("SCAN:", counter)) {
-//                     counter += "SCAN:".length();
-//                     tokens.add(new Token(Token.Type.SCAN, "SCAN:", position));
-//                     position.setPosition(position.getPosition() + "SCAN:".length());
+                // if (input.startsWith("SCAN:", counter)) {
+                //     counter += "SCAN:".length();
+                //     tokens.add(new Token(Token.Type.SCAN, "SCAN:", position));
+                //     position.setPosition(position.getPosition() + "SCAN:".length());
 
-//                     // Parse variable names and values
-//                     while (counter < input.length() && input.charAt(counter) != '\n') {
+                //     // Parse variable names and values
+                //     while (counter < input.length() && input.charAt(counter) != '\n') {
 
-//                         skipWhiteSpace();
-//                         // Parse variable name
-//                         StringBuilder variableName = new StringBuilder();
-//                         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
-//                             variableName.append(input.charAt(counter));
-//                             counter++;
-//                         }
+                //         skipWhiteSpace();
+                //         // Parse variable name
+                //         StringBuilder variableName = new StringBuilder();
+                //         while (counter < input.length() && input.charAt(counter) != ',' && input.charAt(counter) != '=' && input.charAt(counter) != '\n') {
+                //             variableName.append(input.charAt(counter));
+                //             counter++;
+                //         }
 
-//                         if (!isValidVariableName(variableName.toString())) {
-//                             System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
-//                             System.exit(1);
-//                         }
+                //         if (!isValidVariableName(variableName.toString())) {
+                //             System.err.println("Invalid variable name at Line " + position.getLine() + ", Position " + position.getPosition());
+                //             System.exit(1);
+                //         }
 
-//                         // Add variable token
-//                         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
-//                         System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
+                //         // Add variable token
+                //         tokens.add(new Token(Token.Type.VARIABLE, variableName.toString(), position));
+                //         System.out.println("Variable name found at Line " + position.getLine() + ", Position " + position.getPosition());
 
-//                         // Get user input
-//                         Scanner scanner = new Scanner(System.in);
-//                         System.out.print("Enter value for " + variableName + ": ");
-//                         String userInput = scanner.nextLine();
+                //         // Get user input
+                //         Scanner scanner = new Scanner(System.in);
+                //         System.out.print("Enter value for " + variableName + ": ");
+                //         String userInput = scanner.nextLine();
 
-//                         // Determine data type of user input
-//                         if (userInput.matches("^[a-zA-Z]+$")) {
-//                             tokens.add(new Token(Token.Type.VALUE, userInput, position));
-//                         } else if (userInput.matches("^-?\\d+$")) {
-//                             tokens.add(new Token(Token.Type.VALUE, userInput, position));
-//                         } else if (userInput.matches("^-?\\d+\\.\\d+$")) {
-//                             tokens.add(new Token(Token.Type.VALUE, userInput , position));
-//                         } else {
-//                             System.err.println("Invalid input at Line " + position.getLine() + ", Position " + position.getPosition());
-//                             System.exit(1);
-//                         }
+                //         // Determine data type of user input
+                //         if (userInput.matches("^[a-zA-Z]+$")) {
+                //             tokens.add(new Token(Token.Type.VALUE, userInput, position));
+                //         } else if (userInput.matches("^-?\\d+$")) {
+                //             tokens.add(new Token(Token.Type.VALUE, userInput, position));
+                //         } else if (userInput.matches("^-?\\d+\\.\\d+$")) {
+                //             tokens.add(new Token(Token.Type.VALUE, userInput , position));
+                //         } else {
+                //             System.err.println("Invalid input at Line " + position.getLine() + ", Position " + position.getPosition());
+                //             System.exit(1);
+                //         }
 
-//                         // Skip whitespace
-//                         while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
-//                             position.setPosition(position.getPosition() + 1);
-//                             counter++;
-//                         }
+                //         // Skip whitespace
+                //         while (counter < input.length() && Character.isWhitespace(input.charAt(counter))) {
+                //             position.setPosition(position.getPosition() + 1);
+                //             counter++;
+                //         }
 
-//                         // Check if there are more variables
-//                         if (counter < input.length() && input.charAt(counter) == ',') {
-//                             position.setPosition(position.getPosition() + 1);
-//                             counter++;
+                //         // Check if there are more variables
+                //         if (counter < input.length() && input.charAt(counter) == ',') {
+                //             position.setPosition(position.getPosition() + 1);
+                //             counter++;
 
-//                             // Since there is a comma, we expect another variable name, so we create a new data type token
-//                             tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
-//                         } else {
-//                             break; // Exit the loop if there are no more variables
-//                         }
-//                     }
-//                     continue;
-//                 }
+                //             // Since there is a comma, we expect another variable name, so we create a new data type token
+                //             tokens.add(new Token(Token.Type.DATA_TYPE, "FLOAT", position));
+                //         } else {
+                //             break; // Exit the loop if there are no more variables
+                //         }
+                //     }
+                //     continue;
+                // }
 
 //                 // Tokenize escape code with square brackets
 //                 if (input.charAt(counter) == '[') {

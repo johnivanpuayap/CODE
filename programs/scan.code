@@ -5,5 +5,5 @@ BEGIN CODE
     BOOL oiew2="FALSE", ewww="TRUE"
 
     #This is a comment
-    SCAN var1, var2
+    SCAN: var1, var2
 END CODE    
