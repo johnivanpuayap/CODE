@@ -25,9 +25,13 @@ public class Position {
         return position;
     }
 
+    public void add(int value) {
+        position += value;
+    }
+
     @Override
     public String toString() {
-        return "Line: " + line + ", Position: " + position;
+        return " at Line: " + line + ", Position: " + position;
     }
 }
 

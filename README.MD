@@ -40,13 +40,20 @@ The interpreter works in several stages:
 Increment 1
 - [X] Basic Program Structure (BEGIN CODE END CODE block)
     - [X] Check for Indentation
+    - [ ] Variable Declaration should only happen after begin code
+    - [ ] Executable Code must only happen after the declaration
+    - [ ] Only one Statement per line
 - [X] Comments
     - [X] Comments Ignore Indentation
+    - [ ] Comments Can Be Put Anywhere, Create a function to ignore comments
 - [X] Variable Declaration and Initialization
-    - [X] Check if the Variable Name is Valid
+    - [X] Check if the Variable Name is valid
     - [X] INT
         - [X] Check if variable type is valid
+        - [ ] Check if the it only uses 4 bytes
     - [X] FLOAT
+        - [ ] Check if variable type is valid
+        - [ ] Check if the it only uses 4 bytes
     - [X] CHAR
     - [X] BOOLEAN
 - [X] Reserved words
@@ -62,13 +69,20 @@ Increment 2
 - [X] arithmetic operation
     - [X] Operator Precendence
     - [X] Parentheses
-
-
-
 - [X] Assignment Statements
     - [X] Single Assignment
-    - [X] Multiple Assignment like x=y=z or x=y=5
+    - [ ] Multiple Assignment like x=y=z or x=y=5
 
-- [ ] Use Variable class in the Semantics Analyzer
-- [ ] 
+Increment 3
+- [ ] Logical Operators
+    - [ ] AND
+    - [ ] OR
+    - [ ] NOT
+- [ ] Unary Operators
+    - [ ] - Negatie
+    - [ ] + Positive
+
+Increment 4
+- [ ] IF-ELSE Selection
+- [ ] IF-ELSE with multiple alternatives
 

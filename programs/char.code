@@ -1,4 +1,4 @@
 BEGIN CODE
     INT a = 100, b = 'a'
-    CHAR b
+    CHAR b = 'a, 'a
 END CODE

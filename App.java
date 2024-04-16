@@ -10,11 +10,11 @@ import src.nodes.ProgramNode;
 import src.parser.Parser;
 import src.utils.Token;
 
-public class Code {
+public class App {
     public static void main(String[] args) {
 
         if (args.length != 1) {
-            System.out.println("Usage: java Code <input_file>");
+            System.out.println("Usage: java App <input_file>");
             System.exit(1);
         }
 
@@ -35,19 +35,19 @@ public class Code {
             String input = sb.toString();
             Lexer lexer = new Lexer(input);
             List<Token> tokens = lexer.tokenize();
-
+            
             for (Token token : tokens) {
                 System.out.println(token);
             }
 
-            Parser parser = new Parser(tokens);
-            ProgramNode programNode = parser.parse();
+            // Parser parser = new Parser(tokens);
+            // ProgramNode programNode = parser.parse();
 
-            SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
-            analyzer.analyze();
+            // SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
+            // analyzer.analyze();
 
-            Interpreter interpreter = new Interpreter(programNode);
-            interpreter.interpret();
+            // Interpreter interpreter = new Interpreter(programNode);
+            // interpreter.interpret();
 
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
