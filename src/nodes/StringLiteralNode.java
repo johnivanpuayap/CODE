@@ -17,4 +17,9 @@ public class StringLiteralNode extends ASTNode {
     public Position getPosition() {
         return super.getPosition();
     }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

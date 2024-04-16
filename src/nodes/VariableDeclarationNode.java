@@ -1,20 +1,20 @@
 package src.nodes;
 import src.utils.Position;
 
-public class DeclarationNode extends ASTNode {
+public class VariableDeclarationNode extends ASTNode {
     private String dataType;
     private String variableName;
     private String value;
     private Position position;
 
-    public DeclarationNode(String dataType, String variableName, String value, Position position) {
+    public VariableDeclarationNode(String dataType, String variableName, String value, Position position) {
         super(position);
         this.dataType = dataType;
         this.variableName = variableName;
         this.value = value;
     }
 
-    public DeclarationNode(String dataType, String variableName, Position position) {
+    public VariableDeclarationNode(String dataType, String variableName, Position position) {
         super(position);
         this.dataType = dataType;
         this.variableName = variableName;
@@ -40,5 +40,14 @@ public class DeclarationNode extends ASTNode {
 
     public Position getPosition() {
         return super.getPosition();
+    }
+
+    @Override
+    public String toString() {
+        if (value != null) {
+            return String.format("%s %s = %s", dataType, variableName, value);
+        } else {
+            return String.format("%s %s", dataType, variableName);
+        }
     }
 }

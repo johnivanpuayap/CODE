@@ -2,7 +2,7 @@ package src.utils;
 
 public class Token {
     public enum Type {
-        BEGIN_CODE, END_CODE, INDENT, DEDENT, NEWLINE, COMMA,
+        BEGIN_CODE, END_CODE, INDENT, DEDENT, NEWLINE, COMMA, EOF,
         INT, INT_LITERAL, CHAR, CHAR_LITERAL, FLOAT, FLOAT_LITERAL, BOOL, BOOL_LITERAL, 
         IDENTIFIER, ASSIGNMENT, ADD, SUBTRACT, MULTIPLY, DIVIDE, LEFT_PARENTHESIS, RIGHT_PARENTHESIS,
         POSITIVE, NEGATIVE,
@@ -55,11 +55,11 @@ public class Token {
             type == Type.BOOL_LITERAL || 
             type == Type.STRING_LITERAL ||
             type == Type.SPECIAL_CHARACTER) {
-            return "<" + type + ", " + "Initial Value: "  + initialValue + ">" + position;   
+            return "<" + type + ", " + "Initial Value: "  + initialValue + ">";   
         } else if(type == Type.IDENTIFIER) {
-            return "<" + type + ", " + "Name: "  + initialValue + "> " + position;
+            return "<" + type + ", " + "Name: "  + initialValue + "> ";
         } else {
-            return "<" + type + ">" + position;
+            return "<" + type + ">";
         }
     }
 }

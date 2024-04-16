@@ -1,4 +1,5 @@
 BEGIN CODE
-    INT a = 100, b = 'a'
-    CHAR b
+    INT xyz, abc=100
+    xyz= ((abc *5)/10 + 10) * -1
+    DISPLAY: [[] & xyz & []]
 END CODE

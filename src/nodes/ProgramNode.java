@@ -2,18 +2,17 @@ package src.nodes;
 import java.util.List;
 
 public class ProgramNode {
-    private List<DeclarationNode> declarations;
+    private List<VariableDeclarationNode> declarations;
     private List<StatementNode> statements;
     private List<FunctionNode> functionCalls;
 
-    public ProgramNode(List<DeclarationNode> declarations, List<StatementNode> statements, List<FunctionNode> functionCalls) {
+    public ProgramNode(List<VariableDeclarationNode> declarations, List<StatementNode> statements) {
         this.declarations = declarations;
         this.statements = statements;
-        this.functionCalls = functionCalls;
     }
 
     // Getters for accessing the private fields
-    public List<DeclarationNode> getDeclarations() {
+    public List<VariableDeclarationNode> getDeclarations() {
         return declarations;
     }
 
@@ -21,7 +20,22 @@ public class ProgramNode {
         return statements;
     }
 
-    public List<FunctionNode> getFunctionCalls() {
-        return functionCalls;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        
+        // Print variable declarations
+        sb.append("Variable Declarations:\n");
+        for (VariableDeclarationNode declaration : declarations) {
+            sb.append(declaration).append("\n");
+        }
+        
+        // Print statements
+        sb.append("\nStatements:\n");
+        for (StatementNode statement : statements) {
+            sb.append(statement).append("\n");
+        }
+        
+        return sb.toString();
     }
 }

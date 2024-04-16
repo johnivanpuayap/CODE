@@ -11,6 +11,12 @@ public class Variable {
         this.position = position;
     }
 
+    public Variable(String value, Position position) {
+        this.value = value;
+        this.position = position;
+        this.dataType = null;
+    }
+
     public void setValue(String value) {
         this.value = value;
     }

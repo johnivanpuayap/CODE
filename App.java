@@ -9,6 +9,7 @@ import src.lexer.Lexer;
 import src.nodes.ProgramNode;
 import src.parser.Parser;
 import src.utils.Token;
+import src.nodes.*;
 
 public class App {
     public static void main(String[] args) {
@@ -42,6 +43,7 @@ public class App {
 
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
+            System.out.println(programNode);
 
             // SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
             // analyzer.analyze();

@@ -233,7 +233,6 @@ public class Lexer {
                     position.newLine();
                     counter++;
                     
-                    System.out.println("Checking indent level");
                     int newIndentLevel = countIndent();
                     if (newIndentLevel > indentLevel) {
                         tokens.add(new Token(Token.Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
@@ -253,13 +252,12 @@ public class Lexer {
                     counter++;
                 }
             } else {
-                // Invalid character
-                throw new IllegalArgumentException("Invalid character: " + currentChar + new Position(position.getLine(), position.getColumn()));
+                System.err.println("Lexer Error: Invalid character found: " + currentChar + new Position(position.getLine(), position.getColumn()));
+                System.exit(1);
             }
         }
 
-
-
+        tokens.add(new Token(Token.Type.EOF, "", new Position(position.getLine(), position.getColumn())));
         return tokens;
     }
 
@@ -412,19 +410,27 @@ public class Lexer {
                 position.add(1);
                 counter++;
 
-                while (input.charAt(counter) != ']') {
+                
 
-                    // Skip trailing whitespace
-                    while (counter < input.length() && input.charAt(counter) == ' ') {
-                        position.add(1);
-                        counter++;
-                    }
-
+                if(input.charAt(counter) == ']' && input.charAt(counter + 1) == ']') {
                     tokens.add(new Token(Token.Type.VALUE, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter++;
-                }
+                } else {
+                    while (input.charAt(counter) != ']') {
 
+                        // Skip trailing whitespace
+                        while (counter < input.length() && input.charAt(counter) == ' ') {
+                            position.add(1);
+                            counter++;
+                        }
+    
+                        tokens.add(new Token(Token.Type.VALUE, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
+                        position.add(1);
+                        counter++;
+                    }
+                }
+                
                 tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "]", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;

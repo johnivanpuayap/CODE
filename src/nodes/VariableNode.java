@@ -17,4 +17,9 @@ public class VariableNode extends ASTNode {
     public Position getPosition() {
         return super.getPosition();
     }
+
+    @Override
+    public String toString() {
+        return variableName;
+    }
 }
