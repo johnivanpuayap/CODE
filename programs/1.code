@@ -1,4 +1,5 @@
 BEGIN CODE
     INT xyz, abc=100
-    xyz= a
+    xyz= ((abc *5)/10 + 10) * -1
+    DISPLAY: [[] & xyz & []]
 END CODE

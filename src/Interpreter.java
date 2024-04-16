@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import src.nodes.ASTNode;
-import src.nodes.DeclarationNode;
+import src.nodes.VariableDeclarationNode;
 import src.nodes.ProgramNode;
 import src.nodes.SpecialCharacterNode;
 import src.nodes.StatementNode;
@@ -22,7 +22,7 @@ import src.utils.Token;
 public class Interpreter {
     private Map<String, Variable> variables = new HashMap<>();
     private ProgramNode program;
-    private List<DeclarationNode> declarations;
+    private List<VariableDeclarationNode> declarations;
     private List<StatementNode> statements;
     private List<FunctionNode> functions;
 
@@ -30,7 +30,6 @@ public class Interpreter {
         this.program = program;
         declarations = this.program.getDeclarations();
         statements = this.program.getStatements();
-        functions = this.program.getFunctionCalls();
     }
 
     public void interpret() {
@@ -38,7 +37,7 @@ public class Interpreter {
         System.out.println("\n\n\n\n\nPROGRAM RESULTS");
 
 
-        for(DeclarationNode declaration: declarations) {
+        for(VariableDeclarationNode declaration: declarations) {
             variables.put(declaration.getVariableName(), new Variable(declaration.getDataType(), declaration.getValue(), declaration.getPosition()));
         }
 
@@ -53,34 +52,36 @@ public class Interpreter {
 
     private void interpretStatement(StatementNode statement) {
 
-        Token leftSide = statement.getLeftSide();
+        return;
+
+        // Token leftSide = statement.getLeftSide();
         
 
-        if (statement.hasExpression()) {
+        // if (statement.hasExpression()) {
 
-            Variable var = variables.get(leftSide.getValue());
-            ExpressionNode expression = statement.getExpressionNode();
+        //     Variable var = variables.get(leftSide.getValue());
+        //     ExpressionNode expression = statement.getExpressionNode();
 
-            System.out.println("Variable: " + var);
+        //     System.out.println("Variable: " + var);
 
-            String result = evaluateExpression(expression);
-            var.setValue(result);
+        //     String result = evaluateExpression(expression);
+        //     var.setValue(result);
 
-            System.out.println("Evaluated " + " expression: " + expression);
-            System.out.println("Result " + result);
+        //     System.out.println("Evaluated " + " expression: " + expression);
+        //     System.out.println("Result " + result);
 
-        } else {
-            Variable left = variables.get(leftSide.getValue());
-            Token rightSide = statement.getRightSide();
+        // } else {
+        //     Variable left = variables.get(leftSide.getValue());
+        //     Token rightSide = statement.getRightSide();
 
-            if(rightSide.getType() == Token.Type.VARIABLE) {
-                Variable right = variables.get(rightSide.getValue());
+        //     if(rightSide.getType() == Token.Type.VARIABLE) {
+        //         Variable right = variables.get(rightSide.getValue());
 
-                left.setValue(right.getValue());
-            } else {
-                left.setValue(rightSide.getValue());
-            }
-        }
+        //         left.setValue(right.getValue());
+        //     } else {
+        //         left.setValue(rightSide.getValue());
+        //     }
+        // }
     }
 
     private String evaluateExpression(ExpressionNode expression) {
@@ -99,7 +100,7 @@ public class Interpreter {
         List<Token> postfixTokens = new ArrayList<>();
     
         for (Token token : infixTokens) {
-            if (token.getType() == Token.Type.VALUE || token.getType() == Token.Type.VARIABLE) {
+            if (token.getType() == Token.Type.VALUE || token.getType() == Token.Type.IDENTIFIER) {
                 postfixTokens.add(token);
             } else if (token.getValue().equals("(")) {
                 stack.push(token);
@@ -111,7 +112,9 @@ public class Interpreter {
                     stack.pop();
                 }
             } else {
-                while (!stack.isEmpty() && stack.peek().getType() == Token.Type.OPERATOR && precedence(token) <= precedence(stack.peek())) {
+                while (!stack.isEmpty() && 
+                (stack.peek().getType() == Token.Type.ADD || stack.peek().getType() == Token.Type.SUBTRACT || stack.peek().getType() == Token.Type.DIVIDE || stack.peek().getType() == Token.Type.MULTIPLY) && 
+                precedence(token) <= precedence(stack.peek())) {
                     postfixTokens.add(stack.pop());
                 }
                 stack.push(token);
@@ -146,12 +149,12 @@ public class Interpreter {
         Stack<Double> stack = new Stack<>();
     
         for (Token token : postfixTokens) {
-            if (token.getType() == Token.Type.OPERATOR) {
+            if (token.getType() == Token.Type.ADD || token.getType() == Token.Type.SUBTRACT || token.getType() == Token.Type.DIVIDE || token.getType() == Token.Type.MULTIPLY) {
                 double operand2 = stack.pop();
                 double operand1 = stack.pop();
                 double result = applyOperator(token.getValue(), operand1, operand2);
                 stack.push(result);
-            } else if(token.getType() == Token.Type.VARIABLE) {
+            } else if(token.getType() == Token.Type.IDENTIFIER) {
                 Variable var = variables.get(token.getValue());
                 stack.push(Double.parseDouble(var.getValue()));
             }  

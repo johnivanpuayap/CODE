@@ -12,7 +12,6 @@ import src.nodes.AssignmentStatementNode;
 import src.nodes.StringLiteralNode;
 import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
-import src.nodes.ExpressionNode.Literal;
 import src.nodes.FunctionNode;
 
 public class Parser {
@@ -131,7 +130,12 @@ public class Parser {
 
     private void parseStatements() {
         while (!match(Token.Type.EOF)) {
+
+            System.out.println("Parsing Statement");
+            System.out.println("Current Token: " + peek());
+
             if (match(Token.Type.IDENTIFIER)) {
+                System.out.println("Parsing Assignment Statement");
                 statements.add(parseAssignmentStatement());
                 continue;
             } 
@@ -185,13 +189,14 @@ public class Parser {
     private StatementNode parseAssignmentStatement() {
         Token identifier = previous();
         if (match(Token.Type.ASSIGNMENT)) {
+            System.out.println("Creating Variable Node");
             VariableNode variable = new VariableNode(identifier.getValue(), identifier.getPosition());
             ExpressionNode expression = parseExpression();
 
             if(!match(Token.Type.NEWLINE)) {
                 error("Expected NEWLINE", peek());
             }
-
+            
             return new AssignmentStatementNode(variable, expression, identifier.getPosition());
         } else {
             error("Expected assignment", peek());
@@ -200,19 +205,44 @@ public class Parser {
     }
 
     private ExpressionNode parseExpression() {
+        System.out.println("Parsing Expression");
+
         if (match(Token.Type.LEFT_PARENTHESIS)) {
+
             return parseParentheses();
-        }
-    
+        }        
+
         if (match(Token.Type.INT_LITERAL) || match(Token.Type.FLOAT_LITERAL)) {
+
+            System.out.println("Found an INT Literal");
+
             Token left = previous();
+
+
+            if (match(Token.Type.ADD) || match(Token.Type.SUBTRACT) || match(Token.Type.MULTIPLY) || match(Token.Type.DIVIDE)) {
+                System.out.println("Found an Arithmetic Expression");
+                
+                return parseArithmeticExpression(left);
+            }
+
             // Handle literals
             return new ExpressionNode.Literal(left);
         }
     
         if (match(Token.Type.IDENTIFIER)) {
+
+            System.out.println("Found an Identifier");
             Token left = previous();
-            // Handle variables
+
+            System.out.println("Previous" + previous());
+            System.out.println("Peek" + peek());
+
+            if (match(Token.Type.ADD) || match(Token.Type.SUBTRACT) || match(Token.Type.MULTIPLY) || match(Token.Type.DIVIDE)) {
+                System.out.println("Found an Arithmetic Expression");
+                
+                return parseArithmeticExpression(left);
+            }
+
             return new ExpressionNode.Variable(left);
         }
     
@@ -225,10 +255,7 @@ public class Parser {
     
         // Handle binary operations like ADD, SUBTRACT, MULTIPLY, DIVIDE
         if (match(Token.Type.ADD) || match(Token.Type.SUBTRACT) || match(Token.Type.MULTIPLY) || match(Token.Type.DIVIDE)) {
-            Token operator = previous();
-            ExpressionNode leftExpression = parseExpression();
-            ExpressionNode rightExpression = parseExpression();
-            return new ExpressionNode.Binary(leftExpression, operator, rightExpression);
+            error("Unexpected operator", previous());
         }
     
         // If none of the above conditions match, it's a syntax error
@@ -238,8 +265,10 @@ public class Parser {
 
     private ExpressionNode parseArithmeticExpression(Token left) {
 
+        System.out.println("Parsing Arithmetic Expression");
         ExpressionNode leftExpression = null;
         Token operator = previous();
+        
     
         if(left.getType() == Token.Type.INT_LITERAL || left.getType() == Token.Type.FLOAT_LITERAL) {
             leftExpression = new ExpressionNode.Literal(left);
@@ -249,14 +278,37 @@ public class Parser {
         
         ExpressionNode rightExpression = parseExpression();
         
+        System.out.println("Creating Binary Node");
         return new ExpressionNode.Binary(leftExpression, operator, rightExpression);
     }
 
     private ExpressionNode parseParentheses() {
+
+        System.out.println("Parsing Parentheses");
+
         ExpressionNode innerExpression = parseExpression();
+
+        System.out.println("Inner Expression: " + innerExpression);
+        
+        System.out.println("Current Token: " + peek());
+
+        System.out.println("Previous Token: " + previous());
+
+        
         if(!match(Token.Type.RIGHT_PARENTHESIS)) {
             error("Expected RIGHT PARENTHESIS", peek());
         }
+
+        // After parsing the inner expression, check for additional arithmetic operations
+        while (match(Token.Type.ADD) || match(Token.Type.SUBTRACT) || match(Token.Type.MULTIPLY) || match(Token.Type.DIVIDE)) {
+
+            System.out.println("Found an After Parenthesis Arithmetic Expression");
+
+            Token operator = previous();
+            ExpressionNode rightExpression = parseExpression();
+            innerExpression = new ExpressionNode.Binary(innerExpression, operator, rightExpression);
+        }
+
         return innerExpression;
     }
 
