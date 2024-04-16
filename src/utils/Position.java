@@ -29,6 +29,11 @@ public class Position {
         position += value;
     }
 
+    public void newLine() {
+        line++;
+        position = 1;
+    }
+
     @Override
     public String toString() {
         return " at Line: " + line + ", Position: " + position;

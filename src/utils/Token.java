@@ -2,13 +2,15 @@ package src.utils;
 
 public class Token {
     public enum Type {
-        BEGIN_CODE, END_CODE, 
+        BEGIN_CODE, END_CODE, INDENT, DEDENT, NEWLINE, COMMA,
         INT, INT_LITERAL, CHAR, CHAR_LITERAL, FLOAT, FLOAT_LITERAL, BOOL, BOOL_LITERAL, 
-        IDENTIFIER, ASSIGNMENT, OPERATOR, 
-        SCAN, SCAN_VALUE, 
-        PARENTHESES, ESCAPE_CODE,
-        DISPLAY_VARIABLE, DELIMITER, FUNCTION, CONCATENATION, STRING_LITERAL, COLON, SPECIAL_CHARACTER, VALUE,
-        INDENT, DEDENT, NEWLINE, COMMA
+        IDENTIFIER, ASSIGNMENT, ADD, SUBTRACT, MULTIPLY, DIVIDE, LEFT_PARENTHESIS, RIGHT_PARENTHESIS,
+        POSITIVE, NEGATIVE,
+        GREATER, LESS, GREATER_EQUAL, LESS_EQUAL, NOT_EQUAL, EQUAL,
+        AND, OR, NOT,
+        IF, ELSE_IF, ELSE, BEGIN_IF, END_IF,
+        SCAN, SCAN_VALUE,
+        DISPLAY, DELIMITER, CONCATENATION, STRING_LITERAL, COLON, SPECIAL_CHARACTER, VALUE, ESCAPE_CODE,
     }
 
     private Type type;
@@ -45,16 +47,11 @@ public class Token {
 
     @Override
     public String toString() {
-        if(type == Type.CHAR_LITERAL || type == Type.INT_LITERAL || type == Type.FLOAT_LITERAL || type == Type.BOOL_LITERAL) {
-            return "<" + type + ", " + "Initial Value: "  + initialValue +  " Current Value: "  + currentValue + ">";   
-        }
-        else if(type == Type.PARENTHESES || type == Type.OPERATOR || type == Type.STRING_LITERAL) {
-            return "<" + type + ", " + "Value: "  + initialValue + ">";
-        }
-        else if(type == Type.IDENTIFIER) {
+        if(type == Type.CHAR_LITERAL || type == Type.INT_LITERAL || type == Type.FLOAT_LITERAL || type == Type.BOOL_LITERAL || type == Type.STRING_LITERAL) {
+            return "<" + type + ", " + "Initial Value: "  + initialValue + ">";   
+        } else if(type == Type.IDENTIFIER) {
             return "<" + type + ", " + "Name: "  + initialValue + ">";
-        }
-        else {
+        } else {
             return "<" + type + ">";
         }
     }
