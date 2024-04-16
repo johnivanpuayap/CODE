@@ -116,4 +116,40 @@ public abstract class ExpressionNode{
             return 1; // Variable node has only one token
         }
     }
+
+    public static class Unary extends ExpressionNode {
+        private final Token operator;
+        private final ExpressionNode operand;
+    
+        public Unary(Token operator, ExpressionNode operand) {
+            this.operator = operator;
+            this.operand = operand;
+        }
+    
+        public Token getOperator() {
+            return operator;
+        }
+    
+        public ExpressionNode getOperand() {
+            return operand;
+        }
+    
+        @Override
+        public String toString() {
+            return operator.getValue() + operand.toString();
+        }
+    
+        @Override
+        public int countTokens() {
+            return operand.countTokens() + 1; // Add 1 for the operator token
+        }
+    
+        @Override
+        public List<Token> getTokens() {
+            List<Token> tokens = new ArrayList<>();
+            tokens.add(operator);
+            tokens.addAll(operand.getTokens());
+            return tokens;
+        }
+    }
 }
