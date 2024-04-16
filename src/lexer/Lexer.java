@@ -72,7 +72,19 @@ public class Lexer {
                 tokens.add(new Token(Token.Type.END_IF, "END IF", position));
                 position.add("END IF".length());
                 counter += "END IF".length();
-            }
+            } else if(input.startsWith("WHILE", counter)) {
+                tokens.add(new Token(Token.Type.WHILE, "WHILE", position));
+                position.add("WHILE".length());
+                counter += "WHILE".length();
+            } else if(input.startsWith("BEGIN WHILE", counter)) {
+                tokens.add(new Token(Token.Type.BEGIN_WHILE, "BEGIN WHILE", position));
+                position.add("BEGIN WHILE".length());
+                counter += "BEGIN WHILE".length();
+            } else if(input.startsWith("END WHILE", counter)) {
+                tokens.add(new Token(Token.Type.END_WHILE, "END WHILE", position));
+                position.add("END WHILE".length());
+                counter += "END WHILE".length();
+            } 
             
             else if (Character.isLetter(currentChar)) {
                 tokens.add(tokenizeIdentifier());
