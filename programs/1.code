@@ -1,5 +1,4 @@
 BEGIN CODE
     INT xyz, abc=100
     xyz= a
-    INT y =b
 END CODE

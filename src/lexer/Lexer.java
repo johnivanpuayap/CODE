@@ -220,9 +220,21 @@ public class Lexer {
                 }
 
             } else if(currentChar == '#') {
+
                 while(counter < input.length() && input.charAt(counter) != '\n') {
                     counter++;
                     position.add(1);
+                }
+
+                
+                if(tokens.getLast().getType() == Token.Type.INDENT || tokens.getLast().getType() == Token.Type.NEWLINE) {
+                    counter++;
+                    position.add(1);
+
+                    List<Token> indentions = checkIndentLevel(position);
+                    if (indentions != null) {
+                        tokens.addAll(indentions);
+                    }
                 }
             } 
             
@@ -233,19 +245,9 @@ public class Lexer {
                     position.newLine();
                     counter++;
                     
-                    int newIndentLevel = countIndent();
-                    if (newIndentLevel > indentLevel) {
-                        tokens.add(new Token(Token.Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
-                        position.add(newIndentLevel * 4);
-                        counter += newIndentLevel * 4;
-                        indentLevel = newIndentLevel;
-                    } else if (newIndentLevel < indentLevel) {
-                        while (newIndentLevel < indentLevel) {
-                            tokens.add(new Token(Token.Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
-                            position.add(newIndentLevel * 4);
-                            counter += newIndentLevel * 4;
-                            indentLevel--;
-                        }
+                    List<Token> indentions = checkIndentLevel(position);
+                    if (indentions != null) {
+                        tokens.addAll(indentions);
                     }
                 } else {
                     position.add(1);
@@ -489,5 +491,27 @@ public class Lexer {
             temp++;
         }
         return indent / 4; // Divide by 4 to count four spaces as one level of indentation
+    }
+
+    private List<Token> checkIndentLevel(Position position) {
+        int newIndentLevel = countIndent();
+        List<Token> tokens = new ArrayList<>();
+    
+        if (newIndentLevel > indentLevel) {
+            for (int i = 0; i < newIndentLevel - indentLevel; i++) {
+                tokens.add(new Token(Token.Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
+                position.add(4);
+                counter += 4;
+            }
+            indentLevel = newIndentLevel;
+    
+        } else if (newIndentLevel < indentLevel) {
+            while (newIndentLevel < indentLevel) {
+                tokens.add(new Token(Token.Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
+                indentLevel--;
+            }
+        }
+    
+        return tokens;
     }
 }

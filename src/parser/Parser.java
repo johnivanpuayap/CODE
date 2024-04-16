@@ -50,8 +50,10 @@ public class Parser {
             error("Expected NEWLINE AFTER END CODE", peek());
         }
 
-        if(!match(Token.Type.EOF)) {
-            error("CODE SHOULD BE INSIDE THE BEGIN AND END CODE", peek());
+        while(!match(Token.Type.EOF)) {
+            if(!match(Token.Type.NEWLINE)) {
+                error("Code should be enclosed within 'BEGIN CODE' and 'END CODE' markers. Found code outside this range.", peek());
+            }
         }
 
         if (!isAtEnd()) {
@@ -160,12 +162,11 @@ public class Parser {
                 } else {
                     error("Expected END CODE after DEDENTION", peek());
                 }
-            } else {
-                System.out.println(previous());
-                error("Unexpected DEDENTION", peek());
             }
 
-            
+            if(match(Token.Type.INT) || match(Token.Type.CHAR) || match(Token.Type.FLOAT) || match(Token.Type.BOOL)) {
+                error("Found a variable declaration after the executable code", previous());
+            }
             
             if(match(Token.Type.ELSE_IF)){
                 error("Found an ELSE_IF block without an IF block", previous());
