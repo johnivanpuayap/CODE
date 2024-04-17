@@ -239,42 +239,74 @@ public class Interpreter {
 
     private void interpretScan(ScanStatementNode scanStatement) {
         Scanner scanner = new Scanner(System.in);
-    
+
         for (String identifier : scanStatement.getIdentifiers()) {
+            // Check if the variable exists
+            if (!variables.containsKey(identifier)) {
+                error("Variable " + identifier + " not declared", null);
+                continue; // Skip to the next identifier
+            }
+
             System.out.print(identifier + ": ");
             String input = scanner.nextLine();
 
-            // Convert to a Data Type
-
+            // Determine input data type
             String inputDataType = null;
 
-            if(input.matches("[-+]?[0-9]+")) {
+            if (input.matches("[-+]?[0-9]+")) {
                 inputDataType = "INT";
-            } else if(input.matches("[-+]?[0-9]+(\\.[0-9]+)?")) {
+            } else if (input.matches("[-+]?[0-9]+(\\.[0-9]+)?")) {
                 inputDataType = "FLOAT";
-            } else if(input.matches("[a-zA-Z]")) {
+            } else if (input.matches("[a-zA-Z]")) {
                 inputDataType = "CHAR";
-            } else if(input.equalsIgnoreCase("TRUE") || input.equalsIgnoreCase("FALSE")) {
+            } else if (input.equalsIgnoreCase("TRUE") || input.equalsIgnoreCase("FALSE")) {
                 inputDataType = "BOOL";
             } else {
                 error("Invalid input", null);
+                continue; // Skip to the next identifier
             }
-    
-            for(VariableDeclarationNode declaration: declarations) {
-                if(declaration.getVariableName().equals(identifier)) {
-                    if(declaration.getDataType().equals(inputDataType)) {
-                        variables.get(identifier).setValue(input);
-                    } else {
-                        error("Type mismatch. Assigning " + inputDataType + " to " + declaration.getDataType(), declaration.getPosition());
-                    }
+
+            // Find the declaration of the variable
+            VariableDeclarationNode declaration = findVariableDeclaration(identifier);
+            if (declaration != null) {
+                // Check if input data type is compatible with variable data type
+                if (isCompatible(declaration.getDataType(), inputDataType)) {
+                    // Update variable value
+                    variables.get(identifier).setValue(input);
+                } else {
+                    error("Type mismatch. Assigning " + inputDataType + " to " + declaration.getDataType(), declaration.getPosition());
                 }
-            
+            } else {
+                error("Variable " + identifier + " not declared", null);
             }
         }
-    
+
         scanner.close();
     }
-    
+
+    private VariableDeclarationNode findVariableDeclaration(String identifier) {
+        for (VariableDeclarationNode declaration : declarations) {
+            if (declaration.getVariableName().equals(identifier)) {
+                return declaration;
+            }
+        }
+        return null; // Return null if variable declaration not found
+    }
+
+    private boolean isCompatible(String variableType, String inputType) {
+        if (variableType.equals("INT") && (inputType.equals("INT") || inputType.equals("FLOAT"))) {
+            return true;
+        } else if (variableType.equals("FLOAT") && (inputType.equals("INT") || inputType.equals("FLOAT"))) {
+            return true;
+        } else if (variableType.equals("CHAR") && inputType.equals("CHAR")) {
+            return true;
+        } else if (variableType.equals("BOOL") && inputType.equals("BOOL")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void error(String message, Position position) {
         System.err.println("Error: " + message + " " + position);
         System.exit(1);
