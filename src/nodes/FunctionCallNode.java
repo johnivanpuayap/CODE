@@ -1,5 +1,4 @@
 package src.nodes;
-
 import java.util.List;
 import src.utils.Position;
 import src.utils.Token;
@@ -8,7 +7,7 @@ public class FunctionCallNode extends StatementNode {
     private String functionName;
     private List<Token> arguments;
 
-    public FunctionCallNode(String functionName, List<Token> arguments, Position position) {
+    public FunctionCallNode(String functionName, List<Token>  arguments, Position position) {
         super(position);
         this.functionName = functionName;
         this.arguments = arguments;

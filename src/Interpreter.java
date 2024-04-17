@@ -19,6 +19,7 @@ import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
 import src.nodes.FunctionCallNode;
 import src.utils.Variable;
+import src.utils.Token;
 import src.utils.Position;
 
 
@@ -207,34 +208,31 @@ public class Interpreter {
     private void interpretFunction(FunctionCallNode function) {   
         
         if (function.getFunctionName() == "DISPLAY") {
-            for (ASTNode node : function.getArguments()) {
-                if (node instanceof StringLiteralNode) {
-                    StringLiteralNode stringLiteral = (StringLiteralNode) node;
-                    System.out.print(stringLiteral.getValue());
+            for (Token node : function.getArguments()) {
+                if (node.getType() == Token.Type.STRING_LITERAL) {
+                    System.out.print(node.getValue());
                     continue;
                 }
-                if (node instanceof VariableNode) {
-                    VariableNode variable = (VariableNode) node;
-
-                    Variable var = variables.get(variable.getVariableName());
+                if (node.getType() == Token.Type.IDENTIFIER) {
+                    
+                    Variable var = variables.get(node.getValue());
 
                     if(var == null) {
-                        error("Variable " + variable.getVariableName() + " does not exist", variable.getPosition());
+                        error("Variable " + node.getValue() + " does not exist", node.getPosition());
                     }
 
                     String value = var.getValue();
 
 
                     if(value == null) {
-                        error("Variable " + variable.getVariableName() + " was used in DISPLAY but was not initialized", variable.getPosition());
+                        error("Variable " + node.getValue() + " was used in DISPLAY but was not initialized", node.getPosition());
                     }
 
 
                     continue;
                 }
-                if (node instanceof SpecialCharacterNode) {
-                    SpecialCharacterNode specialCharacter = (SpecialCharacterNode) node;
-                    System.out.print(specialCharacter.getValue());
+                if (node.getType() == Token.Type.SPECIAL_CHARACTER) {
+                    System.out.print(node.getValue());
                 }
             }
         } else if (function.getFunctionName() == "SCAN") {

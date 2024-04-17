@@ -4,7 +4,6 @@ import java.util.List;
 public class ProgramNode {
     private List<VariableDeclarationNode> declarations;
     private List<StatementNode> statements;
-    private List<FunctionCallNode> functionCalls;
 
     public ProgramNode(List<VariableDeclarationNode> declarations, List<StatementNode> statements) {
         this.declarations = declarations;

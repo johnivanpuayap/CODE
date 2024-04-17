@@ -1,4 +1,4 @@
 BEGIN CODE
     INT a1=10
-    DISPLAY: "abc" $ a1
+    DISPLAY: a1
 END CODE

@@ -2,14 +2,10 @@ package src.parser;
 import java.util.ArrayList;
 import java.util.List;
 import src.utils.Token;
-import src.utils.Position;
-import src.nodes.ASTNode;
 import src.nodes.ProgramNode;
-import src.nodes.SpecialCharacterNode;
 import src.nodes.VariableDeclarationNode;
 import src.nodes.StatementNode;
 import src.nodes.AssignmentStatementNode;
-import src.nodes.StringLiteralNode;
 import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
 import src.nodes.FunctionCallNode;
@@ -376,14 +372,20 @@ public class Parser {
         List<Token> arguments = new ArrayList<>();
 
         while (peek().getType() != Token.Type.NEWLINE && !isAtEnd()) {
+            
+            System.out.println("Parsing Display Statement");
+
             Token current = peek();
+            
 
             if (current.getType() == Token.Type.IDENTIFIER ||
                 current.getType() == Token.Type.INT_LITERAL ||
                 current.getType() == Token.Type.FLOAT_LITERAL ||
                 current.getType() == Token.Type.CHAR_LITERAL ||
-                current.getType() == Token.Type.BOOL_LITERAL ||
-                current.getType() == Token.Type.STRING_LITERAL) {
+                current.getType() == Token.Type.BOOL_LITERAL) {
+
+                    System.out.println("TEST");
+
                     arguments.add(consume(current.getType(), "Expected identifier or literal"));
 
                     if (peek().getType() == Token.Type.CONCATENATION ||
@@ -399,6 +401,8 @@ public class Parser {
                     } else if (peek().getType() != Token.Type.NEWLINE) {
                         error("Expected concatenation symbol (&)", peek());
                     }
+                    
+                    System.out.println("TEST");
 
                 } else {
                     error("Expected an identifier or literal after concatenation symbol", peek());
