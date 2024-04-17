@@ -1,4 +1,5 @@
 BEGIN CODE
     INT a, b=1, c, abc = 5
-    a=b=c
+    CHAR d
+    d=a
 END CODE
