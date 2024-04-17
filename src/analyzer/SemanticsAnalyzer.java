@@ -17,30 +17,31 @@
 
 
 
-// public class SemanticsAnalyzer {
-//     private ProgramNode program;
-//     private Set<String> reservedWords;
-//     private Set<String> declaredFunctions;
-//     private List<VariableDeclarationNode> declarations;
-//     private List<StatementNode> statements;
+public class SemanticsAnalyzer {
+    private ProgramNode program;
+    private Set<String> reservedWords;
+    private Set<String> declaredFunctions;
+    private List<DeclarationNode> declarations;
+    private List<StatementNode> statements;
+    private List<FunctionCallNode> functionCalls;
 
-//     public SemanticsAnalyzer(ProgramNode program) {
-//         this.program = program;
-//         reservedWords = new HashSet<>();
-//         declaredFunctions = new HashSet<>();
-//         initializeReservedWords();
-//         initializeDeclaredFunctions();
-//         declarations = this.program.getDeclarations();
-//         statements = this.program.getStatements();
-//     }
+    public SemanticsAnalyzer(ProgramNode program) {
+        this.program = program;
+        reservedWords = new HashSet<>();
+        declaredFunctions = new HashSet<>();
+        initializeReservedWords();
+        initializeDeclaredFunctions();
+        declarations = this.program.getDeclarations();
+        statements = this.program.getStatements();
+    }
 
-//     public void analyze() {
-
-//         for (VariableDeclarationNode declaration : declarations) {
-//             // Extract information from the DeclarationNode
-//             String dataType = declaration.getDataType();
-//             String variableName = declaration.getVariableName();
-//             String value = declaration.getValue();
+    public void analyze() {
+        
+        for (DeclarationNode declaration : declarations) {
+            // Extract information from the DeclarationNode
+            String dataType = declaration.getDataType();
+            String variableName = declaration.getVariableName();
+            String value = declaration.getValue();
 
 //             System.out.println("Data Type: " + dataType);
 //             System.out.println("Variable Name: " + variableName);
@@ -111,8 +112,8 @@
 
 //             //         System.out.println("Checking Token: " + token.getType() + " " + token.getValue());
 
-//             //         // Check if the variable used is okay
-//             //         if (token.getType() == Token.Type.VARIABLE) {
+                    // Check if the variable used is okay
+                    if (token.getType() == Token.Type.IDENTIFIER) {
 
 //             //             System.out.println("The token is a " + token.getType());
 
@@ -155,19 +156,19 @@
 //             //                 error("Invalid value for INT/FLOAT data type. Expected a number value, but got: " + currValue);
 //             //             }
 
-//             //         } else if(token.getType() == Token.Type.VALUE) {    
-//             //             String currValue = token.getCurrentValue();
-//             //             try {
-//             //                 if(currValue != null) {
-//             //                     Integer.parseInt(currValue);
-//             //                 }
-//             //             } catch (NumberFormatException e) {
-//             //                 if (e.getMessage().contains("out of range")) {
-//             //                     error("Invalid value for INT/FLOAT data type. The number is too large: " + currValue);
-//             //                 } else {
-//             //                     error("Invalid value for INT/FLOAT data type. Expected a number value, but got: " + currValue);
-//             //                 }
-//             //             }
+                    } else if(token.getType() == Token.Type.INT_LITERAL || token.getType() == Token.Type.FLOAT_LITERAL) {
+                        String currValue = token.getCurrentValue();
+                        try {
+                            if(currValue != null) {
+                                Integer.parseInt(currValue);
+                            }
+                        } catch (NumberFormatException e) {
+                            if (e.getMessage().contains("out of range")) {
+                                error("Invalid value for INT/FLOAT data type. The number is too large: " + currValue);
+                            } else {
+                                error("Invalid value for INT/FLOAT data type. Expected a number value, but got: " + currValue);
+                            }
+                        }
                         
 //             //         }
                     
@@ -187,9 +188,9 @@
 //                 //     error("Use of undeclared variable " + leftSide.getValue() + " was not declared " + leftSide.getPosition());
 //                 // }
 
-//                 // First let's check if it's a value or a variable
-//                 // if(statement.getRightSide().getType() == Token.Type.VALUE){
-//                     // System.out.println("The right is an INT");
+                // First let's check if it's a value or a variable
+                if(statement.getRightSide().getType() == Token.Type.INT_LITERAL){
+                    System.out.println("The right is an INT");
                     
 //                     // for (DeclarationNode declaration : declarations) {
 //                     //     if (declaration.getVariableName().equals(leftSide.getValue())) {
@@ -280,55 +281,57 @@
 //             return true;
 //         }
         
-//         switch(dataType) {
-//             case "INT":
-//                 try {
-//                     if(value != null) {
-//                         Integer.parseInt(value);
-//                         return value.matches("-?\\d+"); // The value fits within 4 bytes
-//                     }
-                   
-//                 } catch (NumberFormatException e) {
-//                     if (e.getMessage().contains("out of range")) {
-//                         error("Invalid value for INT data type. The number is too large to fit in 4 bytes: " + value);
-//                     } else {
-//                         error("Invalid value for INT data type. Expected an integer value, but got: " + value);
-//                     }
-//                 }
-//             case "FLOAT":
-//                 try {
-//                     if(value != null) {
-//                         Float.parseFloat(value);
-//                         return true;
-//                     }
-//                 } catch (NumberFormatException e) {
-//                     if (e.getMessage().contains("out of range")) {
-//                         error("Invalid value for FLOAT data type. The number is too large: " + value);
-//                     } else {
-//                         error("Invalid value for FLOAT data type. Expected a floating-point value, but got: " + value);
-//                     }
-//                 }
+        switch(dataType) {
+            case "INT":
+                try {
+                    if(value != null) {
+                        Integer.parseInt(value);
+                        return value.matches("-?\\d+"); // The value fits within 4 bytes
+                    }
+                } catch (NumberFormatException e) {
+                    if (e.getMessage().contains("out of range")) {
+                        error("Invalid value for INT data type. The number is too large to fit in 4 bytes: " + value);
+                    } else {
+                        error("Invalid value for INT data type. Expected an integer value, but got: " + value);
+                    }
+                }
+
+            case "FLOAT":
+                try {
+                    if(value != null) {
+                        Float.parseFloat(value);
+                        return true;
+                    }
+                } catch (NumberFormatException e) {
+                    if (e.getMessage().contains("out of range")) {
+                        error("Invalid value for FLOAT data type. The number is too large: " + value);
+                    } else {
+                        error("Invalid value for FLOAT data type. Expected a floating-point value, but got: " + value);
+                    }
+                }
                 
-//             case "CHAR":
-//                 if (value != null) {
-//                     if (value.matches("'.'")) {
-//                         return true;
-//                     } else {
-//                         error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + value);
-//                     }
-//                 }
-//             case "BOOL":
-//                 if (value != null) {
-//                     if (value.equals("TRUE") || value.equals("FALSE")) {
-//                         return true;
-//                     } else {
-//                         error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + value);
-//                     }
-//                 }
-//             default:
-//                 return false;
-//         }
-//     }
+            case "CHAR":
+                if (value != null) {
+                    if (value.matches("'.'")) {
+                        return true;
+                    } else {
+                        error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + value);
+                    }
+                }
+
+            case "BOOL":
+                if (value != null) {
+                    if (value.equals("TRUE") || value.equals("FALSE")) {
+                        return true;
+                    } else {
+                        error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + value);
+                    }
+                }
+
+            default:
+                return false;
+        }
+    }
 
 
 //     // Use of Variables
@@ -353,14 +356,16 @@
 //         return false;
 //     }
 
-//     private boolean isFunctionDeclared(String functionName) {
-//         return declaredFunctions.contains(functionName);
-//     }
+    private boolean isFunctionDeclared(String functionName) {
+        return declaredFunctions.contains(functionName);
+    }
 
-//     // Method to handle errors
-//     private void error(String message) {
-//         throw new RuntimeException(message);
-//     }
+
+    // Method to handle errors
+    private void error(String message, Token token) {
+        System.err.println("Syntax error " + token.getPosition() + ": " + message);
+        System.exit(1);
+    }
 
 //     private void initializeReservedWords() {
 //         // Add all reserved words to the set

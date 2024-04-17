@@ -42,7 +42,9 @@ public class App {
 
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
-            System.out.println(programNode);
+
+            SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
+            analyzer.analyze();
 
             Interpreter interpreter = new Interpreter(programNode);
             interpreter.interpret();
