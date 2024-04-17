@@ -1,4 +1,4 @@
 BEGIN CODE
     INT a, b=1, c, abc = 5
-    SCAN: d, y
+    a=b=c
 END CODE

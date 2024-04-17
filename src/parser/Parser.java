@@ -160,7 +160,8 @@ public class Parser {
                 else {
                     List<StatementNode> statement = parseAssignmentStatement();
                     statements.addAll(statement);
-        
+                    
+                    System.out.println("STATEMENTS: " + statements);
 
                     if (!match(Token.Type.NEWLINE)) {
                         error("Expected NEWLINE", peek());
@@ -218,11 +219,15 @@ public class Parser {
         List<StatementNode> assignments = new ArrayList<>();
             
         // Parse assignment statement
-        Token variableToken = tokens.get(currentTokenIndex);
+        Token variableToken = previous();
         Token valueToken = tokens.get(currentTokenIndex + 2);
+
+        System.out.println("Variable: " + variableToken.getValue());
+        System.out.println("Value: " + valueToken.getValue());
 
         VariableNode variable = new VariableNode(variableToken, valueToken.getPosition());
         ExpressionNode rightExpression = null;
+;
 
         if(tokens.get(currentTokenIndex + 2).getType() == Token.Type.IDENTIFIER) {
             rightExpression = new ExpressionNode.Variable(valueToken);
@@ -230,14 +235,42 @@ public class Parser {
         } else if(tokens.get(currentTokenIndex + 2).getType() == Token.Type.INT_LITERAL || tokens.get(currentTokenIndex + 2).getType() == Token.Type.FLOAT_LITERAL) {
             rightExpression = new ExpressionNode.Literal(valueToken);
             assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
-        } else if (tokens.get(currentTokenIndex + 2).getType() == Token.Type.ASSIGNMENT) {
+        }
 
-            do {
+        while(match(Token.Type.ASSIGNMENT)) {
+            List<Token> variableTokens = new ArrayList<>();
+            variableTokens.add(variableToken);
+            
+            if(peek().getType() == Token.Type.IDENTIFIER) {
 
-            } while (tokens.get(currentTokenIndex + 2).getType() == Token.Type.ASSIGNMENT);
+                if(peekNext(1).getType() == Token.Type.ASSIGNMENT) {
 
-        } else {
-            error("Invalid assignment statement", tokens.get(currentTokenIndex));
+                    System.out.println("Variable: " + peek());
+                    variableTokens.add(peek());
+                    currentTokenIndex++;
+                } else {
+                    for (Token var: variableTokens) {
+                        System.out.println("Variable: " + var.getValue());
+
+                        VariableNode v = new VariableNode(var, var.getPosition());
+                        ExpressionNode e = new ExpressionNode.Variable(peek());
+                        assignments.add(new AssignmentStatementNode(v, e, variableToken.getPosition()));
+                    }
+                }
+
+            } else if (peek().getType() == Token.Type.INT_LITERAL || peek().getType() == Token.Type.FLOAT_LITERAL || peek().getType() == Token.Type.BOOL_LITERAL || peek().getType() == Token.Type.CHAR_LITERAL) {
+                rightExpression = new ExpressionNode.Literal(valueToken);
+
+                // a = b = 5
+                for (Token var: variableTokens) {
+                    VariableNode v = new VariableNode(var, var.getPosition());
+                    ExpressionNode e = new ExpressionNode.Literal(peek());
+                    assignments.add(new AssignmentStatementNode(v, e, variableToken.getPosition()));
+                }
+            } else {
+                error(null, valueToken);
+            }
+
         }
 
         currentTokenIndex += 4; // Skip over the assignment and the right side
@@ -376,7 +409,8 @@ public class Parser {
             System.out.println("Parsing Display Statement");
 
             Token current = peek();
-            
+
+            System.out.println("Peek: " + peek());
 
             if (current.getType() == Token.Type.IDENTIFIER ||
                 current.getType() == Token.Type.INT_LITERAL ||
@@ -384,33 +418,34 @@ public class Parser {
                 current.getType() == Token.Type.CHAR_LITERAL ||
                 current.getType() == Token.Type.BOOL_LITERAL) {
 
-                    System.out.println("TEST");
+                System.out.println("TEST");
 
-                    arguments.add(consume(current.getType(), "Expected identifier or literal"));
+                arguments.add(consume(current.getType(), "Expected identifier or literal"));
 
-                    if (peek().getType() == Token.Type.CONCATENATION ||
-                        peek().getType() == Token.Type.NEXT_LINE) {
-                            arguments.add(consume(peek().getType(), "Expected concatenation symbol or newline"));
+                if (peek().getType() == Token.Type.CONCATENATION ||
+                    peek().getType() == Token.Type.NEXT_LINE) {
+                        arguments.add(consume(peek().getType(), "Expected concatenation symbol or newline"));
 
-                    } else if (peek().getType() == Token.Type.ESCAPE_CODE_OPEN) {
-                        arguments.add(peek());
-                        currentTokenIndex++;
-                        arguments.add(consume(Token.Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
-                        consume(Token.Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
+                } else if (peek().getType() == Token.Type.ESCAPE_CODE_OPEN) {
+                    arguments.add(peek());
+                    currentTokenIndex++;
+                    arguments.add(consume(Token.Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
+                    consume(Token.Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
 
-                    } else if (peek().getType() != Token.Type.NEWLINE) {
-                        error("Expected concatenation symbol (&)", peek());
-                    }
-                    
-                    System.out.println("TEST");
-
-                } else {
-                    error("Expected an identifier or literal after concatenation symbol", peek());
+                } else if (peek().getType() != Token.Type.NEWLINE) {
+                    error("Expected concatenation symbol (&)", peek());
                 }
+            } else {
+                error("Expected an identifier or literal after concatenation symbol", peek());
+            }
         }
 
         if (previous().getType() == Token.Type.CONCATENATION) {
             error("Expected identifier or literal", previous());
+        }
+
+        if(!match(Token.Type.NEWLINE)) {
+            error("One Statement per Line only", peek());
         }
 
         return new FunctionCallNode(function.getValue(), arguments, function.getPosition());

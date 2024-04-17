@@ -55,11 +55,11 @@ public class Token {
             type == Type.BOOL_LITERAL || 
             type == Type.STRING_LITERAL ||
             type == Type.SPECIAL_CHARACTER) {
-            return "<" + type + ", " + "Initial Value: "  + initialValue + "> " + position;   
+            return "<" + type + ", " + "Initial Value: "  + initialValue + ">";   
         } else if(type == Type.IDENTIFIER) {
-            return "<" + type + ", " + "Name: "  + initialValue + "> " + position;
+            return "<" + type + ", " + "Name: "  + initialValue + "> ";
         } else {
-            return "<" + type + ">" + position;
+            return "<" + type + ">";
         }
     }
 }

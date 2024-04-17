@@ -44,13 +44,9 @@ public class Interpreter {
             variables.put(declaration.getVariableName(), new Variable(declaration.getDataType(), declaration.getValue(), declaration.getPosition()));
         }
 
-        System.out.println(variables);
-
         for (StatementNode statement : statements) {
             interpretStatement(statement);
         }
-
-        System.out.println(variables);
     }
 
     private void interpretStatement(StatementNode statement) {
@@ -228,7 +224,7 @@ public class Interpreter {
                         error("Variable " + node.getValue() + " was used in DISPLAY but was not initialized", node.getPosition());
                     }
 
-
+                    System.out.print(value);
                     continue;
                 }
                 if (node.getType() == Token.Type.SPECIAL_CHARACTER) {
