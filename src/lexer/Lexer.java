@@ -117,7 +117,7 @@ public class Lexer {
                 position.add(1);
                 counter++;
             } else if (currentChar == '$') {
-                tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "$", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Token.Type.NEXT_LINE, "$", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
             } else if(currentChar == '(') {
@@ -128,7 +128,17 @@ public class Lexer {
                 tokens.add(new Token(Token.Type.RIGHT_PARENTHESIS, ")", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if(currentChar == '+') {
+            } else if( currentChar == '[') {
+                tokens.add(new Token(Token.Type.ESCAPE_CODE_OPEN, ")", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
+            } else if( currentChar == '[') {
+                tokens.add(new Token(Token.Type.ESCAPE_CODE_CLOSE, ")", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
+            }
+            
+            else if(currentChar == '+') {
                 Token latest_token = tokens.get(tokens.size() - 1);
                 if (
                     latest_token.getType() == Token.Type.ADD || 
@@ -404,18 +414,18 @@ public class Lexer {
 
             // Tokenize newline character
             } else if (input.charAt(counter) == '$') {
-                tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "$", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Token.Type.NEXT_LINE, "$", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
             } else if (input.charAt(counter) == '[') {
-                tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "[", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Token.Type.ESCAPE_CODE_OPEN, "[", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
 
                 
 
                 if(input.charAt(counter) == ']' && input.charAt(counter + 1) == ']') {
-                    tokens.add(new Token(Token.Type.VALUE, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
+                    tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter++;
                 } else {
@@ -427,13 +437,13 @@ public class Lexer {
                             counter++;
                         }
     
-                        tokens.add(new Token(Token.Type.VALUE, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
+                        tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
                         position.add(1);
                         counter++;
                     }
                 }
                 
-                tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "]", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Token.Type.ESCAPE_CODE_CLOSE, "]", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
             }

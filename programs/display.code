@@ -1,4 +1,4 @@
 BEGIN CODE
     INT a1=10
-    SCAN: a
+    DISPLAY: "abc" $ a1
 END CODE

@@ -74,9 +74,6 @@ public class Interpreter {
 
                 var.setValue(var2.getValue());
             } else {
-                System.out.println("Evaluating expression");
-                
-                System.out.println("Assignment: " + assignment);
 
                 Variable var = variables.get(assignment.getVariable().getVariableName());
                 double result = evaluateExpression((ExpressionNode) assignment.getExpression());
@@ -104,11 +101,7 @@ public class Interpreter {
 
         List<String> tokens = tokenize(expression.toString());
 
-        System.out.println(tokens);
-
         List<String> postfixExpression = infixToPostfix(tokens);
-
-        System.out.println(postfixExpression);
 
         return evaluatePostfix(postfixExpression);
     }
@@ -226,7 +219,19 @@ public class Interpreter {
                     VariableNode variable = (VariableNode) node;
 
                     Variable var = variables.get(variable.getVariableName());
-                    System.out.print(var.getValue());
+
+                    if(var == null) {
+                        error("Variable " + variable.getVariableName() + " does not exist", variable.getPosition());
+                    }
+
+                    String value = var.getValue();
+
+
+                    if(value == null) {
+                        error("Variable " + variable.getVariableName() + " was used in DISPLAY but was not initialized", variable.getPosition());
+                    }
+
+
                     continue;
                 }
                 if (node instanceof SpecialCharacterNode) {
@@ -242,7 +247,7 @@ public class Interpreter {
 
 
     private void error(String message, Position position) {
-        System.err.println("Error: " + message + " " + position);
+        System.err.println("Semantics Error: " + message + " " + position);
         System.exit(1);
     }
 }

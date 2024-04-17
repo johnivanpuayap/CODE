@@ -315,7 +315,33 @@ public class Parser {
         if (match(Token.Type.INT_LITERAL) || match(Token.Type.FLOAT_LITERAL) || match(Token.Type.BOOL_LITERAL) || match(Token.Type.CHAR_LITERAL)){
             return new ExpressionNode.Literal(previous());
         } else if (match(Token.Type.IDENTIFIER)) {
+
+            boolean isDeclared = false;
+
+            for(VariableDeclarationNode var : declarations) {
+                if(var.getVariableName().equals(previous().getValue())) {
+                    isDeclared = true;
+                    
+                    if(var.getValue() == null) {
+                        error("Variable not initialized", previous());
+                    }
+
+                    if(!(var.getDataType().equals("INT") || var.getDataType().equals("FLOAT"))) {
+                        error("Arithmetic operation cannot be performed on "+ var.getDataType() + " data type", previous());
+                    }
+
+
+
+                    break;
+                }
+            }
+            
+            if (!isDeclared) {
+                error("Variable not declared", previous());
+            }
+
             return new ExpressionNode.Variable(previous());
+
         } else if (match(Token.Type.LEFT_PARENTHESIS)) {
             ExpressionNode expression = parseExpression();
             boolean found = false;
@@ -373,44 +399,44 @@ public class Parser {
                 }
             }
 
-            if (match(Token.Type.SPECIAL_CHARACTER)) {
-                Token token = previous();
+            if (match(Token.Type.NEXT_LINE)) {
 
-                if (token.getValue() == "$") {
-                    SpecialCharacterNode specialCharacter = new SpecialCharacterNode(token.getValue(), token.getPosition());
+                SpecialCharacterNode specialCharacter = new SpecialCharacterNode(previous().getValue(), previous().getPosition());
+                arguments.add(specialCharacter);
+                currentTokenIndex++;
+                continue;
+            }
+
+            
+            if (match(Token.Type.ESCAPE_CODE_OPEN)) {
+
+                if(peek().getType() == Token.Type.SPECIAL_CHARACTER && peekNext(1).getType() == Token.Type.ESCAPE_CODE_CLOSE) {
+                    Token valueToken = consume(Token.Type.SPECIAL_CHARACTER, "Expected value");
+                    SpecialCharacterNode specialCharacter = new SpecialCharacterNode(valueToken.getValue(), valueToken.getPosition());
                     arguments.add(specialCharacter);
-                    currentTokenIndex++;
+                    start = false;
                     continue;
-                }
-
-                if (token.getValue() == "[") {
-
-                    if(peek().getType() == Token.Type.VALUE && peekNext(1).getType() == Token.Type.SPECIAL_CHARACTER) {
-                        Token valueToken = consume(Token.Type.VALUE, "Expected value");
-                        SpecialCharacterNode specialCharacter = new SpecialCharacterNode(valueToken.getValue(), valueToken.getPosition());
-                        arguments.add(specialCharacter);
-                        start = false;
-                        continue;
-                    }
                 }
             }
 
             if (match(Token.Type.DELIMITER)) {
-                if (peekNext(1).getType() == Token.Type.STRING_LITERAL &&
-                    peekNext(2).getType() == Token.Type.DELIMITER) {
-                        String value = tokens.get(currentTokenIndex + 1).getValue();
-                        StringLiteralNode newNode = new StringLiteralNode(value, tokens.get(currentTokenIndex + 1).getPosition());
-                        System.out.print("String Literal: " + value);
+                if (peek().getType() == Token.Type.STRING_LITERAL) {
+                    if(peekNext(1).getType() == Token.Type.DELIMITER) {
+                        StringLiteralNode newNode = new StringLiteralNode(peek().getValue(), peek().getPosition());
                         arguments.add(newNode);
                         currentTokenIndex += 2;
+                        start = false;
+                    } else {
+                        error("Missing Closing Delimiter", peek());
+                    }
                 } else {
-                    error("Missing delimiter in string literal", peek());
+                    error("Expected String Literal", peek());
                 }
                 continue;
             }
 
             if (match(Token.Type.IDENTIFIER)) {
-                VariableNode newNode  = new VariableNode(previous(), tokens.get(currentTokenIndex).getPosition());
+                VariableNode newNode  = new VariableNode(previous(), tokens.get(currentTokenIndex).getPosition());                
                 arguments.add(newNode);
                 continue;
             }
