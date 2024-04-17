@@ -10,6 +10,7 @@ import src.nodes.AssignmentStatementNode;
 import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
 import src.nodes.FunctionCallNode;
+import src.nodes.ScanStatementNode;
 
 public class Parser {
     private final List<Token> tokens;
@@ -150,8 +151,8 @@ public class Parser {
                     StatementNode statement = parseArithmeticStatement();
                     statements.add(statement);
                     
-                    if (!match(Token.Type.NEWLINE)) {   
-                        error("Expected NEWLINE", peek());
+                    if (!match(Token.Type.NEWLINE)) {
+                        error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                     }
 
                 }
@@ -162,7 +163,7 @@ public class Parser {
                     statements.add(statement);
 
                     if (!match(Token.Type.NEWLINE)) {
-                        error("Expected NEWLINE", peek());
+                        error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                     }
 
                 }
@@ -171,7 +172,7 @@ public class Parser {
                     statements.addAll(statement);
             
                     if (!match(Token.Type.NEWLINE)) {
-                        error("Expected NEWLINE", peek());
+                        error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                     }
                 }
 
@@ -180,21 +181,37 @@ public class Parser {
             
             if(match(Token.Type.DISPLAY)) {
                 statements.add(parseDisplayStatement());
+
                 continue;
             }
             
             if(match(Token.Type.SCAN)) {
                 statements.add(parseScanStatement());
+
+                if (!match(Token.Type.NEWLINE)) {
+                    error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
+                }
+
                 continue;
             }
             
             if(match(Token.Type.IF)) {
                 statements.add(parseIfStatement());
+
+                if (!match(Token.Type.NEWLINE)) {
+                    error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
+                }
+
                 continue;
             }
             
             if(match(Token.Type.WHILE)) {
                 statements.add(parseWhileStatement());
+
+                if (!match(Token.Type.NEWLINE)) {
+                    error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
+                }
+
                 continue;
             }
 
@@ -603,7 +620,21 @@ public class Parser {
     }
 
     private StatementNode parseScanStatement() {
-        return null;
+        consume(Token.Type.COLON, "Expected a COLON Token"); // Consume the colon ":" after SCAN
+
+        List<String> identifiers = new ArrayList<>();
+
+        // Parse the list of identifiers after the colon
+        while (match(Token.Type.IDENTIFIER)) {
+            identifiers.add(previous().getValue());
+            // Check for comma to parse multiple identifiers
+            if (!match(Token.Type.COMMA)) {
+                break; // Exit loop if no comma found
+            }
+        }
+
+        // Create a SCAN statement node with the list of identifiers
+        return new ScanStatementNode(identifiers);
     }
 
     private StatementNode parseIfStatement() {

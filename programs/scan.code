@@ -1,9 +1,7 @@
 BEGIN CODE
     INT aaa1=10, b=100, s2, a2=1
-    CHAR qa1='a'
-    FLOAT qw2=23.0
-    BOOL oiew2="FALSE", ewww="TRUE"
-    
+    CHAR s1
     #This is a comment
-    SCAN: var1, var2
+    SCAN: s1, s2
+    DISPLAY: s1 & s2
 END CODE    

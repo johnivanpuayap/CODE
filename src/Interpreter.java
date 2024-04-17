@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.Scanner;
 
 import src.nodes.AssignmentStatementNode;
 import src.nodes.VariableDeclarationNode;
 import src.nodes.ProgramNode;
+import src.nodes.ScanStatementNode;
 import src.nodes.StatementNode;
 import src.nodes.ExpressionNode;
 import src.nodes.FunctionCallNode;
@@ -84,6 +86,8 @@ public class Interpreter {
             }
         } else if(statement instanceof FunctionCallNode) {
             interpretFunction((FunctionCallNode) statement);
+        } else if(statement instanceof ScanStatementNode) {
+            interpretScan((ScanStatementNode) statement);
         }
         
     }
@@ -233,8 +237,46 @@ public class Interpreter {
             
     }
 
+    private void interpretScan(ScanStatementNode scanStatement) {
+        Scanner scanner = new Scanner(System.in);
+    
+        for (String identifier : scanStatement.getIdentifiers()) {
+            System.out.print(identifier + ": ");
+            String input = scanner.nextLine();
+
+            // Convert to a Data Type
+
+            String inputDataType = null;
+
+            if(input.matches("[-+]?[0-9]+")) {
+                inputDataType = "INT";
+            } else if(input.matches("[-+]?[0-9]+(\\.[0-9]+)?")) {
+                inputDataType = "FLOAT";
+            } else if(input.matches("[a-zA-Z]")) {
+                inputDataType = "CHAR";
+            } else if(input.equalsIgnoreCase("TRUE") || input.equalsIgnoreCase("FALSE")) {
+                inputDataType = "BOOL";
+            } else {
+                error("Invalid input", null);
+            }
+    
+            for(VariableDeclarationNode declaration: declarations) {
+                if(declaration.getVariableName().equals(identifier)) {
+                    if(declaration.getDataType().equals(inputDataType)) {
+                        variables.get(identifier).setValue(input);
+                    } else {
+                        error("Type mismatch. Assigning " + inputDataType + " to " + declaration.getDataType(), declaration.getPosition());
+                    }
+                }
+            
+            }
+        }
+    
+        scanner.close();
+    }
+    
     private void error(String message, Position position) {
-        System.err.println("Semantics Error: " + message + " " + position);
+        System.err.println("Error: " + message + " " + position);
         System.exit(1);
     }
 }
