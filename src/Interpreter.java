@@ -27,7 +27,7 @@ public class Interpreter {
     private List<VariableDeclarationNode> declarations;
     private List<StatementNode> statements;
 
-    public Interpreter(ProgramNode program) {
+     public Interpreter(ProgramNode program) {
         this.program = program;
         declarations = this.program.getDeclarations();
         statements = this.program.getStatements();
@@ -141,30 +141,7 @@ public class Interpreter {
             postfix.add(operatorStack.pop());
         }
     
-        return postfixTokens;
-    }
-
-    private boolean isLiteral(Token token) {
-        return token.getType() == Token.Type.INT_LITERAL ||
-            token.getType() == Token.Type.FLOAT_LITERAL ||
-            token.getType() == Token.Type.CHAR_LITERAL ||
-            token.getType() == Token.Type.BOOL_LITERAL;
-    }
-    
-    private int precedence(Token token) {
-        switch (token.getValue()) {
-            case "+":
-            case "-":
-                return 0;
-            case "*":
-            case "/":
-                return 1;
-            case "(":
-            case ")":
-                return 2;
-            default:
-                return -1;
-        }
+        return postfix;
     }
     
     public double evaluatePostfix(List<String> postfixExpression) {
