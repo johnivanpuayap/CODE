@@ -2,7 +2,6 @@ package src;
 
 import java.util.Map;
 import java.util.Stack;
-import java.util.function.Function;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -18,9 +17,8 @@ import src.nodes.StatementNode;
 import src.nodes.StringLiteralNode;
 import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
-import src.nodes.FunctionNode;
+import src.nodes.FunctionCallNode;
 import src.utils.Variable;
-import src.utils.Token;
 import src.utils.Position;
 
 
@@ -91,8 +89,8 @@ public class Interpreter {
                 }
                 
             }
-        } else if(statement instanceof FunctionNode) {
-            interpretFunction((FunctionNode) statement);
+        } else if(statement instanceof FunctionCallNode) {
+            interpretFunction((FunctionCallNode) statement);
         }
         
     }
@@ -206,7 +204,7 @@ public class Interpreter {
         }
     }
     
-    private void interpretFunction(FunctionNode function) {   
+    private void interpretFunction(FunctionCallNode function) {   
         
         if (function.getFunctionName() == "DISPLAY") {
             for (ASTNode node : function.getArguments()) {

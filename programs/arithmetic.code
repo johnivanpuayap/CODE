@@ -1,5 +1,4 @@
 BEGIN CODE
     INT xyz, abc=100
-    a=b=+c
-    xyz= ((abc *5)/10 + 10) * --1
+    a=b=c
 END CODE

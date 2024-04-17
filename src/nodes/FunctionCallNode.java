@@ -2,12 +2,13 @@ package src.nodes;
 
 import java.util.List;
 import src.utils.Position;
+import src.utils.Token;
 
-public class FunctionNode extends StatementNode {
+public class FunctionCallNode extends StatementNode {
     private String functionName;
-    private List<ASTNode> arguments;
+    private List<Token> arguments;
 
-    public FunctionNode(String functionName, List<ASTNode> arguments, Position position) {
+    public FunctionCallNode(String functionName, List<Token> arguments, Position position) {
         super(position);
         this.functionName = functionName;
         this.arguments = arguments;
@@ -17,7 +18,7 @@ public class FunctionNode extends StatementNode {
         return functionName;
     }
 
-    public List<ASTNode> getArguments() {
+    public List<Token> getArguments() {
         return arguments;
     }
 

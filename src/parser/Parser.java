@@ -12,7 +12,7 @@ import src.nodes.AssignmentStatementNode;
 import src.nodes.StringLiteralNode;
 import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
-import src.nodes.FunctionNode;
+import src.nodes.FunctionCallNode;
 
 public class Parser {
     private final List<Token> tokens;
@@ -122,6 +122,9 @@ public class Parser {
                     } else {
                         variables.add(new VariableDeclarationNode("BOOL", identifier.getValue(), identifier.getPosition()));
                     }
+                    break;
+                default:
+                    error("Invalid Data Type", peek());
             }
         } while (match(Token.Type.COMMA));
         
@@ -159,8 +162,8 @@ public class Parser {
 
                 }
                 else {
-                    StatementNode statement = parseAssignmentStatement();
-                    statements.add(statement);
+                    List<StatementNode> statement = parseAssignmentStatement();
+                    statements.addAll(statement);
         
 
                     if (!match(Token.Type.NEWLINE)) {
@@ -215,43 +218,35 @@ public class Parser {
         }
     }
 
-    private StatementNode parseAssignmentStatement() {
-        // Ensure that there are enough tokens to represent an assignment statement
-
-        
-        if (currentTokenIndex + 2 >= tokens.size()) {
-            error("Invalid assignment statement", tokens.get(currentTokenIndex));
-            return null; // Or handle the error
-        }
-
-    
-        // Check token sequence for assignment statement
-
-        if (tokens.get(currentTokenIndex).getType() == Token.Type.ASSIGNMENT &&
-                (tokens.get(currentTokenIndex + 1).getType() == Token.Type.INT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.FLOAT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.IDENTIFIER)){
-    
-            // Parse assignment statement
-            Token leftSide = tokens.get(currentTokenIndex);
-            Token rightSide = tokens.get(currentTokenIndex + 2);
-    
+    private List<StatementNode> parseAssignmentStatement() {
+        List<StatementNode> assignments = new ArrayList<>();
             
-            VariableNode variable = new VariableNode(leftSide, leftSide.getPosition());
-            ExpressionNode rightExpression = null;
-            
-            if(tokens.get(currentTokenIndex + 2).getType() == Token.Type.IDENTIFIER) {
-                rightExpression = new ExpressionNode.Variable(rightSide);
-            } else {
-                rightExpression = new ExpressionNode.Literal(rightSide);
-            }
+        // Parse assignment statement
+        Token variableToken = tokens.get(currentTokenIndex);
+        Token valueToken = tokens.get(currentTokenIndex + 2);
 
-            currentTokenIndex += 2;
-    
-            return new AssignmentStatementNode(variable, rightExpression, leftSide.getPosition());
-    
+        VariableNode variable = new VariableNode(variableToken, valueToken.getPosition());
+        ExpressionNode rightExpression = null;
+
+        if(tokens.get(currentTokenIndex + 2).getType() == Token.Type.IDENTIFIER) {
+            rightExpression = new ExpressionNode.Variable(valueToken);
+            assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
+        } else if(tokens.get(currentTokenIndex + 2).getType() == Token.Type.INT_LITERAL || tokens.get(currentTokenIndex + 2).getType() == Token.Type.FLOAT_LITERAL) {
+            rightExpression = new ExpressionNode.Literal(valueToken);
+            assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
+        } else if (tokens.get(currentTokenIndex + 2).getType() == Token.Type.ASSIGNMENT) {
+
+            do {
+
+            } while (tokens.get(currentTokenIndex + 2).getType() == Token.Type.ASSIGNMENT);
+
         } else {
             error("Invalid assignment statement", tokens.get(currentTokenIndex));
-            return null;
         }
+
+        currentTokenIndex += 4; // Skip over the assignment and the right side
+        
+        return assignments;
     }
 
     private StatementNode parseArithmeticStatement() {
@@ -375,81 +370,46 @@ public class Parser {
     }
 
     private StatementNode parseDisplayStatement() {
-
-        List<ASTNode> arguments = new ArrayList<>();
-        Position currentFunctionPosition = tokens.get(currentTokenIndex).getPosition();
-
-        if(!match(Token.Type.COLON)) {
-            error("COLON not found after DISPLAY", peek());
-        }
-       
-        boolean start = true;
-
-        while (currentTokenIndex < (tokens.size()) && (peek().getType() != Token.Type.NEWLINE)) {
-
-            if (match(Token.Type.CONCATENATION)) {
-                if (start) {
-                    error("Cannot concatenate without any prior string literals or variables", peek());
-                }
-
-                if (peek().getType() != Token.Type.STRING_LITERAL &&
-                    peek().getType() != Token.Type.IDENTIFIER &&
-                    peek().getType() != Token.Type.SPECIAL_CHARACTER){
-                        error("Missing string literal/variable/special character in display concatenation", peek());
-                }
-            }
-
-            if (match(Token.Type.NEXT_LINE)) {
-
-                SpecialCharacterNode specialCharacter = new SpecialCharacterNode(previous().getValue(), previous().getPosition());
-                arguments.add(specialCharacter);
-                currentTokenIndex++;
-                continue;
-            }
-
-            
-            if (match(Token.Type.ESCAPE_CODE_OPEN)) {
-
-                if(peek().getType() == Token.Type.SPECIAL_CHARACTER && peekNext(1).getType() == Token.Type.ESCAPE_CODE_CLOSE) {
-                    Token valueToken = consume(Token.Type.SPECIAL_CHARACTER, "Expected value");
-                    SpecialCharacterNode specialCharacter = new SpecialCharacterNode(valueToken.getValue(), valueToken.getPosition());
-                    arguments.add(specialCharacter);
-                    start = false;
-                    continue;
-                }
-            }
-
-            if (match(Token.Type.DELIMITER)) {
-                if (peek().getType() == Token.Type.STRING_LITERAL) {
-                    if(peekNext(1).getType() == Token.Type.DELIMITER) {
-                        StringLiteralNode newNode = new StringLiteralNode(peek().getValue(), peek().getPosition());
-                        arguments.add(newNode);
-                        currentTokenIndex += 2;
-                        start = false;
-                    } else {
-                        error("Missing Closing Delimiter", peek());
-                    }
-                } else {
-                    error("Expected String Literal", peek());
-                }
-                continue;
-            }
-
-            if (match(Token.Type.IDENTIFIER)) {
-                VariableNode newNode  = new VariableNode(previous(), tokens.get(currentTokenIndex).getPosition());                
-                arguments.add(newNode);
-                continue;
-            }
-        }
         
-        if(!match(Token.Type.NEWLINE)) {
-            error("Expected One Statement per Line", peek());
-        } else {
-            System.out.println("Found a New Line after Display Statement");
+        Token function = previous();
+        consume(Token.Type.COLON, "Expected colon after Display Call");
+        List<Token> arguments = new ArrayList<>();
+
+        while (peek().getType() != Token.Type.NEWLINE && !isAtEnd()) {
+            Token current = peek();
+
+            if (current.getType() == Token.Type.IDENTIFIER ||
+                current.getType() == Token.Type.INT_LITERAL ||
+                current.getType() == Token.Type.FLOAT_LITERAL ||
+                current.getType() == Token.Type.CHAR_LITERAL ||
+                current.getType() == Token.Type.BOOL_LITERAL ||
+                current.getType() == Token.Type.STRING_LITERAL) {
+                    arguments.add(consume(current.getType(), "Expected identifier or literal"));
+
+                    if (peek().getType() == Token.Type.CONCATENATION ||
+                        peek().getType() == Token.Type.NEXT_LINE) {
+                            arguments.add(consume(peek().getType(), "Expected concatenation symbol or newline"));
+
+                    } else if (peek().getType() == Token.Type.ESCAPE_CODE_OPEN) {
+                        arguments.add(peek());
+                        currentTokenIndex++;
+                        arguments.add(consume(Token.Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
+                        consume(Token.Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
+
+                    } else if (peek().getType() != Token.Type.NEWLINE) {
+                        error("Expected concatenation symbol (&)", peek());
+                    }
+
+                } else {
+                    error("Expected an identifier or literal after concatenation symbol", peek());
+                }
         }
 
-        System.out.println("Creating Display Node");
-        return new FunctionNode("DISPLAY", arguments, currentFunctionPosition);
+        if (previous().getType() == Token.Type.CONCATENATION) {
+            error("Expected identifier or literal", previous());
+        }
+
+        return new FunctionCallNode(function.getValue(), arguments, function.getPosition());
     }
 
     private StatementNode parseScanStatement() {
