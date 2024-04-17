@@ -38,10 +38,16 @@ public class Lexer {
                 position.add("DISPLAY".length());
                 counter += "DISPLAY".length();
                 tokens = tokenizeDisplay(tokens);
-            } else if(input.startsWith("SCAN", counter)) {
-                tokens.add(new Token(Token.Type.SCAN, "SCAN", new Position(position.getLine(), position.getColumn())));
-                position.add("SCAN".length());
-                counter += "SCAN".length();
+            } else if (input.startsWith("SCAN:", counter)) {
+            // Add a token for SCAN
+            tokens.add(new Token(Token.Type.SCAN, "SCAN", new Position(position.getLine(), position.getColumn())));
+            position.add("SCAN".length());
+            counter += "SCAN".length();
+
+            // Add a token for the colon
+            tokens.add(new Token(Token.Type.COLON, ":", new Position(position.getLine(), position.getColumn())));
+            position.add(":".length());
+            counter++; // Increment counter to skip the colon
             } else if(input.startsWith("AND", counter)) {
                 tokens.add(new Token(Token.Type.AND, "AND", new Position(position.getLine(), position.getColumn())));
                 position.add("AND".length());

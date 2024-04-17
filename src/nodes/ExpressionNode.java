@@ -47,11 +47,11 @@ public abstract class ExpressionNode {
         @Override
         public List<Token> getTokens() {
             List<Token> tokens = new ArrayList<>();
-            tokens.add(new Token(Token.Type.PARENTHESES, "(", new Position(0, 0))); // Add opening parenthesis
+            tokens.add(new Token(Token.Type.LEFT_PARENTHESIS, "(", new Position(0, 0))); // Add opening parenthesis
             tokens.addAll(left.getTokens());
             tokens.add(operator);
             tokens.addAll(right.getTokens());
-            tokens.add(new Token(Token.Type.PARENTHESES, ")", new Position(0, 0))); // Add closing parenthesis
+            tokens.add(new Token(Token.Type.RIGHT_PARENTHESIS, ")", new Position(0, 0))); // Add closing parenthesis
             return tokens;
         }
     }

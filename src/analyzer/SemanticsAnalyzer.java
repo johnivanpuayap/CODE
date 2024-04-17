@@ -86,7 +86,7 @@ public class SemanticsAnalyzer {
                             }
                         }
                         if (!variableFound) {
-                            error("Variable " + variable.getVariableName() + " has not been declared yet at line " + variable.getPosition().getLine() + " position " + variable.getPosition().getPosition());
+                            error("Variable " + variable.getVariableName() + " has not been declared yet at line " + variable.getPosition().getLine() + " position " + variable.getPosition());
                         }
                     }
                 }
@@ -114,7 +114,7 @@ public class SemanticsAnalyzer {
                     System.out.println("Checking Token: " + token.getType() + " " + token.getValue());
 
                     // Check if the variable used is okay
-                    if (token.getType() == Token.Type.VARIABLE) {
+                    if (token.getType() == Token.Type.INT || token.getType() == Token.Type.FLOAT || token.getType() == Token.Type.CHAR || token.getType() == Token.Type.BOOL) {
 
                         System.out.println("The token is a " + token.getType());
 

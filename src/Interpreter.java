@@ -54,7 +54,7 @@ public class Interpreter {
     private void interpretStatement(StatementNode statement) {
 
         Token leftSide = statement.getLeftSide();
-        
+
 
         if (statement.hasExpression()) {
 
@@ -84,7 +84,7 @@ public class Interpreter {
     }
 
     private String evaluateExpression(ExpressionNode expression) {
-        
+
         List<Token> prefixTokens = expression.getTokens();
         List<Token> postfixTokens = convertInfixToPostfix(prefixTokens);
 
@@ -97,7 +97,7 @@ public class Interpreter {
     public List<Token> convertInfixToPostfix(List<Token> infixTokens) {
         Stack<Token> stack = new Stack<>();
         List<Token> postfixTokens = new ArrayList<>();
-    
+
         for (Token token : infixTokens) {
             if (token.getType() == Token.Type.VALUE || token.getType() == Token.Type.VARIABLE) {
                 postfixTokens.add(token);
@@ -117,15 +117,15 @@ public class Interpreter {
                 stack.push(token);
             }
         }
-    
+
         // Pop remaining operators from the stack and add them to postfixTokens
         while (!stack.isEmpty()) {
             postfixTokens.add(stack.pop());
         }
-    
+
         return postfixTokens;
     }
-    
+
     private int precedence(Token token) {
         switch (token.getValue()) {
             case "+":
@@ -141,10 +141,10 @@ public class Interpreter {
                 return -1;
         }
     }
-    
+
     public double evaluatePostfix(List<Token> postfixTokens) {
         Stack<Double> stack = new Stack<>();
-    
+
         for (Token token : postfixTokens) {
             if (token.getType() == Token.Type.OPERATOR) {
                 double operand2 = stack.pop();
@@ -154,12 +154,12 @@ public class Interpreter {
             } else if(token.getType() == Token.Type.VARIABLE) {
                 Variable var = variables.get(token.getValue());
                 stack.push(Double.parseDouble(var.getValue()));
-            }  
+            }
             else { // Assuming it's a numeric value
                 stack.push(Double.parseDouble(token.getValue()));
             }
         }
-    
+
         return stack.pop();
     }
 
@@ -178,8 +178,8 @@ public class Interpreter {
         }
     }
 
-    private void interpretFunction(FunctionNode function) {   
-        
+    private void interpretFunction(FunctionNode function) {
+
         if (function.getFunctionName() == "DISPLAY") {
             for (ASTNode node : function.getArguments()) {
                 if (node instanceof StringLiteralNode) {
@@ -202,6 +202,6 @@ public class Interpreter {
         } else if (function.getFunctionName() == "SCAN") {
 
         }
-            
+
     }
 }

@@ -5,16 +5,15 @@ import java.util.List;
 
 import src.utils.Position;
 import src.utils.Token;
-import src.nodes.ExpressionNode;
 
-public class StatementNode extends ASTNode {
+public abstract class StatementNode extends ASTNode {
     private Token leftSide;
     private Token rightSide;
     private ExpressionNode expressionNode;
     private Position position;
     private String value;
 
-    public StatementNode(Token leftSide, ExpressionNode expressionNode) {
+    public StatementNode() {
         super(leftSide.getPosition());
         this.leftSide = leftSide;
         this.expressionNode = expressionNode;
@@ -64,4 +63,6 @@ public class StatementNode extends ASTNode {
         }
         return tokens;
     }
+
+    public abstract void execute();
 }
