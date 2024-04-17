@@ -24,13 +24,13 @@ public class Interpreter {
     private ProgramNode program;
     private List<DeclarationNode> declarations;
     private List<StatementNode> statements;
-    private List<FunctionNode> functions;
+    private List<FunctionNode> functionCalls;
 
-     public Interpreter(ProgramNode program) {
+    public Interpreter(ProgramNode program) {
         this.program = program;
         declarations = this.program.getDeclarations();
         statements = this.program.getStatements();
-        functions = this.program.getFunctionCalls();
+        functionCalls = this.program.getFunctionCalls();
     }
 
     public void interpret() {
@@ -46,7 +46,7 @@ public class Interpreter {
             interpretStatement(statement);
         }
 
-        for (FunctionNode function: functions) {
+        for (FunctionNode function: functionCalls) {
             interpretFunction(function);
         }
     }
@@ -73,7 +73,7 @@ public class Interpreter {
             Variable left = variables.get(leftSide.getValue());
             Token rightSide = statement.getRightSide();
 
-            if(rightSide.getType() == Token.Type.VARIABLE) {
+            if(rightSide.getType() == Token.Type.IDENTIFIER) {
                 Variable right = variables.get(rightSide.getValue());
 
                 left.setValue(right.getValue());
@@ -99,7 +99,7 @@ public class Interpreter {
         List<Token> postfixTokens = new ArrayList<>();
     
         for (Token token : infixTokens) {
-            if (token.getType() == Token.Type.VALUE || token.getType() == Token.Type.VARIABLE) {
+            if (isLiteral(token) || token.getType() == Token.Type.IDENTIFIER) {
                 postfixTokens.add(token);
             } else if (token.getValue().equals("(")) {
                 stack.push(token);
@@ -111,9 +111,10 @@ public class Interpreter {
                     stack.pop();
                 }
             } else {
-                while (!stack.isEmpty() && stack.peek().getType() == Token.Type.OPERATOR && precedence(token) <= precedence(stack.peek())) {
-                    postfixTokens.add(stack.pop());
-                }
+                // while (!stack.isEmpty() && stack.peek().getType() ==
+                //         (Token.Type. || ) && precedence(token) <= precedence(stack.peek())) {
+                //         postfixTokens.add(stack.pop());
+                // }
                 stack.push(token);
             }
         }
@@ -124,6 +125,13 @@ public class Interpreter {
         }
     
         return postfixTokens;
+    }
+
+    private boolean isLiteral(Token token) {
+        return token.getType() == Token.Type.INT_LITERAL ||
+            token.getType() == Token.Type.FLOAT_LITERAL ||
+            token.getType() == Token.Type.CHAR_LITERAL ||
+            token.getType() == Token.Type.BOOL_LITERAL;
     }
     
     private int precedence(Token token) {
@@ -146,15 +154,16 @@ public class Interpreter {
         Stack<Double> stack = new Stack<>();
     
         for (Token token : postfixTokens) {
-            if (token.getType() == Token.Type.OPERATOR) {
-                double operand2 = stack.pop();
-                double operand1 = stack.pop();
-                double result = applyOperator(token.getValue(), operand1, operand2);
-                stack.push(result);
-            } else if(token.getType() == Token.Type.VARIABLE) {
+            // if (token.getType() == Token.Type.OPERATOR) {
+            //     double operand2 = stack.pop();
+            //     double operand1 = stack.pop();
+            //     double result = applyOperator(token.getValue(), operand1, operand2);
+            //     stack.push(result);
+            // } else 
+            if(token.getType() == Token.Type.IDENTIFIER) {
                 Variable var = variables.get(token.getValue());
                 stack.push(Double.parseDouble(var.getValue()));
-            }  
+            }
             else { // Assuming it's a numeric value
                 stack.push(Double.parseDouble(token.getValue()));
             }

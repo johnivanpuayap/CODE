@@ -3,11 +3,11 @@ package src.nodes;
 import java.util.List;
 import src.utils.Position;
 
-public class FunctionNode extends ASTNode {
+public class FunctionCallNode extends ASTNode {
     private String functionName;
-    private List<ASTNode> arguments;
+    private List<Token> arguments;
 
-    public FunctionNode(String functionName, List<ASTNode> arguments, Position position) {
+    public FunctionNode(String functionName, List<Token> arguments, Position position) {
         super(position);
         this.functionName = functionName;
         this.arguments = arguments;
@@ -17,7 +17,7 @@ public class FunctionNode extends ASTNode {
         return functionName;
     }
 
-    public List<ASTNode> getArguments() {
+    public List<Token> getArguments() {
         return arguments;
     }
 
@@ -25,4 +25,3 @@ public class FunctionNode extends ASTNode {
         return super.getPosition();
     }
 }
-

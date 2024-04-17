@@ -23,6 +23,7 @@ public class SemanticsAnalyzer {
     private Set<String> declaredFunctions;
     private List<DeclarationNode> declarations;
     private List<StatementNode> statements;
+    private List<FunctionCallNode> functionCalls;
 
     public SemanticsAnalyzer(ProgramNode program) {
         this.program = program;
@@ -32,11 +33,10 @@ public class SemanticsAnalyzer {
         initializeDeclaredFunctions();
         declarations = this.program.getDeclarations();
         statements = this.program.getStatements();
+        functionCalls = this.program.getFunctionCalls();
     }
 
     public void analyze() {
-
-        List<FunctionNode> functionCalls = program.getFunctionCalls();
         
         for (DeclarationNode declaration : declarations) {
             // Extract information from the DeclarationNode
@@ -114,7 +114,7 @@ public class SemanticsAnalyzer {
                     System.out.println("Checking Token: " + token.getType() + " " + token.getValue());
 
                     // Check if the variable used is okay
-                    if (token.getType() == Token.Type.VARIABLE) {
+                    if (token.getType() == Token.Type.IDENTIFIER) {
 
                         System.out.println("The token is a " + token.getType());
 
@@ -157,7 +157,7 @@ public class SemanticsAnalyzer {
                             error("Invalid value for INT/FLOAT data type. Expected a number value, but got: " + currValue);
                         }
 
-                    } else if(token.getType() == Token.Type.VALUE) {    
+                    } else if(token.getType() == Token.Type.INT_LITERAL || token.getType() == Token.Type.FLOAT_LITERAL) {
                         String currValue = token.getCurrentValue();
                         try {
                             if(currValue != null) {
@@ -190,7 +190,7 @@ public class SemanticsAnalyzer {
                 }
 
                 // First let's check if it's a value or a variable
-                if(statement.getRightSide().getType() == Token.Type.VALUE){
+                if(statement.getRightSide().getType() == Token.Type.INT_LITERAL){
                     System.out.println("The right is an INT");
                     
                     for (DeclarationNode declaration : declarations) {
@@ -289,7 +289,6 @@ public class SemanticsAnalyzer {
                         Integer.parseInt(value);
                         return value.matches("-?\\d+"); // The value fits within 4 bytes
                     }
-                   
                 } catch (NumberFormatException e) {
                     if (e.getMessage().contains("out of range")) {
                         error("Invalid value for INT data type. The number is too large to fit in 4 bytes: " + value);
@@ -297,6 +296,7 @@ public class SemanticsAnalyzer {
                         error("Invalid value for INT data type. Expected an integer value, but got: " + value);
                     }
                 }
+
             case "FLOAT":
                 try {
                     if(value != null) {
@@ -319,6 +319,7 @@ public class SemanticsAnalyzer {
                         error("Invalid value for CHAR data type. Expected a single character enclosed in single quotes, but got: " + value);
                     }
                 }
+
             case "BOOL":
                 if (value != null) {
                     if (value.equals("TRUE") || value.equals("FALSE")) {
@@ -327,6 +328,7 @@ public class SemanticsAnalyzer {
                         error("Invalid value for BOOL data type. Expected \"TRUE\" or \"FALSE\" (case sensitive), but got: " + value);
                     }
                 }
+
             default:
                 return false;
         }
@@ -359,9 +361,11 @@ public class SemanticsAnalyzer {
         return declaredFunctions.contains(functionName);
     }
 
+
     // Method to handle errors
-    private void error(String message) {
-        throw new RuntimeException(message);
+    private void error(String message, Token token) {
+        System.err.println("Syntax error " + token.getPosition() + ": " + message);
+        System.exit(1);
     }
 
     private void initializeReservedWords() {
