@@ -1,6 +1,7 @@
 package src.parser;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
 import src.utils.Token;
 import src.nodes.ProgramNode;
 import src.nodes.VariableDeclarationNode;
@@ -13,6 +14,7 @@ import src.nodes.FunctionCallNode;
 public class Parser {
     private final List<Token> tokens;
     private int currentTokenIndex = 0;
+    private Set<String> declaredVariableNames = new HashSet<>();
     private List<VariableDeclarationNode> declarations = new ArrayList<>();
     private List<StatementNode> statements = new ArrayList<>();
 
@@ -85,6 +87,13 @@ public class Parser {
 
         do {
             Token identifier = consume(Token.Type.IDENTIFIER, "Expected identifier");
+            String variableName = identifier.getValue();
+
+            if (declaredVariableNames.contains(variableName)) {
+                error("Variable " + variableName + " is already declared" , identifier);
+            }
+
+            declaredVariableNames.add(variableName);
             
             switch(type) {
                 case Token.Type.INT:
@@ -220,27 +229,79 @@ public class Parser {
             
         // Parse assignment statement
         Token variableToken = previous();
-        Token valueToken = tokens.get(currentTokenIndex + 2);
+        Token valueToken = tokens.get(currentTokenIndex + 1);
 
         VariableNode variable = new VariableNode(variableToken, valueToken.getPosition());
         ExpressionNode rightExpression = null;
 ;
 
-        if(tokens.get(currentTokenIndex + 2).getType() == Token.Type.IDENTIFIER) {
+        if(peek().getType() != Token.Type.ASSIGNMENT && tokens.get(currentTokenIndex + 1).getType() == Token.Type.IDENTIFIER) {
             rightExpression = new ExpressionNode.Variable(valueToken);
+
+            boolean isDeclared = false;
+            
+            for (VariableDeclarationNode declaration: declarations) {
+                if(declaration.getVariableName().equals(valueToken.getValue())) {
+                    isDeclared = true;
+                } 
+            }
+
+            if(variableToken != valueToken) {
+                error("Type Mismatch", valueToken);
+            }
+
+            // Variable does not exist
+            if(!isDeclared) {
+                error("Variable not declared", valueToken);
+            }
+            
             assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
-            currentTokenIndex += 4; // Skip over the assignment and the right side
-        } else if(tokens.get(currentTokenIndex + 2).getType() == Token.Type.INT_LITERAL || tokens.get(currentTokenIndex + 2).getType() == Token.Type.FLOAT_LITERAL) {
+            currentTokenIndex += 2; // Skip over the assignment and the right side
+            return assignments;
+
+        } else if(peek().getType() != Token.Type.ASSIGNMENT && tokens.get(currentTokenIndex + 1).getType() == Token.Type.INT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.FLOAT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.BOOL_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.CHAR_LITERAL) {
+
             rightExpression = new ExpressionNode.Literal(valueToken);
+            
+            String variableDataType = null;
+            for (VariableDeclarationNode declaration: declarations) {
+                if(declaration.getVariableName().equals(variableToken.getValue())) {
+                    variableDataType = declaration.getDataType();
+                } 
+            }
+
+            switch (variableDataType) {
+                case "INT":
+                case "FLOAT":
+                    if(!(valueToken.getType() == Token.Type.INT_LITERAL || valueToken.getType() == Token.Type.FLOAT_LITERAL)) {
+                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
+                    }
+                    break;
+                case "BOOL":
+                    if(!(valueToken.getType() == Token.Type.BOOL_LITERAL)) {
+                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
+                    }
+                    break;
+                case "CHAR":
+                    if(!(valueToken.getType() == Token.Type.CHAR_LITERAL)) {
+                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
+                    }
+                    break;
+                default:
+                    error("Data Type Invalid", valueToken);
+            }
+
+            
             assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
-            currentTokenIndex += 4; // Skip over the assignment and the right side
+            currentTokenIndex += 2; // Skip over the assignment and the right side
+            return assignments;
         }
 
         List<Token> variableTokens = new ArrayList<>();
         variableTokens.add(variableToken);
 
         while(match(Token.Type.ASSIGNMENT)) {
-            
+
             if(peek().getType() == Token.Type.IDENTIFIER) {
 
                 if(peekNext(1).getType() == Token.Type.ASSIGNMENT) {

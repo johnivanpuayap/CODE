@@ -8,14 +8,10 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import src.nodes.ASTNode;
 import src.nodes.AssignmentStatementNode;
 import src.nodes.VariableDeclarationNode;
 import src.nodes.ProgramNode;
-import src.nodes.SpecialCharacterNode;
 import src.nodes.StatementNode;
-import src.nodes.StringLiteralNode;
-import src.nodes.VariableNode;
 import src.nodes.ExpressionNode;
 import src.nodes.FunctionCallNode;
 import src.utils.Variable;
@@ -236,7 +232,6 @@ public class Interpreter {
         }
             
     }
-
 
     private void error(String message, Position position) {
         System.err.println("Semantics Error: " + message + " " + position);

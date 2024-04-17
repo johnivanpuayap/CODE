@@ -1,4 +1,4 @@
 BEGIN CODE
-    INT a = "TRUE", b = 'a'
+    BOOL a = "TRUE", b = 'a'
     CHAR b
 END CODE
