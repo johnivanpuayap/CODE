@@ -422,9 +422,12 @@ public class Lexer {
                 position.add(1);
                 counter++;
 
-                
 
-                if(input.charAt(counter) == ']' && input.charAt(counter + 1) == ']') {
+                if(input.charAt(counter) == '[' && input.charAt(counter + 1) == ']') {
+                    tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
+                    position.add(1);
+                    counter++;
+                } else if(input.charAt(counter) == ']' && input.charAt(counter + 1) == ']') {
                     tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter++;

@@ -549,12 +549,11 @@ public class Parser {
         } else if (match(Token.Type.POSITIVE) || match(Token.Type.NEGATIVE)) {
             
             Token operatorToken = previous();
-            
-            ExpressionNode expression;
+            ExpressionNode expression = null;
 
-            if(match(Token.Type.INT_LITERAL) || match(Token.Type.FLOAT_LITERAL) || match(Token.Type.IDENTIFIER)) {
+            if(match(Token.Type.INT_LITERAL) || match(Token.Type.FLOAT_LITERAL)) {
                 expression = new ExpressionNode.Literal(previous());
-            } else {
+            } else if(match(Token.Type.IDENTIFIER)) {
                 expression = new ExpressionNode.Variable(previous());
             }
             return new ExpressionNode.Unary(operatorToken, expression);

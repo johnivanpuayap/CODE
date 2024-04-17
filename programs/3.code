@@ -1,4 +1,4 @@
 BEGIN CODE
-    INT b=1, b, abc = 5
+    INT b=1, abc = 5
     b = ab
 END CODE
