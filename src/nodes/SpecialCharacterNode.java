@@ -58,4 +58,9 @@ public class SpecialCharacterNode extends ASTNode {
 
         return null;
     }
+
+    @Override
+    public String toString() {
+        return character;
+    }
 }

@@ -1,12 +1,15 @@
 package src.nodes;
 import src.utils.Position;
+import src.utils.Token;
 
 public class VariableNode extends ASTNode {
     private String variableName;
+    private Token token;
 
-    public VariableNode(String variableName, Position position) {
+    public VariableNode(Token token, Position position) {
         super(position);
-        this.variableName = variableName;
+        this.variableName = token.getValue();
+        this.token = token;
     }
 
     // Getters for value and position
@@ -16,5 +19,14 @@ public class VariableNode extends ASTNode {
 
     public Position getPosition() {
         return super.getPosition();
+    }
+
+    public Token getToken() {
+        return token;
+    }
+
+    @Override
+    public String toString() {
+        return variableName;
     }
 }

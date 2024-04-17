@@ -117,7 +117,7 @@ public class Lexer {
                 position.add(1);
                 counter++;
             } else if (currentChar == '$') {
-                tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, "$", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Token.Type.NEXT_LINE, "$", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
             } else if(currentChar == '(') {
@@ -128,7 +128,17 @@ public class Lexer {
                 tokens.add(new Token(Token.Type.RIGHT_PARENTHESIS, ")", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if(currentChar == '+') {
+            } else if( currentChar == '[') {
+                tokens.add(new Token(Token.Type.ESCAPE_CODE_OPEN, ")", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
+            } else if( currentChar == '[') {
+                tokens.add(new Token(Token.Type.ESCAPE_CODE_CLOSE, ")", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
+            }
+            
+            else if(currentChar == '+') {
                 Token latest_token = tokens.get(tokens.size() - 1);
                 if (
                     latest_token.getType() == Token.Type.ADD || 
@@ -220,9 +230,21 @@ public class Lexer {
                 }
 
             } else if(currentChar == '#') {
+
                 while(counter < input.length() && input.charAt(counter) != '\n') {
                     counter++;
                     position.add(1);
+                }
+
+                
+                if(tokens.getLast().getType() == Token.Type.INDENT || tokens.getLast().getType() == Token.Type.NEWLINE) {
+                    counter++;
+                    position.add(1);
+
+                    List<Token> indentions = checkIndentLevel(position);
+                    if (indentions != null) {
+                        tokens.addAll(indentions);
+                    }
                 }
             } 
             
@@ -233,33 +255,21 @@ public class Lexer {
                     position.newLine();
                     counter++;
                     
-                    System.out.println("Checking indent level");
-                    int newIndentLevel = countIndent();
-                    if (newIndentLevel > indentLevel) {
-                        tokens.add(new Token(Token.Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
-                        position.add(newIndentLevel * 4);
-                        counter += newIndentLevel * 4;
-                        indentLevel = newIndentLevel;
-                    } else if (newIndentLevel < indentLevel) {
-                        while (newIndentLevel < indentLevel) {
-                            tokens.add(new Token(Token.Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
-                            position.add(newIndentLevel * 4);
-                            counter += newIndentLevel * 4;
-                            indentLevel--;
-                        }
+                    List<Token> indentions = checkIndentLevel(position);
+                    if (indentions != null) {
+                        tokens.addAll(indentions);
                     }
                 } else {
                     position.add(1);
                     counter++;
                 }
             } else {
-                // Invalid character
-                throw new IllegalArgumentException("Invalid character: " + currentChar + new Position(position.getLine(), position.getColumn()));
+                System.err.println("Lexer Error: Invalid character found: " + currentChar + new Position(position.getLine(), position.getColumn()));
+                System.exit(1);
             }
         }
 
-
-
+        tokens.add(new Token(Token.Type.EOF, "", new Position(position.getLine(), position.getColumn())));
         return tokens;
     }
 
@@ -412,19 +422,27 @@ public class Lexer {
                 position.add(1);
                 counter++;
 
-                while (input.charAt(counter) != ']') {
+                
 
-                    // Skip trailing whitespace
-                    while (counter < input.length() && input.charAt(counter) == ' ') {
-                        position.add(1);
-                        counter++;
-                    }
-
+                if(input.charAt(counter) == ']' && input.charAt(counter + 1) == ']') {
                     tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter++;
-                }
+                } else {
+                    while (input.charAt(counter) != ']') {
 
+                        // Skip trailing whitespace
+                        while (counter < input.length() && input.charAt(counter) == ' ') {
+                            position.add(1);
+                            counter++;
+                        }
+    
+                        tokens.add(new Token(Token.Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)), new Position(position.getLine(), position.getColumn())));
+                        position.add(1);
+                        counter++;
+                    }
+                }
+                
                 tokens.add(new Token(Token.Type.ESCAPE_CODE_CLOSE, "]", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
@@ -483,5 +501,27 @@ public class Lexer {
             temp++;
         }
         return indent / 4; // Divide by 4 to count four spaces as one level of indentation
+    }
+
+    private List<Token> checkIndentLevel(Position position) {
+        int newIndentLevel = countIndent();
+        List<Token> tokens = new ArrayList<>();
+    
+        if (newIndentLevel > indentLevel) {
+            for (int i = 0; i < newIndentLevel - indentLevel; i++) {
+                tokens.add(new Token(Token.Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
+                position.add(4);
+                counter += 4;
+            }
+            indentLevel = newIndentLevel;
+    
+        } else if (newIndentLevel < indentLevel) {
+            while (newIndentLevel < indentLevel) {
+                tokens.add(new Token(Token.Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
+                indentLevel--;
+            }
+        }
+    
+        return tokens;
     }
 }

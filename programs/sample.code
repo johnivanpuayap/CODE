@@ -1,4 +1,3 @@
-TEST
 BEGIN CODE
     INT x, y, z=5 
     CHAR a_1='n' 

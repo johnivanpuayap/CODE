@@ -40,9 +40,9 @@ The interpreter works in several stages:
 Increment 1
 - [X] Basic Program Structure (BEGIN CODE END CODE block)
     - [X] Check for Indentation
-    - [ ] Variable Declaration should only happen after begin code
-    - [ ] Executable Code must only happen after the declaration
-    - [ ] Only one Statement per line
+    - [X] Variable Declaration should only happen after begin code
+    - [X] Executable Code must only happen after the declaration
+    - [X] Only one Statement per line
 - [X] Comments
     - [X] Comments Ignore Indentation
     - [ ] Comments Can Be Put Anywhere, Create a function to ignore comments
@@ -62,8 +62,8 @@ Increment 1
 
 
 Increment 2
-- [ ] concatenation (&)
-- [ ] next line ($)
+- [X] concatenation (&)
+- [X] next line ($)
 - [X] escape code
 - [X] SCAN function
 - [X] arithmetic operation
@@ -71,16 +71,22 @@ Increment 2
     - [X] Parentheses
 - [X] Assignment Statements
     - [X] Single Assignment
-    - [ ] Multiple Assignment like x=y=z or x=y=5
+        - [X] Check if assignment is valid
+        - [X] If assignee is variable, check if it exists
+    - [X] Multiple Assignment like x=y=z or x=y=5
+        - [X] Check if all the data types are the same
+        - [X] Check if all the identifiers exist
+        - [X] Check if the last one is initialized
+
 
 Increment 3
 - [ ] Logical Operators
     - [ ] AND
     - [ ] OR
     - [ ] NOT
-- [ ] Unary Operators
-    - [ ] - Negatie
-    - [ ] + Positive
+- [X] Unary Operators
+    - [X] - Negative
+    - [X] + Positive
 
 Increment 4
 - [ ] IF-ELSE Selection
@@ -90,5 +96,5 @@ Increment 5
 - [ ] LOOPS
 
 Final Presentation
+- [ ] Fix Semantics Analyzer
 - [ ] Improve Error Handling
-

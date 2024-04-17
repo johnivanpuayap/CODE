@@ -4,7 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import src.Interpreter;
-import src.analyzer.SemanticsAnalyzer;
+// import src.analyzer.SemanticsAnalyzer;
 import src.lexer.Lexer;
 import src.nodes.ProgramNode;
 import src.parser.Parser;
@@ -43,8 +43,8 @@ public class App {
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
 
-            SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
-            analyzer.analyze();
+            // SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
+            // analyzer.analyze();
 
             Interpreter interpreter = new Interpreter(programNode);
             interpreter.interpret();
