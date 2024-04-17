@@ -44,8 +44,8 @@ public class App {
             ProgramNode programNode = parser.parse();
             System.out.println(programNode);
 
-            // Interpreter interpreter = new Interpreter(programNode);
-            // interpreter.interpret();
+            Interpreter interpreter = new Interpreter(programNode);
+            interpreter.interpret();
 
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());

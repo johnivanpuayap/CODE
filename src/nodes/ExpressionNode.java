@@ -16,7 +16,7 @@ public abstract class ExpressionNode{
         private final ExpressionNode left;
         private final ExpressionNode right;
 
-        public Binary(ExpressionNode left, Token operator, ExpressionNode right) {
+        public Binary(Token operator, ExpressionNode left, ExpressionNode right) {
             this.operator = operator;
             this.left = left;
             this.right = right;
@@ -36,13 +36,16 @@ public abstract class ExpressionNode{
 
         @Override
         public String toString() {
-            return "(" + left + " " + operator.getValue() + " " + right + ")";
+            return "(" + left.toString() + operator.getValue() + right.toString() + ")";
         }
+
 
         @Override
         public int countTokens() {
             return left.countTokens() + right.countTokens() + 1; // Add 1 for the operator token
         }
+
+    
 
         @Override
         public List<Token> getTokens() {
