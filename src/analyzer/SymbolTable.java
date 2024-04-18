@@ -11,11 +11,13 @@ class SymbolTable {
     }
 
     // Insert a symbol into the symbol table
-    public void insert(Symbol symbol) throws Exception {
+    public boolean insert(Symbol symbol) {
         if (symbols.containsKey(symbol.name)) {
-            throw new Exception("Symbol '" + symbol.name + "' already declared in this scope");
+            return false;
         }
+        
         symbols.put(symbol.name, symbol);
+        return true;
     }
 
     // Lookup a symbol in the symbol table

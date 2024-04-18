@@ -399,13 +399,15 @@ public class Parser {
     }
 
     private StatementNode parseScanStatement() {
+        Token scanToken = previous();
+
         consume(Type.COLON, "Expected a COLON Token"); // Consume the colon ":" after SCAN
 
-        List<String> identifiers = new ArrayList<>();
+        List<Token> identifiers = new ArrayList<>();
 
         // Parse the list of identifiers after the colon
         while (match(Type.IDENTIFIER)) {
-            identifiers.add(previous().getLexeme());
+            identifiers.add(previous());
             // Check for comma to parse multiple identifiers
             if (!match(Type.COMMA)) {
                 break; // Exit loop if no comma found
@@ -413,7 +415,7 @@ public class Parser {
         }
 
         // Create a SCAN statement node with the list of identifiers
-        return new ScanNode(identifiers);
+        return new ScanNode(identifiers, scanToken.getPosition());
     }
 
     private StatementNode parseIfStatement() {

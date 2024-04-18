@@ -1,11 +1,12 @@
 package src.analyzer;
 
 import src.nodes.*;
+import src.utils.Position;
+import src.utils.Token;
 
+import java.util.List;
 
 // Check if the variable was declared and initialized before using it
-
-
 
 class SemanticAnalyzer {
     private SymbolTable symbolTable;
@@ -18,13 +19,13 @@ class SemanticAnalyzer {
     public void analyze(ProgramNode programNode) {
 
         for (VariableDeclarationNode declaration: programNode.getDeclarations()) {
-
-            try {
-                symbolTable.insert(new Symbol(declaration.getType(), declaration.getName(), declaration.getValue());
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
+            
+            Symbol symbol = new Symbol(declaration.getType(), declaration.getName(), declaration.getValue());
+            if(!symbolTable.insert(symbol)) {
+                error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
             }
         }
+
         for (StatementNode statement : programNode.getStatements()) {
             try {
                 visit(statement);
@@ -32,44 +33,81 @@ class SemanticAnalyzer {
                 System.err.println(e.getMessage());
             }
         }
-
-        visit(programNode);
     }
 
     // Visit an AST node
-    private void visit(ProgramNode programNode) throws Exception {
-        if (node instanceof VariableDeclarationNode) {
+    private void visit(StatementNode node) {
+        if (node instanceof AssignmentNode) {
             visitAssignmentNode((AssignmentNode) node);
-        } else if (node instanceof State,pdeNode) {
-            visitVariableNode((VariableDeclarationNode) node);
+        } else if (node instanceof DisplayNode) {
+            visitDisplayNode((DisplayNode) node);
+        } else if (node instanceof ScanNode) {
+            visitScanNode((ScanNode) node);
         }
     }
 
     // Visit an assignment node
-    private void visitAssignmentNode(AssignmentNode node) throws Exception {
-        Symbol symbol = symbolTable.lookup(node.variable);
-        if (symbol == null) {
-            throw new Exception("Variable '" + node.variable + "' is not declared");
-        }
-        symbol.setValue(evaluate(node.value));
+    private void visitAssignmentNode(AssignmentNode node) {
+
+        Symbol symbol = symbolTable.lookup(node.getVariable().getName());
+        
+        visitVariableNode(node.getVariable());
+
+        symbol.setValue(evaluate(node.getExpression()));
     }
 
     // Visit a variable node
-    private void visitVariableNode(VariableNode node) throws Exception {
-        Symbol symbol = symbolTable.lookup(node.name);
+    private void visitVariableNode(VariableNode node) {
+
+        String name = node.getName();
+
+        Symbol symbol = symbolTable.lookup(name);
         if (symbol == null) {
-            throw new Exception("Variable '" + node.name + "' is not declared");
+            error("Variable '" + name + "' is not declared", node.getPosition());
         }
         if (!symbol.isInitialized()) {
-            throw new Exception("Variable '" + node.name + "' is not initialized");
+            error("Variable '" + name + "' is not initialized", node.getPosition());
         }
-        // Additional checks and actions can be performed here
+    }
+
+    // Visit a display node
+    private void visitDisplayNode(DisplayNode node) {
+        List<Token> arguments = node.getArguments();
+
+        for (Token argument : arguments) {
+
+            Symbol symbol = symbolTable.lookup(argument.getLexeme());
+            if (symbol == null) {
+                error("Variable '" + argument.getLexeme() + "' is not declared", node.getPosition());
+            }
+            if (!symbol.isInitialized()) {
+                error("Variable '" + argument.getLexeme() + "' is not initialized", node.getPosition());
+            }
+        }
+    }
+
+    // Visit a scan node
+    private void visitScanNode(ScanNode node) {
+        
+        for (Token identifier : node.getIdentifiers()) {
+            Symbol symbol = symbolTable.lookup(identifier.getLexeme());
+            
+            if (symbol == null) {
+                error("Variable '" + identifier + "' is not declared", node.getPosition());
+            }
+        }
     }
 
     // Evaluate the value of an expression node
-    private Object evaluate(ExpressionNode node) {
+    private String evaluate(ExpressionNode node) {
         // Dummy implementation for demonstration purposes
         // You would implement actual evaluation logic based on the AST structure
         return null;
+    }
+
+
+    // Report an error
+    private void error(String message, Position position) {
+        System.err.println("Error at " + position + ": " + message);
     }
 }

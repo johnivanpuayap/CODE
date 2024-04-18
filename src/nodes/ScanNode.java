@@ -1,16 +1,18 @@
 package src.nodes;
 
 import java.util.List;
+import src.utils.Position;
+import src.utils.Token;
 
 public class ScanNode extends StatementNode {
-    private List<String> identifiers;
+    private List<Token> identifiers;
 
-    public ScanNode(List<String> identifiers) {
-        super(null);
+    public ScanNode(List<Token> identifiers, Position position) {
+        super(position);
         this.identifiers = identifiers;
     }
 
-    public List<String> getIdentifiers() {
+    public List<Token> getIdentifiers() {
         return identifiers;
     }
 
