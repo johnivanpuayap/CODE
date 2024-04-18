@@ -56,43 +56,53 @@ Increment 1
         - [ ] Check if the it only uses 4 bytes
     - [X] CHAR
     - [X] BOOLEAN
-- [X] Reserved words
+- [ ] Reserved words
     - [X] Check for variable names that are only similar in uppercase
+    - [ ] Check for Usage of Reserved Words in Variable Declaration
+    - [ ] Check for Usage of Reserved Words in Statements
 - [ ] DISPLAY function
-
-
-Increment 2
-- [X] concatenation (&)
-- [X] next line ($)
-- [X] escape code
+    - [X] concatenation (&)
+    - [X] next line ($)
+    - [X] escape code
 - [X] SCAN function
-- [X] arithmetic operation
+
+- [X] Arithmetic operation
     - [X] Operator Precendence
     - [X] Parentheses
+    - [ ] Unary Operation
+    - [ ] Modulo Operation
 - [X] Assignment Statements
     - [X] Single Assignment
         - [X] Check if assignment is valid
         - [ ] Check if the all the variable is defined
         - [X] If assignee is variable, check if it is initialized
-
     - [X] Multiple Assignment like x=y=z or x=y=5
-        - [X] Check if all the data types are the same
         - [X] Check if all the identifiers exist
         - [X] Check if the last one is initialized
-
-Increment 3
+        - [ ] Check if all the data types are the same as the last one
+- [ ] Comparison Operators
+    - [ ] Greater than >, Lesser than <
+    - [ ] Greater than or Equal to >=, Less than or Equal to <=
+    - [ ] Equal ==, Not Equal <>
 - [ ] Logical Operators
     - [ ] AND
     - [ ] OR
     - [ ] NOT
+
 - [X] Unary Operators
     - [X] - Negative
     - [X] + Positive
+    - [ ] Multiple Unary Operators
 
-Increment 4
-- [ ] IF-ELSE Selection
-    
-- [ ] IF-ELSE with multiple alternatives
+- [ ] If-Else
+    - [ ] Tokenize 
+    - [ ] Check Syntax
+
+- [ ] If-Else With Else IF
+
+- [ ] If-Else with Mutlitple Else If
+- [ ] Check for Indention Errors
+
 
 Increment 5
 - [ ] LOOPS

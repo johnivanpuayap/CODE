@@ -50,7 +50,13 @@ public class Lexer {
                 tokens.add(new Token(Type.OR, "OR", new Position(position.getLine(), position.getColumn())));
                 position.add("OR".length());
                 counter += "OR".length();
-            } else if(input.startsWith("IF", counter)) {
+            } else if(input.startsWith("NOT", counter)) {
+                tokens.add(new Token(Type.OR, "NOT", new Position(position.getLine(), position.getColumn())));
+                position.add("NOT".length());
+                counter += "NOT".length();
+            }
+            
+            else if(input.startsWith("IF", counter)) {
                 tokens.add(new Token(Type.IF, "IF", new Position(position.getLine(), position.getColumn())));
                 position.add("IF".length());
                 counter += "IF".length();
@@ -70,7 +76,10 @@ public class Lexer {
                 tokens.add(new Token(Type.END_IF, "END IF", new Position(position.getLine(), position.getColumn())));
                 position.add("END IF".length());
                 counter += "END IF".length();
-            } else if(input.startsWith("WHILE", counter)) {
+            } 
+            
+            
+            else if(input.startsWith("WHILE", counter)) {
                 tokens.add(new Token(Type.WHILE, "WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("WHILE".length());
                 counter += "WHILE".length();
@@ -82,15 +91,13 @@ public class Lexer {
                 tokens.add(new Token(Type.END_WHILE, "END WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("END WHILE".length());
                 counter += "END WHILE".length();
-            } 
+            }
             
             else if (Character.isLetter(currentChar) || currentChar == '_') {
                 tokens.add(tokenizeIdentifier());
             }else if (Character.isDigit(currentChar)) {
                 tokens.add(tokenizeLiteral());   
-            }
-            
-            else if (currentChar == '=') {
+            } else if (currentChar == '=') {
                 if (input.charAt(counter + 1) == '=') {
                     tokens.add(new Token(Type.EQUAL, "==", new Position(position.getLine(), position.getColumn())));
                     position.add(2);
@@ -136,15 +143,14 @@ public class Lexer {
                 tokens.add(new Token(Type.ESCAPE_CODE_CLOSE, ")", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            }
-            
-            else if(currentChar == '+') {
+            } else if(currentChar == '+') {
                 Token latest_token = tokens.get(tokens.size() - 1);
                 if (
                     latest_token.getType() == Type.ADD || 
                     latest_token.getType() == Type.SUBTRACT || 
                     latest_token.getType() == Type.MULTIPLY ||
                     latest_token.getType() == Type.DIVIDE ||
+                    latest_token.getType() == Type.MODULO ||
                     latest_token.getType() == Type.GREATER ||
                     latest_token.getType() == Type.LESS ||
                     latest_token.getType() == Type.ASSIGNMENT ||
@@ -202,6 +208,10 @@ public class Lexer {
                 counter++;
             } else if(currentChar == '/') {
                 tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
+            } else if(currentChar == '%') {
+                tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
             } else if(currentChar == '>') {

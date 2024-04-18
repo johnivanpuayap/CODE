@@ -110,12 +110,12 @@ public class Parser {
             
    
             if (match(Type.IDENTIFIER)) {
-                if( 
-                    peek().getType() == Type.ASSIGNMENT && 
+                if(peek().getType() == Type.ASSIGNMENT && 
                     (peekNext(2).getType() == Type.ADD || 
                     peekNext(2).getType() == Type.SUBTRACT || 
                     peekNext(2).getType() == Type.MULTIPLY || 
-                    peekNext(2).getType() == Type.DIVIDE)){
+                    peekNext(2).getType() == Type.DIVIDE || 
+                    peekNext(2).getType() == Type.MODULO)){
 
                     StatementNode statement = parseArithmeticStatement();
                     statements.add(statement);
@@ -327,7 +327,7 @@ public class Parser {
     
     private ExpressionNode parseMultiplicationDivision() {
         ExpressionNode left = parsePrimary();
-        while (match(Type.MULTIPLY) || match(Type.DIVIDE)) {
+        while (match(Type.MULTIPLY) || match(Type.DIVIDE) || match(Type.MODULO)) {
             Token operatorToken = previous();
             ExpressionNode right = parsePrimary();
             left = new BinaryNode(left, operatorToken, right);
