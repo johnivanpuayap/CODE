@@ -1,21 +1,17 @@
 package src.nodes;
 import java.util.List;
-import src.utils.Position;
+import src.utils.Token;
 
 public class DisplayNode extends StatementNode {
-    private List<ExpressionNode> expressions;
+    private List<Token> arguments;
 
-    public DisplayNode(List<ExpressionNode> expressions, Position position) {
-        super(position);
-        this.expressions = expressions;
+    public DisplayNode(List<Token> arguments) {
+        super(arguments.getFirst().getPosition());
+        this.arguments = arguments;
     }
 
-    public List<ExpressionNode> getExpressions() {
-        return expressions;
-    }
-
-    public Position getPosition() {
-        return super.getPosition();
+    public List<Token> getArguments() {
+        return arguments;
     }
 
     @Override
@@ -24,10 +20,12 @@ public class DisplayNode extends StatementNode {
         sb.append("DisplayNode { expressions = [");
         
         // Append each expression
-        for (int i = 0; i < expressions.size(); i++) {
-            sb.append(expressions.get(i));
-            if (i < expressions.size() - 1) {
-                sb.append(" "); // Add a concatenation symbol if it's not the last expression
+        for (int i = 0; i < arguments.size(); i++) {
+            
+            sb.append(arguments.get(i));
+
+            if (i < arguments.size() - 1) {
+                sb.append("& "); // Add a concatenation symbol if it's not the last expression
             }
         }
         

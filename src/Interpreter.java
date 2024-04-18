@@ -9,13 +9,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Scanner;
 
-import src.nodes.AssignmentNode;
-import src.nodes.VariableDeclarationNode;
-import src.nodes.ProgramNode;
-import src.nodes.ScanNode;
-import src.nodes.StatementNode;
-import src.nodes.ExpressionNode;
-import src.nodes.DisplayNode;
+import src.nodes.*;
 import src.utils.Token;
 import src.utils.Type;
 import src.utils.Position;
@@ -53,14 +47,14 @@ public class Interpreter {
         if(statement instanceof AssignmentNode) {
             
             AssignmentNode assignment = (AssignmentNode) statement;
-            if (assignment.getExpression() instanceof ExpressionNode.Literal ||
-                assignment.getExpression() instanceof ExpressionNode.Unary) {
+            if (assignment.getExpression() instanceof LiteralNode ||
+                assignment.getExpression() instanceof UnaryNode) {
                 Variable var = variables.get(assignment.getVariable().getName());
                 
                 var.setValue(assignment.getExpression().toString());
-            } else if(assignment.getExpression() instanceof ExpressionNode.Variable) {
-                Variable var = variables.get(assignment.getVariable().getVariableName());
-                Variable var2 = variables.get(((ExpressionNode.Variable) assignment.getExpression()).getName().getValue());
+            } else if(assignment.getExpression() instanceof VariableNode) {
+                Variable var = variables.get(assignment.getVariable().getName());
+                Variable var2 = variables.get(((VariableNode) assignment.getExpression()).getName());
 
                 if (var2.getDataType() != var.getDataType()) {
                     error("Type mismatch", var2.position());
@@ -69,7 +63,7 @@ public class Interpreter {
                 var.setValue(var2.getValue());
             } else {
 
-                Variable var = variables.get(assignment.getVariable().getVariableName());
+                Variable var = variables.get(assignment.getVariable().getName());
                 double result = evaluateExpression((ExpressionNode) assignment.getExpression());
 
 
@@ -86,7 +80,7 @@ public class Interpreter {
                 
             }
         } else if(statement instanceof DisplayNode) {
-            interpretFunction((DisplayNode) statement);
+            interpretDisplay((DisplayNode) statement);
         } else if(statement instanceof ScanNode) {
             interpretScan((ScanNode) statement);
         }
@@ -202,40 +196,27 @@ public class Interpreter {
         }
     }
     
-    private void interpretFunction(DisplayNode function) {   
-        
-        if (function.getFunctionName() == "DISPLAY") {
-            for (Token node : function.getArguments()) {
-                if (node.getType() == Type.STRING_LITERAL) {
-                    System.out.print(node.getValue());
-                    continue;
-                }
-                if (node.getType() == Type.IDENTIFIER) {
-                    
-                    Variable var = variables.get(node.getValue());
-
-                    if(var == null) {
-                        error("Variable " + node.getValue() + " does not exist", node.getPosition());
-                    }
-
-                    String value = var.getValue();
-
-
-                    if(value == null) {
-                        error("Variable " + node.getValue() + " was used in DISPLAY but was not initialized", node.getPosition());
-                    }
-
-                    System.out.print(value);
-                    continue;
-                }
-                if (node.getType() == Type.SPECIAL_CHARACTER) {
-                    System.out.print(node.getValue());
-                }
+    private void interpretDisplay(DisplayNode display) {   
+                
+        for (Token token : display.getArguments()) {
+            if (token.getType() == Type.STRING_LITERAL) {
+                System.out.print(token.getLexeme());
+                continue;
             }
-        } else if (function.getFunctionName() == "SCAN") {
+            if (token.getType() == Type.IDENTIFIER) {
+                
+                Variable var = variables.get(token.getLexeme());
 
+                String value = var.getValue();
+
+                System.out.print(value);
+                continue;
+            }
+            if (token.getType() == Type.SPECIAL_CHARACTER) {
+                System.out.print(token.getLexeme());
+            }
         }
-            
+ 
     }
 
     private void interpretScan(ScanNode scanStatement) {
@@ -262,11 +243,11 @@ public class Interpreter {
             }
     
             for(VariableDeclarationNode declaration: declarations) {
-                if(declaration.getVariableName().equals(identifier)) {
-                    if(declaration.getDataType().equals(inputDataType)) {
+                if(declaration.getName().equals(identifier)) {
+                    if(declaration.getType().equals(inputDataType)) {
                         variables.get(identifier).setValue(input);
                     } else {
-                        error("Type mismatch. Assigning " + inputDataType + " to " + declaration.getDataType(), declaration.getPosition());
+                        error("Type mismatch. Assigning " + inputDataType + " to " + declaration.getType(), declaration.getPosition());
                     }
                 }
             

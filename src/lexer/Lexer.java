@@ -86,8 +86,8 @@ public class Lexer {
             
             else if (Character.isLetter(currentChar) || currentChar == '_') {
                 tokens.add(tokenizeIdentifier());
-            } else if (Character.isDigit(currentChar)) {
-                tokens.add(tokenizeNumber());   
+            }else if (Character.isDigit(currentChar)) {
+                tokens.add(tokenizeLiteral());   
             }
             
             else if (currentChar == '=') {
@@ -109,9 +109,9 @@ public class Lexer {
                 position.add(1);
                 counter++;
             } else if(currentChar == '\'') {
-                tokens.add(tokenizeCharLiteral());     
+                tokens.add(tokenizeLiteral());     
             } else if(currentChar == '\"') {
-                tokens.add(tokenizeBooleanLiteral());
+                tokens.add(tokenizeLiteral());
             } else if (currentChar == '&') {
                 tokens.add(new Token(Type.CONCATENATION, "$", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
@@ -296,96 +296,17 @@ public class Lexer {
         }
     }
 
-    private Token tokenizeNumber() {
-        StringBuilder number = new StringBuilder();
-        boolean hasDecimal = false;
-    
-        while (counter < input.length()) {
-            char currentChar = input.charAt(counter);
-            if (Character.isDigit(currentChar)) {
-                number.append(currentChar);
-                position.add(1);
-                counter++;
-            } else if (currentChar == '.' && !hasDecimal) {
-                number.append(currentChar);
-                position.add(1);
-                counter++;
-                hasDecimal = true;
-            } else {
-                break;
-            }
-        }
-    
-        return new Token(hasDecimal ? Type.FLOAT_LITERAL : Type.INT_LITERAL, number.toString(), new Position(position.getLine(), position.getColumn()));
-    }
+    private Token tokenizeLiteral() {
+        StringBuilder literal = new StringBuilder();
 
-    private Token tokenizeCharLiteral() {
-        StringBuilder charLiteral = new StringBuilder();
-    
-        // Store the opening single quote
-        charLiteral.append(input.charAt(counter));
-        position.add(1);
-        counter++;
-    
-        while (counter < input.length() && input.charAt(counter) != '\n') {
-            char currentChar = input.charAt(counter);
-            if (currentChar == '\'') {
-                // Store the closing single quote and create the CHAR_LITERAL token
-                charLiteral.append(currentChar);
-                position.add(1);
-                counter++;
-                return new Token(Type.CHAR_LITERAL, charLiteral.toString(), new Position(position.getLine(), position.getColumn()));
-            } else {
-                // Append regular characters
-                charLiteral.append(currentChar);
-                position.add(1);
-                counter++;
-            }
-        }
-    
-        // If no closing single quote is found, store characters until the next single quote or newline
-        while (counter < input.length() && input.charAt(counter) != '\'' && input.charAt(counter) != '\n') {
-            charLiteral.append(input.charAt(counter));
-            position.add(1);
+        while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != ' ' && input.charAt(counter) != ',') {
+            int currentChar = input.charAt(counter);
+            literal.append(currentChar);
             counter++;
+            position.add(1);
         }
-    
-        // Return the CHAR_LITERAL token with the stored characters
-        return new Token(Type.CHAR_LITERAL, charLiteral.toString(), new Position(position.getLine(), position.getColumn()));
-    }
 
-    private Token tokenizeBooleanLiteral() {
-        StringBuilder boolLiteral = new StringBuilder();
-    
-        boolLiteral.append(input.charAt(counter));
-        position.add(1);
-        counter++;
-    
-        while (counter < input.length() && input.charAt(counter) != '\n') {
-            char currentChar = input.charAt(counter);
-            if (currentChar == '\"') {
-                // Store the closing single quote and create the CHAR_LITERAL token
-                boolLiteral.append(currentChar);
-                position.add(1);
-                counter++;
-                return new Token(Type.BOOL_LITERAL, boolLiteral.toString(), new Position(position.getLine(), position.getColumn()));
-            } else {
-                // Append regular characters
-                boolLiteral.append(currentChar);
-                position.add(1);
-                counter++;
-            }
-        }
-    
-        // If no closing single quote is found, store characters until the next " or newline
-        while (counter < input.length() && input.charAt(counter) != '\'' && input.charAt(counter) != '\n') {
-            boolLiteral.append(input.charAt(counter));
-            position.add(1);
-            counter++;
-        }
-    
-        // Return the CHAR_LITERAL token with the stored characters
-        return new Token(Type.BOOL_LITERAL, boolLiteral.toString(), new Position(position.getLine(), position.getColumn()));
+        return new Token(Type.LITERAL, literal.toString(), new Position(position.getLine(), position.getColumn()));
     }
 
     private List<Token> tokenizeDisplay(List<Token> tokens) {

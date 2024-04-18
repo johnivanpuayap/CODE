@@ -8,19 +8,16 @@ public class VariableDeclarationNode extends ASTNode {
     private Token literal;
     private String value;
 
-    public VariableDeclarationNode(Token dataType, Token identifier, Token literal) {
-        super(dataType.getPosition());
-        this.dataType = dataType;
-        this.identifier = identifier;
-        this.literal = literal;
-        this.value = literal.getLexeme();
-    }
-
     public VariableDeclarationNode(Token dataType, Token identifier) {
         super(dataType.getPosition());
         this.dataType = dataType;
         this.identifier = identifier;
-        this.literal = null;
+    }
+
+    public VariableDeclarationNode(Token dataType, Token identifier, Token literal) {
+        this(dataType, identifier);
+        this.literal = literal;
+        this.value = literal.getLexeme();
     }
 
     // Getters for data type, variable name, and value

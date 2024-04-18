@@ -27,12 +27,7 @@ public class Token {
     @Override
     public String toString() {
         if(
-            type == Type.CHAR_LITERAL || 
-            type == Type.INT_LITERAL || 
-            type == Type.FLOAT_LITERAL || 
-            type == Type.BOOL_LITERAL || 
-            type == Type.STRING_LITERAL ||
-            type == Type.SPECIAL_CHARACTER) {
+            type == Type.LITERAL || type == Type.SPECIAL_CHARACTER) {
             return "<" + type + ", " + "Value: "  + lexeme + ">";   
         } else if(type == Type.IDENTIFIER) {
             return "<" + type + ", " + "Name: "  + lexeme + "> ";

@@ -15,8 +15,8 @@ public class VariableNode extends ExpressionNode {
         tokens.add(name);
     }
 
-    public Token getName() {
-        return name;
+    public String getName() {
+        return name.getLexeme();
     }
 
     @Override

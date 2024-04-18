@@ -2,21 +2,23 @@ package src.analyzer;
 
 // Represents a symbol in the symbol table
 class Symbol {
-    String name;
+    String identifier;
     String type;
-    Object value; // Value of the symbol
+    String value;
     boolean initialized; // Flag to track if the symbol is initialized
 
-    public Symbol(String name, String type) {
-        this.name = name;
+    public Symbol(String type, String identifier) {
+        this.identifier = identifier;
         this.type = type;
         this.initialized = false; // Initialize as not initialized
     }
 
-    public void setValue(Object value) {
+    public Symbol(String type, String identifier, String value) {
+        this(type, identifier);
         this.value = value;
-        this.initialized = true; // Mark as initialized when assigning a value
+        this.initialized = true; // Initialize as initialized
     }
+
 
     public boolean isInitialized() {
         return initialized;
