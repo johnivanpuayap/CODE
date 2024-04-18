@@ -1,16 +1,12 @@
 package src.parser;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
+import java.util.Set;
+import java.util.HashSet;
+
 import src.utils.Token;
-import src.nodes.ProgramNode;
-import src.nodes.VariableDeclarationNode;
-import src.nodes.StatementNode;
-import src.nodes.AssignmentStatementNode;
-import src.nodes.VariableNode;
-import src.nodes.ExpressionNode;
-import src.nodes.FunctionCallNode;
-import src.nodes.ScanStatementNode;
+import src.utils.Type;
+import src.nodes.*;
 
 public class Parser {
     private final List<Token> tokens;
@@ -30,26 +26,26 @@ public class Parser {
     }
 
     private ProgramNode parseProgram() {
-        if(!match(Token.Type.BEGIN_CODE)) {
+        if(!match(Type.BEGIN_CODE)) {
             error("Expected BEGIN CODE", peek());
         }
 
-        if(!match(Token.Type.NEWLINE)) {
+        if(!match(Type.NEWLINE)) {
             error("EWLINE AFTER BEGIN CODE", peek());
         }
 
-        if(!match(Token.Type.INDENT)) {
+        if(!match(Type.INDENT)) {
             error("Expected INDENTION AFTER BEGIN CODE", peek());
         }
 
         parseDeclaration();
 
-        if(!match(Token.Type.NEWLINE)) {
+        if(!match(Type.NEWLINE)) {
             error("Expected NEWLINE AFTER END CODE", peek());
         }
 
-        while(!match(Token.Type.EOF)) {
-            if(!match(Token.Type.NEWLINE)) {
+        while(!match(Type.EOF)) {
+            if(!match(Type.NEWLINE)) {
                 error("Code should be enclosed within 'BEGIN CODE' and 'END CODE' markers. Found code outside this range.", peek());
             }
         }
@@ -63,11 +59,11 @@ public class Parser {
 
 
     private void parseDeclaration() {
-        while (!match(Token.Type.EOF)) {
-            if (match(Token.Type.INT) || match(Token.Type.CHAR) || match(Token.Type.FLOAT) || match(Token.Type.BOOL)) {
+        while (!match(Type.EOF)) {
+            if (match(Type.INT) || match(Type.CHAR) || match(Type.FLOAT) || match(Type.BOOL)) {
                 declarations.addAll(parseVariableDeclaration());
 
-                if (!match(Token.Type.NEWLINE)) {
+                if (!match(Type.NEWLINE)) {
                     error("Expected NEWLINE", peek());
                 }
 
@@ -83,12 +79,12 @@ public class Parser {
     }
 
     private List<VariableDeclarationNode> parseVariableDeclaration() {
-        Token.Type type = previous().getType();
+        Token dataType = previous();
         List<VariableDeclarationNode> variables = new ArrayList<>();
 
         do {
-            Token identifier = consume(Token.Type.IDENTIFIER, "Expected identifier");
-            String variableName = identifier.getValue();
+            Token identifier = consume(Type.IDENTIFIER, "Expected identifier");
+            String variableName = identifier.getLexeme();
 
             if (declaredVariableNames.contains(variableName)) {
                 error("Variable " + variableName + " is already declared" , identifier);
@@ -96,73 +92,46 @@ public class Parser {
 
             declaredVariableNames.add(variableName);
             
-            switch(type) {
-                case Token.Type.INT:
-                    if (match(Token.Type.ASSIGNMENT)) {
-                        Token value = consume(Token.Type.INT_LITERAL, "Expected INT value");
-                        variables.add(new VariableDeclarationNode("INT", identifier.getValue(), value.getValue(), identifier.getPosition()));
-                    } else {
-                        variables.add(new VariableDeclarationNode("INT", identifier.getValue(), identifier.getPosition()));
-                    }
-                    break;
-                case Token.Type.CHAR:
-                    if (match(Token.Type.ASSIGNMENT)) {
-                        Token value = consume(Token.Type.CHAR_LITERAL, "Expected CHAR value");
-                        variables.add(new VariableDeclarationNode("CHAR", identifier.getValue(), value.getValue(), identifier.getPosition()));
-                    } else {
-                        variables.add(new VariableDeclarationNode("CHAR", identifier.getValue(), identifier.getPosition()));
-                    }
-                    break;
-                case Token.Type.FLOAT:
-                    if(match(Token.Type.ASSIGNMENT)) {
-                        Token value = consume(Token.Type.FLOAT_LITERAL, "Expected FLOAT value");
-                        variables.add(new VariableDeclarationNode("FLOAT", identifier.getValue(), value.getValue(), identifier.getPosition()));
-                    } else {
-                        variables.add(new VariableDeclarationNode("FLOAT", identifier.getValue(), identifier.getPosition()));
-                    } 
-                    break;
-                case Token.Type.BOOL:
-                    if(match(Token.Type.ASSIGNMENT)) {
-                        Token value = consume(Token.Type.BOOL_LITERAL, "Expected BOOL value");
-                        variables.add(new VariableDeclarationNode("BOOL", identifier.getValue(), value.getValue(), identifier.getPosition()));
-                    } else {
-                        variables.add(new VariableDeclarationNode("BOOL", identifier.getValue(), identifier.getPosition()));
-                    }
-                    break;
-                default:
-                    error("Invalid Data Type", peek());
+            
+            if (match(Type.ASSIGNMENT)) {
+                Token literal = consume(Type.LITERAL, "Expected a Literal");
+                variables.add(new VariableDeclarationNode(dataType, identifier, literal));
+            } else {
+                variables.add(new VariableDeclarationNode(dataType, identifier));
             }
-        } while (match(Token.Type.COMMA));
+
+        } while (match(Type.COMMA));
         
         return variables;
     }
 
     private void parseStatements() {
-        while (!match(Token.Type.EOF) && !(currentTokenIndex >= tokens.size())) {
-
-            if (match(Token.Type.IDENTIFIER)) {
+        while (!match(Type.EOF) && !(currentTokenIndex >= tokens.size())) {
+            
+   
+            if (match(Type.IDENTIFIER)) {
                 if( 
-                    peek().getType() == Token.Type.ASSIGNMENT && 
-                    (peekNext(2).getType() == Token.Type.ADD || 
-                    peekNext(2).getType() == Token.Type.SUBTRACT || 
-                    peekNext(2).getType() == Token.Type.MULTIPLY || 
-                    peekNext(2).getType() == Token.Type.DIVIDE)){
+                    peek().getType() == Type.ASSIGNMENT && 
+                    (peekNext(2).getType() == Type.ADD || 
+                    peekNext(2).getType() == Type.SUBTRACT || 
+                    peekNext(2).getType() == Type.MULTIPLY || 
+                    peekNext(2).getType() == Type.DIVIDE)){
 
                     StatementNode statement = parseArithmeticStatement();
                     statements.add(statement);
                     
-                    if (!match(Token.Type.NEWLINE)) {
+                    if (!match(Type.NEWLINE)) {
                         error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                     }
 
                 }
-                else if(peek().getType() == Token.Type.ASSIGNMENT && 
-                        (peekNext(1).getType() == Token.Type.LEFT_PARENTHESIS)){
+                else if(peek().getType() == Type.ASSIGNMENT && 
+                        (peekNext(1).getType() == Type.LEFT_PARENTHESIS)){
                     
                     StatementNode statement = parseArithmeticStatement();
                     statements.add(statement);
 
-                    if (!match(Token.Type.NEWLINE)) {
+                    if (!match(Type.NEWLINE)) {
                         error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                     }
 
@@ -171,7 +140,7 @@ public class Parser {
                     List<StatementNode> statement = parseAssignmentStatement();
                     statements.addAll(statement);
             
-                    if (!match(Token.Type.NEWLINE)) {
+                    if (!match(Type.NEWLINE)) {
                         error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                     }
                 }
@@ -179,63 +148,67 @@ public class Parser {
                 continue;
             } 
             
-            if(match(Token.Type.DISPLAY)) {
+            if(match(Type.DISPLAY)) {
                 statements.add(parseDisplayStatement());
 
+                if (!match(Type.NEWLINE)) {
+                    error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
+                }
+
                 continue;
             }
             
-            if(match(Token.Type.SCAN)) {
+            if(match(Type.SCAN)) {
                 statements.add(parseScanStatement());
 
-                if (!match(Token.Type.NEWLINE)) {
+                if (!match(Type.NEWLINE)) {
                     error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                 }
 
                 continue;
             }
             
-            if(match(Token.Type.IF)) {
+            if(match(Type.IF)) {
                 statements.add(parseIfStatement());
 
-                if (!match(Token.Type.NEWLINE)) {
+                if (!match(Type.NEWLINE)) {
                     error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                 }
 
                 continue;
             }
             
-            if(match(Token.Type.WHILE)) {
+            if(match(Type.WHILE)) {
                 statements.add(parseWhileStatement());
 
-                if (!match(Token.Type.NEWLINE)) {
+                if (!match(Type.NEWLINE)) {
                     error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
                 }
 
                 continue;
             }
 
-            if(match(Token.Type.DEDENT)){
-                if(match(Token.Type.END_CODE)) {
+            if(match(Type.DEDENT)){
+                if(match(Type.END_CODE)) {
                     break;  
                 } else {
                     error("Expected END CODE after DEDENTION", peek());
                 }
             }
 
-            if(match(Token.Type.INT) || match(Token.Type.CHAR) || match(Token.Type.FLOAT) || match(Token.Type.BOOL)) {
+            if(match(Type.INT) || match(Type.CHAR) || match(Type.FLOAT) || match(Type.BOOL)) {
                 error("Found a variable declaration after the executable code", previous());
             }
             
-            if(match(Token.Type.ELSE_IF)){
+            if(match(Type.ELSE_IF)){
                 error("Found an ELSE_IF block without an IF block", previous());
             }
         
-            if(match(Token.Type.ELSE)) {
+            if(match(Type.ELSE)) {
                 error("Found an ELSE_IF block without an IF block", previous());
             }
 
-            if(match(Token.Type.END_CODE)) {
+            if(match(Type.END_CODE)) {
                 error("Unexpected END CODE without DEDENTION", peek());
             }
         }
@@ -245,196 +218,64 @@ public class Parser {
         List<StatementNode> assignments = new ArrayList<>();
             
         // Parse assignment statement
-        Token variableToken = previous();
-        Token valueToken = tokens.get(currentTokenIndex + 1);
+        Token identifierToken = previous();
+        VariableNode identifier = new VariableNode(identifierToken);
 
-        VariableNode variable = new VariableNode(variableToken, valueToken.getPosition());
-        ExpressionNode rightExpression = null;
-;
-
-        if(peek().getType() != Token.Type.ASSIGNMENT && tokens.get(currentTokenIndex + 1).getType() == Token.Type.IDENTIFIER) {
-            rightExpression = new ExpressionNode.Variable(valueToken);
-
-            boolean isDeclared = false;
-            
-            for (VariableDeclarationNode declaration: declarations) {
-                if(declaration.getVariableName().equals(valueToken.getValue())) {
-                    isDeclared = true;
-                } 
-            }
-
-            if(variableToken != valueToken) {
-                error("Type Mismatch", valueToken);
-            }
-
-            // Variable does not exist
-            if(!isDeclared) {
-                error("Variable not declared", valueToken);
-            }
-            
-            assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
-            currentTokenIndex += 2; // Skip over the assignment and the right side
-            return assignments;
-
-        } else if(peek().getType() != Token.Type.ASSIGNMENT && tokens.get(currentTokenIndex + 1).getType() == Token.Type.INT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.FLOAT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.BOOL_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Token.Type.CHAR_LITERAL) {
-
-            rightExpression = new ExpressionNode.Literal(valueToken);
-            
-            String variableDataType = null;
-            for (VariableDeclarationNode declaration: declarations) {
-                if(declaration.getVariableName().equals(variableToken.getValue())) {
-                    variableDataType = declaration.getDataType();
-                } 
-            }
-
-            switch (variableDataType) {
-                case "INT":
-                case "FLOAT":
-                    if(!(valueToken.getType() == Token.Type.INT_LITERAL || valueToken.getType() == Token.Type.FLOAT_LITERAL)) {
-                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
-                    }
-                    break;
-                case "BOOL":
-                    if(!(valueToken.getType() == Token.Type.BOOL_LITERAL)) {
-                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
-                    }
-                    break;
-                case "CHAR":
-                    if(!(valueToken.getType() == Token.Type.CHAR_LITERAL)) {
-                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
-                    }
-                    break;
-                default:
-                    error("Data Type Invalid", valueToken);
-            }
-
-            
-            assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
-            currentTokenIndex += 2; // Skip over the assignment and the right side
-            return assignments;
+        if(!match(Type.ASSIGNMENT)) {
+            error("Expected an assignment token.", peek());
         }
 
+        if(match(Type.IDENTIFIER) && peek().getType() != Type.ASSIGNMENT) {
+            
+            assignments.add(new AssignmentNode(identifier, new VariableNode(previous())));
+            return assignments;
+      
+        } else if (match(Type.LITERAL) && peek().getType() != Type.ASSIGNMENT) {
+            
+            assignments.add(new AssignmentNode(identifier, new LiteralNode(previous())));
+            return assignments;
+        
+        } else {
+            error("Assignment Operation Error. Expected a LITERAL or an IDENTIFIER after an assigment token.", identifierToken);
+        }
+        
         List<Token> variableTokens = new ArrayList<>();
-        variableTokens.add(variableToken);
+        variableTokens.add(identifierToken);
 
-        while(match(Token.Type.ASSIGNMENT)) {
+        while(match(Type.ASSIGNMENT)) {
 
-            if(peek().getType() == Token.Type.IDENTIFIER) {
+            if(match(Type.IDENTIFIER)) {
 
-                if(peekNext(1).getType() == Token.Type.ASSIGNMENT) {
+                Token var = previous();
+
+                if(match(Type.ASSIGNMENT)) {
                     
-                    Token var = peek();
-
-                    boolean isDeclared = false;
-
-                    for (VariableDeclarationNode declaration: declarations) {
-                        if(declaration.getVariableName().equals(var.getValue())) {
-                            isDeclared = true;
-                        }   
-                    }
-
-                    // Variable does not exist
-                    if(!isDeclared) {
-                        error("Variable not declared", var);
-                    }
-
-                    variableTokens.add(peek());
+                    variableTokens.add(var);
                 
-                    currentTokenIndex++;
-
                 } else {
 
-
-                    // Here the variable should have an initialization since it is the end
-                    Token var = peek();
-                    boolean isDeclared = false;
-
-
-                    for (VariableDeclarationNode declaration: declarations) {
-                        if(declaration.getVariableName().equals(var.getValue())) {
-                            isDeclared = true;
-                            if(declaration.getValue() == null) {
-                                error("Variable not initialized", var);
-                            }
-                        }   
-                    }
-
-                    // Variable does not exist
-                    if(!isDeclared) {
-                        error("Variable not declared", peek());
-                    }
-
-                    valueToken = consume(Token.Type.IDENTIFIER, "Expected identifier");
-
                     for (Token token: variableTokens) {
-                        System.out.println("Variable: " + token.getValue());
+                        System.out.println("Variable: " + token.getLexeme());
 
-                        VariableNode v = new VariableNode(token, var.getPosition());
-                        ExpressionNode e = new ExpressionNode.Variable(valueToken);
+                        VariableNode left = new VariableNode(token);
+                        VariableNode right = new VariableNode(var);
 
-                        // Before Creating the AssignmentStatementNode make sure that they are the same data type
-                        String variableDataType = null;
-                        String expressionDataType = null;
-                        for(VariableDeclarationNode declaration : declarations) {
-                            if (declaration.getVariableName().equals(token.getValue())) {
-                                variableDataType = declaration.getDataType();
-                            }
-
-                            if(declaration.getVariableName().equals(valueToken.getValue())) {
-                                expressionDataType = declaration.getDataType();
-                            }
-                        }
-                        
-                        if(variableDataType.equals(expressionDataType)) {
-
-                        } else{
-                            error("Type Mismatch. Assigning " + expressionDataType + " to a " + variableDataType, valueToken);
-                        }
-
-                        assignments.add(new AssignmentStatementNode(v, e, variableToken.getPosition()));                               
+                        assignments.add(new AssignmentNode(left, right));                               
                     }
                 }
 
-            } else if (peek().getType() == Token.Type.INT_LITERAL || peek().getType() == Token.Type.FLOAT_LITERAL || peek().getType() == Token.Type.BOOL_LITERAL || peek().getType() == Token.Type.CHAR_LITERAL) {
-                rightExpression = new ExpressionNode.Literal(valueToken);
+            } else if (match(Type.LITERAL)) {
+                
+                Token var = previous();
 
-                if(peekNext(1).getType() == Token.Type.ASSIGNMENT) {
-                    error("Can't assign value to a Literal", valueToken);
+                if(match(Type.ASSIGNMENT)) {
+                    error("Can't assign value to a Literal" + var, var);
                 } else {
                     for (Token token: variableTokens) {
-                        VariableNode v = new VariableNode(token, token.getPosition());
-                        ExpressionNode e = new ExpressionNode.Literal(peek());
+                        VariableNode left = new VariableNode(token);
+                        LiteralNode right = new LiteralNode(var);
 
-                        // Before Creating the AssignmentStatementNode make sure that they are the same data type
-                        String variableDataType = null;
-                        for(VariableDeclarationNode declaration : declarations) {
-                            if (declaration.getVariableName().equals(token.getValue())) {
-                                variableDataType = declaration.getDataType();
-                            }
-                        }
-                        
-                        switch (peek().getType()) {
-                            case INT_LITERAL:
-                            case FLOAT_LITERAL:
-                                if(!(variableDataType.equals("INT") || variableDataType.equals("FLOAT"))) {
-                                    error("Type Mismatch. Assigning " + peek().getType() + " to a " + variableDataType, valueToken);
-                                }
-                                break;
-                            case BOOL_LITERAL:
-                                if(!(variableDataType.equals("BOOL"))) {
-                                    error("Type Mismatch. Assigning " + peek().getType() + " to a " + variableDataType, valueToken);
-                                }
-                                break;
-                            case CHAR_LITERAL:
-                                if(!(variableDataType.equals("BOOL"))) {
-                                    error("Type Mismatch. Assigning " + peek().getType() + " to a " + variableDataType, valueToken);
-                                }
-                                break;
-                            default:
-                                error("Data Type Invalid", valueToken);
-                        }
-
-                        assignments.add(new AssignmentStatementNode(v, e, variableToken.getPosition()));
+                        assignments.add(new AssignmentNode(left, right));
                     }
     
                 }
@@ -442,7 +283,7 @@ public class Parser {
                 currentTokenIndex++;
 
             } else {
-                error("Assignment Operation Error", valueToken);
+                error("Assignment Operation Error. Expected a LITERAL or an IDENTIFIER", identifierToken);
             }
         }
 
@@ -453,31 +294,19 @@ public class Parser {
         // Ensure that there are enough tokens to represent an assignment statement
         if (currentTokenIndex + 4 >= tokens.size()) {
             error("Invalid arithmetic statement", peek());
-            return null; // Or handle the error appropriately
         }
     
-        // Check token sequence for arithmetic statement
         Token variableName = previous();
-        int startIndex = currentTokenIndex;
     
-        if (peek().getType() == Token.Type.ASSIGNMENT) {
-            // Move to the next token after the assignment operator
-            currentTokenIndex += 1;
-        } else {
+        if (!match(Type.ASSIGNMENT)) {
             error("Invalid arithmetic statement", peek());
             return null;
         }
     
-        // Parse the expression after the assignment operator
+        VariableNode variable = new VariableNode(variableName);
         ExpressionNode expression = parseExpression();
 
-        // Output or process the parsed arithmetic statement as needed
-        System.out.println("Arithmetic Statement: " + variableName + " = " + expression);
-        System.out.println("Current Token: "  + peek());
-        
-        VariableNode variable = new VariableNode(variableName, tokens.get(startIndex).getPosition());
-
-        return new AssignmentStatementNode(variable, expression, tokens.get(startIndex).getPosition());
+        return new AssignmentNode(variable, expression);
     }
 
     private ExpressionNode parseExpression() {
@@ -488,76 +317,44 @@ public class Parser {
     
     private ExpressionNode parseAdditionSubtraction() {
         ExpressionNode left = parseMultiplicationDivision();
-        while (match(Token.Type.ADD) || match(Token.Type.SUBTRACT)) {
+        while (match(Type.ADD) || match(Type.SUBTRACT)) {
             Token operatorToken = previous();
             ExpressionNode right = parseMultiplicationDivision();
-            left = new ExpressionNode.Binary(operatorToken, left, right);
+            left = new BinaryNode(left, operatorToken, right);
         }
         return left;
     }
     
     private ExpressionNode parseMultiplicationDivision() {
         ExpressionNode left = parsePrimary();
-        while (match(Token.Type.MULTIPLY) || match(Token.Type.DIVIDE)) {
+        while (match(Type.MULTIPLY) || match(Type.DIVIDE)) {
             Token operatorToken = previous();
             ExpressionNode right = parsePrimary();
-            left = new ExpressionNode.Binary(operatorToken, left, right);
+            left = new BinaryNode(left, operatorToken, right);
         }
         return left;
     }
     
     private ExpressionNode parsePrimary() {
-        if (match(Token.Type.INT_LITERAL) || match(Token.Type.FLOAT_LITERAL) || match(Token.Type.BOOL_LITERAL) || match(Token.Type.CHAR_LITERAL)){
-            return new ExpressionNode.Literal(previous());
-        } else if (match(Token.Type.IDENTIFIER)) {
-
-            boolean isDeclared = false;
-
-            for(VariableDeclarationNode var : declarations) {
-                if(var.getVariableName().equals(previous().getValue())) {
-                    isDeclared = true;
-                    
-                    if(var.getValue() == null) {
-                        error("Variable not initialized", previous());
-                    }
-
-                    if(!(var.getDataType().equals("INT") || var.getDataType().equals("FLOAT"))) {
-                        error("Arithmetic operation cannot be performed on "+ var.getDataType() + " data type", previous());
-                    }
-                    break;
-                }
-            }
-            
-            if (!isDeclared) {
-                error("Variable not declared", previous());
-            }
-
-            return new ExpressionNode.Variable(previous());
-
-        } else if (match(Token.Type.LEFT_PARENTHESIS)) {
+        if (match(Type.LITERAL)) {
+            return new LiteralNode(previous());
+        } else if (match(Type.IDENTIFIER)) {
+            return new VariableNode(previous());
+        } else if (match(Type.LEFT_PARENTHESIS)) {
             ExpressionNode expression = parseExpression();
-            boolean found = false;
-
-            while (match(Token.Type.RIGHT_PARENTHESIS)) {
-                found = true;
-            }
-            if(!found) {
-                error("Expected closing parenthesis", peek());
-            }
             return expression;
 
-        } else if (match(Token.Type.POSITIVE) || match(Token.Type.NEGATIVE)) {
+        } else if (match(Type.POSITIVE) || match(Type.NEGATIVE)) {
             
             Token operatorToken = previous();
-            
-            ExpressionNode expression;
+            ExpressionNode expression = null;
 
-            if(match(Token.Type.INT_LITERAL) || match(Token.Type.FLOAT_LITERAL) || match(Token.Type.IDENTIFIER)) {
-                expression = new ExpressionNode.Literal(previous());
-            } else {
-                expression = new ExpressionNode.Variable(previous());
+            if(match(Type.LITERAL)) {
+                expression = new LiteralNode(previous());
+            } else if(match(Type.IDENTIFIER)) {
+                expression = new VariableNode(previous());
             }
-            return new ExpressionNode.Unary(operatorToken, expression);
+            return new UnaryNode(operatorToken, expression);
         }
         else {
             error("Expect primary expression.", peek());
@@ -568,39 +365,26 @@ public class Parser {
 
     private StatementNode parseDisplayStatement() {
         
-        Token function = previous();
-        consume(Token.Type.COLON, "Expected colon after Display Call");
+        consume(Type.COLON, "Expected colon after Display Call");
         List<Token> arguments = new ArrayList<>();
 
-        while (peek().getType() != Token.Type.NEWLINE && !isAtEnd()) {
-            
-            System.out.println("Parsing Display Statement");
+        while (peek().getType() != Type.NEWLINE) {
 
-            Token current = peek();
+            if (match(Type.IDENTIFIER)) {
 
-            System.out.println("Peek: " + peek());
+                arguments.add(previous());
 
-            if (current.getType() == Token.Type.IDENTIFIER ||
-                current.getType() == Token.Type.INT_LITERAL ||
-                current.getType() == Token.Type.FLOAT_LITERAL ||
-                current.getType() == Token.Type.CHAR_LITERAL ||
-                current.getType() == Token.Type.BOOL_LITERAL) {
-
-                System.out.println("TEST");
-
-                arguments.add(consume(current.getType(), "Expected identifier or literal"));
-
-                if (peek().getType() == Token.Type.CONCATENATION ||
-                    peek().getType() == Token.Type.NEXT_LINE) {
+                if (peek().getType() == Type.CONCATENATION ||
+                    peek().getType() == Type.NEXT_LINE) {
                         arguments.add(consume(peek().getType(), "Expected concatenation symbol or newline"));
 
-                } else if (peek().getType() == Token.Type.ESCAPE_CODE_OPEN) {
+                } else if (peek().getType() == Type.ESCAPE_CODE_OPEN) {
                     arguments.add(peek());
                     currentTokenIndex++;
-                    arguments.add(consume(Token.Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
-                    consume(Token.Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
+                    arguments.add(consume(Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
+                    consume(Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
 
-                } else if (peek().getType() != Token.Type.NEWLINE) {
+                } else if (peek().getType() != Type.NEWLINE) {
                     error("Expected concatenation symbol (&)", peek());
                 }
             } else {
@@ -608,33 +392,31 @@ public class Parser {
             }
         }
 
-        if (previous().getType() == Token.Type.CONCATENATION) {
+        if (previous().getType() == Type.CONCATENATION) {
             error("Expected identifier or literal", previous());
         }
 
-        if(!match(Token.Type.NEWLINE)) {
-            error("One Statement per Line only", peek());
-        }
-
-        return new FunctionCallNode(function.getValue(), arguments, function.getPosition());
+        return new DisplayNode(arguments);
     }
 
     private StatementNode parseScanStatement() {
-        consume(Token.Type.COLON, "Expected a COLON Token"); // Consume the colon ":" after SCAN
+        Token scanToken = previous();
 
-        List<String> identifiers = new ArrayList<>();
+        consume(Type.COLON, "Expected a COLON Token"); // Consume the colon ":" after SCAN
+
+        List<Token> identifiers = new ArrayList<>();
 
         // Parse the list of identifiers after the colon
-        while (match(Token.Type.IDENTIFIER)) {
-            identifiers.add(previous().getValue());
+        while (match(Type.IDENTIFIER)) {
+            identifiers.add(previous());
             // Check for comma to parse multiple identifiers
-            if (!match(Token.Type.COMMA)) {
+            if (!match(Type.COMMA)) {
                 break; // Exit loop if no comma found
             }
         }
 
         // Create a SCAN statement node with the list of identifiers
-        return new ScanStatementNode(identifiers);
+        return new ScanNode(identifiers, scanToken.getPosition());
     }
 
     private StatementNode parseIfStatement() {
@@ -662,7 +444,7 @@ public class Parser {
         return currentTokenIndex >= tokens.size();
     }
 
-    private boolean match(Token.Type type) {
+    private boolean match(Type type) {
         if (currentTokenIndex < tokens.size() && tokens.get(currentTokenIndex).getType() == type) {
             currentTokenIndex++;
             return true;
@@ -674,7 +456,7 @@ public class Parser {
         return tokens.get(currentTokenIndex + index);
     }
 
-    private Token consume(Token.Type expectedType, String errorMessage) {
+    private Token consume(Type expectedType, String errorMessage) {
         Token token = peek();
         if (token.getType() == expectedType) {
             currentTokenIndex++;

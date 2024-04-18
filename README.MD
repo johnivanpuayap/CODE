@@ -7,19 +7,19 @@ This is a simple interpreter written in Java. It interprets code written in a cu
 1. Compile the Java files: 
 
     ```sh
-    javac javac Interpreter.java
+    javac javac App.java
     ```
 
 2. Run the Interpreter class.
     
     ```sh
-    java Interpreter <input file directory>
+    java App <input file directory>
     ```
 
     E.G.
     
     ```sh
-    java Interpreter programs/basic.code
+    java App programs/basic.code
     ```
     Note: file should end in .code
 
@@ -72,12 +72,13 @@ Increment 2
 - [X] Assignment Statements
     - [X] Single Assignment
         - [X] Check if assignment is valid
-        - [X] If assignee is variable, check if it exists
+        - [ ] Check if the all the variable is defined
+        - [X] If assignee is variable, check if it is initialized
+
     - [X] Multiple Assignment like x=y=z or x=y=5
         - [X] Check if all the data types are the same
         - [X] Check if all the identifiers exist
         - [X] Check if the last one is initialized
-
 
 Increment 3
 - [ ] Logical Operators
@@ -90,6 +91,7 @@ Increment 3
 
 Increment 4
 - [ ] IF-ELSE Selection
+    
 - [ ] IF-ELSE with multiple alternatives
 
 Increment 5

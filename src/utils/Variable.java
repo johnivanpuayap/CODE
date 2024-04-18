@@ -1,11 +1,11 @@
 package src.utils;
 
 public class Variable {
-    private String dataType;
+    private Type dataType;
     private String value;
     private Position position;
 
-    public Variable(String dataType, String value, Position position) {
+    public Variable(Type dataType, String value, Position position) {
         this.dataType = dataType;
         this.value = value;
         this.position = position;
@@ -25,7 +25,7 @@ public class Variable {
         return value;
     }
 
-    public String getDataType() {
+    public Type getDataType() {
         return dataType;
     }
 

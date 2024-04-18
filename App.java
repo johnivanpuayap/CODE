@@ -4,10 +4,11 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import src.Interpreter;
-// import src.analyzer.SemanticsAnalyzer;
+import src.analyzer.SemanticAnalyzer;
 import src.lexer.Lexer;
 import src.nodes.ProgramNode;
 import src.parser.Parser;
+import src.utils.SymbolTable;
 import src.utils.Token;
 
 public class App {
@@ -43,10 +44,14 @@ public class App {
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
 
-            // SemanticsAnalyzer analyzer = new SemanticsAnalyzer(programNode);
-            // analyzer.analyze();
+            System.out.println(programNode);
 
-            Interpreter interpreter = new Interpreter(programNode);
+            SemanticAnalyzer analyzer = new SemanticAnalyzer(programNode);
+            analyzer.analyze();
+
+            SymbolTable symbolTable = analyzer.getInitialSymbolTable();
+
+            Interpreter interpreter = new Interpreter(programNode, symbolTable);
             interpreter.interpret();
 
         } catch (IOException e) {

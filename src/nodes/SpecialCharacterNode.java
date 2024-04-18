@@ -6,7 +6,6 @@ import src.utils.Position;
 
 public class SpecialCharacterNode extends ASTNode {
     private String character;
-    private boolean isSpecialCharacter;
 
     public SpecialCharacterNode(String character, Position position) {
         super(position);
