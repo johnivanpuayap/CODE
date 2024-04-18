@@ -71,7 +71,6 @@ Increment 2
     - [X] Parentheses
 - [X] Assignment Statements
     - [X] Single Assignment
-
         - [X] Check if assignment is valid
         - [ ] Check if the all the variable is defined
         - [X] If assignee is variable, check if it is initialized

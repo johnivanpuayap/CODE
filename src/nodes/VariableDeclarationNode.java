@@ -1,53 +1,47 @@
 package src.nodes;
 import src.utils.Position;
+import src.utils.Token;
 
 public class VariableDeclarationNode extends ASTNode {
-    private String dataType;
-    private String variableName;
+    private Token dataType;
+    private Token identifier;
+    private Token literal;
     private String value;
-    private Position position;
 
-    public VariableDeclarationNode(String dataType, String variableName, String value, Position position) {
-        super(position);
+    public VariableDeclarationNode(Token dataType, Token identifier, Token literal) {
+        super(dataType.getPosition());
         this.dataType = dataType;
-        this.variableName = variableName;
-        this.value = value;
+        this.identifier = identifier;
+        this.literal = literal;
+        this.value = literal.getLexeme();
     }
 
-    public VariableDeclarationNode(String dataType, String variableName, Position position) {
-        super(position);
+    public VariableDeclarationNode(Token dataType, Token identifier) {
+        super(dataType.getPosition());
         this.dataType = dataType;
-        this.variableName = variableName;
-        this.value = null;
+        this.identifier = identifier;
+        this.literal = null;
     }
 
     // Getters for data type, variable name, and value
-    public String getDataType() {
-        return dataType;
+    public Token.Type getType() {
+        return dataType.getType();
     }
 
-    public String getVariableName() {
-        return variableName;
+    public String getName() {
+        return identifier.getLexeme();
     }
 
     public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public Position getPosition() {
-        return super.getPosition();
+        return literal.getLexeme();
     }
 
     @Override
     public String toString() {
         if (value != null) {
-            return String.format("%s %s = %s", dataType, variableName, value);
+            return String.format("%s %s = %s", dataType, identifier.getLexeme(), literal.getLexeme(););
         } else {
-            return String.format("%s %s", dataType, variableName);
+            return String.format("%s %s", dataType, identifier.getLexeme());
         }
     }
 }

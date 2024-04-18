@@ -10,6 +10,7 @@ public abstract class ExpressionNode{
 
     public abstract int countTokens();
     public abstract List<Token> getTokens();
+    public abstract Token getToken(int index);
 
     public static class Binary extends ExpressionNode {
         private final Token operator;
@@ -45,7 +46,11 @@ public abstract class ExpressionNode{
             return left.countTokens() + right.countTokens() + 1; // Add 1 for the operator token
         }
 
-    
+        @Override
+        public Token getToken(int index) {
+            List<Token> tokens = getTokens();
+            return tokens.get(index);
+        }
 
         @Override
         public List<Token> getTokens() {
@@ -86,8 +91,14 @@ public abstract class ExpressionNode{
         }
 
         @Override
+        public Token getToken(int index) {
+            List<Token> tokens = getTokens();
+            return tokens.get(index);
+        }
+
+        @Override
         public int countTokens() {
-            return 1; // Literal node has only one token
+            return getTokens().size();
         }
     }
 
@@ -109,28 +120,41 @@ public abstract class ExpressionNode{
 
         @Override
         public List<Token> getTokens() {
-            List<Token> tokens = new ArrayList<>();
+            List<Token> tokens = new ArrayList<>(1);
             tokens.add(name);
             return tokens;
+        }
+
+        @Override
+        public Token getToken(int index) {
+            List<Token> tokens = getTokens();
+            return tokens.get(index);
         }
         
         @Override
         public int countTokens() {
-            return 1; // Variable node has only one token
+            return 1; // Variables will always have one token
         }
     }
 
     public static class Unary extends ExpressionNode {
-        private final Token operator;
+        private final OperatorNode operator;
         private final ExpressionNode operand;
     
-        public Unary(Token operator, ExpressionNode operand) {
+        public Unary(OperatorNode operator, ExpressionNode operand) {
+
+            // create the new List of tokens
+
+            List<Token> tokens = new ArrayList<>();
+            tokens.addAll(operator.getTokens());
+            tokens.addAll(operand.getTokens());
+
             this.operator = operator;
             this.operand = operand;
         }
     
-        public Token getOperator() {
-            return operator;
+        public List<Token> getOperator() {
+            return operator.getTokens();
         }
     
         public ExpressionNode getOperand() {
@@ -144,15 +168,19 @@ public abstract class ExpressionNode{
     
         @Override
         public int countTokens() {
-            return operand.countTokens() + 1; // Add 1 for the operator token
+            return operand.countTokens() + operator.countTokens(); // Add 1 for the operator token
         }
     
         @Override
         public List<Token> getTokens() {
             List<Token> tokens = new ArrayList<>();
-            tokens.add(operator);
+            tokens.addAll(operator.getTokens());
             tokens.addAll(operand.getTokens());
             return tokens;
         }
+    }
+
+    public static class Operator extends ExpressionNode{
+
     }
 }

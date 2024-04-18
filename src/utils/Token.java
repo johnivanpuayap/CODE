@@ -15,14 +15,12 @@ public class Token {
     }
 
     private Type type;
-    private String initialValue;
-    private String currentValue;
+    private String lexeme;
     private Position position;
 
-    public Token(Type type, String value, Position position) {
+    public Token(Type type, String lexeme, Position position) {
         this.type = type;
-        this.initialValue = value;
-        this.currentValue = value;
+        this.lexeme = lexeme;
         this.position = position;
     }
 
@@ -34,16 +32,8 @@ public class Token {
         return type;
     }
 
-    public String getValue() {
-        return initialValue;
-    }
-
-    public String getCurrentValue() {
-        return currentValue;
-    }
-
-    public void setCurrentValue(String currentValue) {
-        this.currentValue = currentValue;
+    public String getLexeme() {
+        return lexeme;
     }
 
     @Override
@@ -55,9 +45,9 @@ public class Token {
             type == Type.BOOL_LITERAL || 
             type == Type.STRING_LITERAL ||
             type == Type.SPECIAL_CHARACTER) {
-            return "<" + type + ", " + "Initial Value: "  + initialValue + ">";   
+            return "<" + type + ", " + "Value: "  + lexeme + ">";   
         } else if(type == Type.IDENTIFIER) {
-            return "<" + type + ", " + "Name: "  + initialValue + "> ";
+            return "<" + type + ", " + "Name: "  + lexeme + "> ";
         } else {
             return "<" + type + ">";
         }

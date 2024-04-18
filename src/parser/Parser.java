@@ -6,11 +6,10 @@ import src.utils.Token;
 import src.nodes.ProgramNode;
 import src.nodes.VariableDeclarationNode;
 import src.nodes.StatementNode;
-import src.nodes.AssignmentStatementNode;
-import src.nodes.VariableNode;
+import src.nodes.AssignmentNode;
 import src.nodes.ExpressionNode;
-import src.nodes.FunctionCallNode;
-import src.nodes.ScanStatementNode;
+import src.nodes.DisplayNode;
+import src.nodes.ScanNode;
 
 public class Parser {
     private final List<Token> tokens;
@@ -272,7 +271,7 @@ public class Parser {
                 error("Variable not declared", valueToken);
             }
             
-            assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
+            assignments.add(new AssignmentNode(variable, rightExpression, variableToken.getPosition()));
             currentTokenIndex += 2; // Skip over the assignment and the right side
             return assignments;
 
@@ -309,7 +308,7 @@ public class Parser {
             }
 
             
-            assignments.add(new AssignmentStatementNode(variable, rightExpression, variableToken.getPosition()));
+            assignments.add(new AssignmentNode(variable, rightExpression, variableToken.getPosition()));
             currentTokenIndex += 2; // Skip over the assignment and the right side
             return assignments;
         }
@@ -372,7 +371,7 @@ public class Parser {
                         VariableNode v = new VariableNode(token, var.getPosition());
                         ExpressionNode e = new ExpressionNode.Variable(valueToken);
 
-                        // Before Creating the AssignmentStatementNode make sure that they are the same data type
+                        // Before Creating the AssignmentNode make sure that they are the same data type
                         String variableDataType = null;
                         String expressionDataType = null;
                         for(VariableDeclarationNode declaration : declarations) {
@@ -391,7 +390,7 @@ public class Parser {
                             error("Type Mismatch. Assigning " + expressionDataType + " to a " + variableDataType, valueToken);
                         }
 
-                        assignments.add(new AssignmentStatementNode(v, e, variableToken.getPosition()));                               
+                        assignments.add(new AssignmentNode(v, e, variableToken.getPosition()));                               
                     }
                 }
 
@@ -405,7 +404,7 @@ public class Parser {
                         VariableNode v = new VariableNode(token, token.getPosition());
                         ExpressionNode e = new ExpressionNode.Literal(peek());
 
-                        // Before Creating the AssignmentStatementNode make sure that they are the same data type
+                        // Before Creating the AssignmentNode make sure that they are the same data type
                         String variableDataType = null;
                         for(VariableDeclarationNode declaration : declarations) {
                             if (declaration.getVariableName().equals(token.getValue())) {
@@ -434,7 +433,7 @@ public class Parser {
                                 error("Data Type Invalid", valueToken);
                         }
 
-                        assignments.add(new AssignmentStatementNode(v, e, variableToken.getPosition()));
+                        assignments.add(new AssignmentNode(v, e, variableToken.getPosition()));
                     }
     
                 }
@@ -477,7 +476,7 @@ public class Parser {
         
         VariableNode variable = new VariableNode(variableName, tokens.get(startIndex).getPosition());
 
-        return new AssignmentStatementNode(variable, expression, tokens.get(startIndex).getPosition());
+        return new AssignmentNode(variable, expression, tokens.get(startIndex).getPosition());
     }
 
     private ExpressionNode parseExpression() {
@@ -615,7 +614,7 @@ public class Parser {
             error("One Statement per Line only", peek());
         }
 
-        return new FunctionCallNode(function.getValue(), arguments, function.getPosition());
+        return new DisplayNode(function.getValue(), arguments, function.getPosition());
     }
 
     private StatementNode parseScanStatement() {
@@ -633,7 +632,7 @@ public class Parser {
         }
 
         // Create a SCAN statement node with the list of identifiers
-        return new ScanStatementNode(identifiers);
+        return new ScanNode(identifiers);
     }
 
     private StatementNode parseIfStatement() {

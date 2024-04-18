@@ -12,10 +12,10 @@ import java.util.Scanner;
 import src.nodes.AssignmentStatementNode;
 import src.nodes.VariableDeclarationNode;
 import src.nodes.ProgramNode;
-import src.nodes.ScanStatementNode;
+import src.nodes.ScanNode;
 import src.nodes.StatementNode;
 import src.nodes.ExpressionNode;
-import src.nodes.FunctionCallNode;
+import src.nodes.DisplayNode;
 import src.utils.Variable;
 import src.utils.Token;
 import src.utils.Position;
@@ -84,10 +84,10 @@ public class Interpreter {
                 }
                 
             }
-        } else if(statement instanceof FunctionCallNode) {
-            interpretFunction((FunctionCallNode) statement);
-        } else if(statement instanceof ScanStatementNode) {
-            interpretScan((ScanStatementNode) statement);
+        } else if(statement instanceof DisplayNode) {
+            interpretFunction((DisplayNode) statement);
+        } else if(statement instanceof ScanNode) {
+            interpretScan((ScanNode) statement);
         }
         
     }
@@ -201,7 +201,7 @@ public class Interpreter {
         }
     }
     
-    private void interpretFunction(FunctionCallNode function) {   
+    private void interpretFunction(DisplayNode function) {   
         
         if (function.getFunctionName() == "DISPLAY") {
             for (Token node : function.getArguments()) {
@@ -237,7 +237,7 @@ public class Interpreter {
             
     }
 
-    private void interpretScan(ScanStatementNode scanStatement) {
+    private void interpretScan(ScanNode scanStatement) {
         Scanner scanner = new Scanner(System.in);
     
         for (String identifier : scanStatement.getIdentifiers()) {
