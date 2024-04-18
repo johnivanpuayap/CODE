@@ -19,6 +19,18 @@ public class Symbol {
         this.initialized = true;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
     public void setValue(String value) {
         this.value = value;
         this.initialized = true;

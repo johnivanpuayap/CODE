@@ -7,7 +7,7 @@ import src.utils.Token;
 
 public class VariableNode extends ExpressionNode {
     private final Token name;
-    private final List<Token> tokens = new ArrayList<>(1);
+    private List<Token> tokens = new ArrayList<>(1);
 
     public VariableNode(Token name) {
         super(name.getPosition());

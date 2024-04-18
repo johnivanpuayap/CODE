@@ -107,7 +107,8 @@ public class Parser {
 
     private void parseStatements() {
         while (!match(Type.EOF) && !(currentTokenIndex >= tokens.size())) {
-
+            
+   
             if (match(Type.IDENTIFIER)) {
                 if( 
                     peek().getType() == Type.ASSIGNMENT && 
@@ -218,14 +219,25 @@ public class Parser {
             
         // Parse assignment statement
         Token identifierToken = previous();
+        VariableNode identifier = new VariableNode(identifierToken);
 
         if(!match(Type.ASSIGNMENT)) {
-            error("Expected an assignment token. Found a ", peek());
+            error("Expected an assignment token.", peek());
         }
 
-        consume(Type.LITERAL, "Expected A Literal");
+        if(match(Type.IDENTIFIER) && peek().getType() != Type.ASSIGNMENT) {
+            
+            assignments.add(new AssignmentNode(identifier, new VariableNode(previous())));
+            return assignments;
+      
+        } else if (match(Type.LITERAL) && peek().getType() != Type.ASSIGNMENT) {
+            
+            assignments.add(new AssignmentNode(identifier, new LiteralNode(previous())));
+            return assignments;
         
-        VariableNode identifier = new VariableNode(identifierToken);
+        } else {
+            error("Assignment Operation Error. Expected a LITERAL or an IDENTIFIER after an assigment token.", identifierToken);
+        }
         
         List<Token> variableTokens = new ArrayList<>();
         variableTokens.add(identifierToken);
@@ -273,17 +285,6 @@ public class Parser {
             } else {
                 error("Assignment Operation Error. Expected a LITERAL or an IDENTIFIER", identifierToken);
             }
-        }
-
-        if(match(Type.IDENTIFIER)) {
-    
-            assignments.add(new AssignmentNode(identifier, new VariableNode(previous())));
-            return assignments;
-
-        } else if(match(Type.LITERAL)){
-
-            assignments.add(new AssignmentNode(identifier, new LiteralNode(previous())));
-            return assignments;
         }
 
         return assignments;

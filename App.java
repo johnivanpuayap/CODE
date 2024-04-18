@@ -44,6 +44,8 @@ public class App {
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
 
+            System.out.println(programNode);
+
             SemanticAnalyzer analyzer = new SemanticAnalyzer(programNode);
             analyzer.analyze();
 

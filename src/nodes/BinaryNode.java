@@ -11,7 +11,7 @@ public class BinaryNode extends ExpressionNode {
     private final Token operator;
     private final ExpressionNode left;
     private final ExpressionNode right;
-    private final List<Token> tokens = new ArrayList<>();
+    private List<Token> tokens = new ArrayList<>();
 
     public BinaryNode(ExpressionNode left, Token operator, ExpressionNode right) {
         super(left.getPosition());
@@ -19,7 +19,9 @@ public class BinaryNode extends ExpressionNode {
         this.left = left;
         this.right = right;
 
-        List<Token> tokens = new ArrayList<>();
+        System.out.println("Left tokens: " + left.getTokens());  // Debug print
+        System.out.println("Right tokens: " + right.getTokens());  // Debug print
+
         tokens.add(new Token(Type.RIGHT_PARENTHESIS, "(", new Position(0, 0)));
         tokens.addAll(left.getTokens());
         tokens.add(operator);
@@ -41,7 +43,7 @@ public class BinaryNode extends ExpressionNode {
 
     @Override
     public String toString() {
-        return "(" + left.toString() + operator.toString() + right.toString() + ")";
+        return "(" + left.toString() + operator.getLexeme() + right.toString() + ")";
     }
 
 

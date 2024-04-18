@@ -15,10 +15,10 @@ import src.utils.Type;
 import src.utils.Position;
 import src.utils.Variable;
 import src.utils.SymbolTable;
+import src.utils.Symbol;
 
 
 public class Interpreter {
-    private Map<String, Variable> variables = new HashMap<>();
     private ProgramNode program;
     private SymbolTable symbolTable;
 
@@ -29,17 +29,11 @@ public class Interpreter {
     
 
     public void interpret() {
-
-        List<VariableDeclarationNode> declarations = program.getDeclarations();
         List<StatementNode> statements = program.getStatements();
 
 
         System.out.println("\n\n\n\n\nPROGRAM RESULTS");
 
-
-        for(VariableDeclarationNode declaration: declarations) {
-            variables.put(declaration.getName(), new Variable(declaration.getType(), declaration.getValue(), declaration.getPosition()));
-        }
 
         for (StatementNode statement : statements) {
             interpretStatement(statement);
@@ -51,26 +45,42 @@ public class Interpreter {
         if(statement instanceof AssignmentNode) {
             
             AssignmentNode assignment = (AssignmentNode) statement;
-            if (assignment.getExpression() instanceof LiteralNode ||
-                assignment.getExpression() instanceof UnaryNode) {
-                Variable var = variables.get(assignment.getVariable().getName());
+            if (assignment.getExpression() instanceof LiteralNode) {
+               
                 
-                var.setValue(assignment.getExpression().toString());
-            } else if(assignment.getExpression() instanceof VariableNode) {
-                Variable var = variables.get(assignment.getVariable().getName());
-                Variable var2 = variables.get(((VariableNode) assignment.getExpression()).getName());
-
-                if (var2.getDataType() != var.getDataType()) {
-                    error("Type mismatch", var2.position());
+            } else if (assignment.getExpression() instanceof UnaryNode) {
+                Symbol s = symbolTable.lookup(assignment.getVariable().getName());
+                
+                if (s.getType() != Type.FLOAT || s.getType() != Type.INT) {
+                    error("Type mismatch. Assigning a Number to a ", assignment.getVariable().getPosition());
                 }
 
-                var.setValue(var2.getValue());
+                s.setValue(assignment.getExpression().toString());
+
+
+            } else if(assignment.getExpression() instanceof VariableNode) {
+
+                Symbol left = symbolTable.lookup(assignment.getVariable().getName());
+                Symbol right = symbolTable.lookup(((VariableNode) assignment.getExpression()).getName());
+
+                left.setValue(right.getValue());
             } else {
 
-                Variable var = variables.get(assignment.getVariable().getName());
                 double result = evaluateExpression((ExpressionNode) assignment.getExpression());
+                
                 String value = String.valueOf(result);
-                var.setValue(value);
+
+                Symbol symbol = symbolTable.lookup(assignment.getVariable().getName());
+
+                if(symbol.getType() == Type.INT) {
+                    if(value.contains(".")) {
+                        String newValue = value.substring(0, value.indexOf("."));
+                        value = newValue;
+                    }
+                }
+                
+                symbol.setValue(value);
+                
             }
         } else if(statement instanceof DisplayNode) {
             interpretDisplay((DisplayNode) statement);
@@ -82,46 +92,39 @@ public class Interpreter {
 
     public double evaluateExpression(ExpressionNode expression) {
 
-        List<String> tokens = tokenize(expression.toString());
+        System.out.println("Expression: " + expression.toString());
+
+        List<Token> tokens = expression.getTokens();
+       
+        System.out.println("Tokens: " + tokens);
 
         List<String> postfixExpression = infixToPostfix(tokens);
 
         return evaluatePostfix(postfixExpression);
     }
 
-    public List<String> tokenize(String expression) {
-        List<String> tokens = new ArrayList<>();
-        Pattern pattern = Pattern.compile("(?<=^|[-+*/])[+-]?\\d+|[-+*/()]|[a-zA-Z]+");
-        Matcher matcher = pattern.matcher(expression);
-        while (matcher.find()) {
-            tokens.add(matcher.group());
-        }
-    
-        System.out.println(tokens);
-    
-        return tokens;
-    }
-
-    private List<String> infixToPostfix(List<String> tokens) {
+    private List<String> infixToPostfix(List<Token> tokens) {
         Stack<String> operatorStack = new Stack<>();
         List<String> postfix = new ArrayList<>();
     
-        for (String token : tokens) {
+        for (Token token : tokens) {
+            
+            System.out.println("Token: " + token.getLexeme());
     
-            if (token.matches("[a-zA-Z]+") || token.matches("[-+]?[0-9]+")) {
-                postfix.add(token);
-            } else if (token.equals("(")) {
-                operatorStack.push(token);
-            } else if (token.equals(")")) {
+            if (token.getType() == Type.IDENTIFIER || token.getType() == Type.LITERAL) {
+                postfix.add(token.getLexeme());
+            } else if (token.getLexeme().equals("(")) {
+                operatorStack.push(token.getLexeme());
+            } else if (token.getLexeme().equals(")")) {
                 while (!operatorStack.isEmpty() && !operatorStack.peek().equals("(")) {
                     postfix.add(operatorStack.pop());
                 }
                 operatorStack.pop();
             } else {
-                while (!operatorStack.isEmpty() && hasHigherPrecedence(operatorStack.peek(), token)) {
+                while (!operatorStack.isEmpty() && hasHigherPrecedence(operatorStack.peek(), token.getLexeme())) {
                     postfix.add(operatorStack.pop());
                 }
-                operatorStack.push(token);
+                operatorStack.push(token.getLexeme());
             }
         }
     
@@ -138,8 +141,8 @@ public class Interpreter {
         for (String token : postfixExpression) {
             if (token.matches("[-+]?[0-9]+")) {
                 stack.push(Double.valueOf(token));
-            } else if (variables.containsKey(token)) {
-                stack.push(Double.parseDouble(variables.get(token).getValue()));
+            } else if (symbolTable.lookup(token) != null) {
+                stack.push(Double.parseDouble(symbolTable.lookup(token).getValue()));
             } else {
                 double operand2 = stack.pop();
                 double operand1 = stack.pop();
@@ -198,9 +201,9 @@ public class Interpreter {
             }
             if (token.getType() == Type.IDENTIFIER) {
                 
-                Variable var = variables.get(token.getLexeme());
+                Symbol symbol = symbolTable.lookup(token.getLexeme());
 
-                String value = var.getValue();
+                String value = symbol.getValue();
 
                 System.out.print(value);
                 continue;

@@ -7,7 +7,7 @@ import src.utils.Token;
 public class LiteralNode extends ExpressionNode {
 
     private final Token value;
-    private final List<Token> tokens = new ArrayList<>(1);
+    private List<Token> tokens = new ArrayList<>(1);
 
     public LiteralNode(Token value) {
         super(value.getPosition());
