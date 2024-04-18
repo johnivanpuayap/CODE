@@ -1,6 +1,6 @@
 package src.nodes;
-import src.utils.Position;
 import src.utils.Token;
+import src.utils.Type;
 
 public class VariableDeclarationNode extends ASTNode {
     private Token dataType;
@@ -24,7 +24,7 @@ public class VariableDeclarationNode extends ASTNode {
     }
 
     // Getters for data type, variable name, and value
-    public Token.Type getType() {
+    public Type getType() {
         return dataType.getType();
     }
 
@@ -33,13 +33,17 @@ public class VariableDeclarationNode extends ASTNode {
     }
 
     public String getValue() {
-        return literal.getLexeme();
+        if (literal != null) {
+            return literal.getLexeme();
+        } else {
+            return null;
+        }
     }
 
     @Override
     public String toString() {
         if (value != null) {
-            return String.format("%s %s = %s", dataType, identifier.getLexeme(), literal.getLexeme(););
+            return String.format("%s %s = %s", dataType, identifier.getLexeme(), literal.getLexeme());
         } else {
             return String.format("%s %s", dataType, identifier.getLexeme());
         }

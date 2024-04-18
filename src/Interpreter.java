@@ -9,16 +9,17 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Scanner;
 
-import src.nodes.AssignmentStatementNode;
+import src.nodes.AssignmentNode;
 import src.nodes.VariableDeclarationNode;
 import src.nodes.ProgramNode;
 import src.nodes.ScanNode;
 import src.nodes.StatementNode;
 import src.nodes.ExpressionNode;
 import src.nodes.DisplayNode;
-import src.utils.Variable;
 import src.utils.Token;
+import src.utils.Type;
 import src.utils.Position;
+import src.utils.Variable;
 
 
 public class Interpreter {
@@ -39,7 +40,7 @@ public class Interpreter {
 
 
         for(VariableDeclarationNode declaration: declarations) {
-            variables.put(declaration.getVariableName(), new Variable(declaration.getDataType(), declaration.getValue(), declaration.getPosition()));
+            variables.put(declaration.getName(), new Variable(declaration.getType(), declaration.getValue(), declaration.getPosition()));
         }
 
         for (StatementNode statement : statements) {
@@ -49,12 +50,12 @@ public class Interpreter {
 
     private void interpretStatement(StatementNode statement) {
 
-        if(statement instanceof AssignmentStatementNode) {
+        if(statement instanceof AssignmentNode) {
             
-            AssignmentStatementNode assignment = (AssignmentStatementNode) statement;
+            AssignmentNode assignment = (AssignmentNode) statement;
             if (assignment.getExpression() instanceof ExpressionNode.Literal ||
                 assignment.getExpression() instanceof ExpressionNode.Unary) {
-                Variable var = variables.get(assignment.getVariable().getVariableName());
+                Variable var = variables.get(assignment.getVariable().getName());
                 
                 var.setValue(assignment.getExpression().toString());
             } else if(assignment.getExpression() instanceof ExpressionNode.Variable) {
@@ -205,11 +206,11 @@ public class Interpreter {
         
         if (function.getFunctionName() == "DISPLAY") {
             for (Token node : function.getArguments()) {
-                if (node.getType() == Token.Type.STRING_LITERAL) {
+                if (node.getType() == Type.STRING_LITERAL) {
                     System.out.print(node.getValue());
                     continue;
                 }
-                if (node.getType() == Token.Type.IDENTIFIER) {
+                if (node.getType() == Type.IDENTIFIER) {
                     
                     Variable var = variables.get(node.getValue());
 
@@ -227,7 +228,7 @@ public class Interpreter {
                     System.out.print(value);
                     continue;
                 }
-                if (node.getType() == Token.Type.SPECIAL_CHARACTER) {
+                if (node.getType() == Type.SPECIAL_CHARACTER) {
                     System.out.print(node.getValue());
                 }
             }

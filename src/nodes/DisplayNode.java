@@ -21,13 +21,13 @@ public class DisplayNode extends StatementNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("DisplayNode{expressions=[");
+        sb.append("DisplayNode { expressions = [");
         
         // Append each expression
         for (int i = 0; i < expressions.size(); i++) {
             sb.append(expressions.get(i));
             if (i < expressions.size() - 1) {
-                sb.append(" & "); // Add a concatenation symbol if it's not the last expression
+                sb.append(" "); // Add a concatenation symbol if it's not the last expression
             }
         }
         

@@ -2,9 +2,9 @@ package src.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import src.utils.Position;
 import src.utils.Token;
+import src.utils.Type;
 
 public abstract class ExpressionNode{
 
@@ -16,11 +16,19 @@ public abstract class ExpressionNode{
         private final Token operator;
         private final ExpressionNode left;
         private final ExpressionNode right;
+        private final List<Token> tokens = new ArrayList<>();
 
         public Binary(Token operator, ExpressionNode left, ExpressionNode right) {
             this.operator = operator;
             this.left = left;
             this.right = right;
+
+            List<Token> tokens = new ArrayList<>();
+            tokens.add(new Token(Type.RIGHT_PARENTHESIS, "(", new Position(0, 0)));
+            tokens.addAll(left.getTokens());
+            tokens.add(operator);
+            tokens.addAll(right.getTokens());
+            tokens.add(new Token(Type.LEFT_PARENTHESIS, ")", new Position(0, 0)));
         }
 
         public Token getOperator() {
@@ -37,7 +45,7 @@ public abstract class ExpressionNode{
 
         @Override
         public String toString() {
-            return "(" + left.toString() + operator.getValue() + right.toString() + ")";
+            return "(" + left.toString() + operator.toString() + right.toString() + ")";
         }
 
 
@@ -54,21 +62,17 @@ public abstract class ExpressionNode{
 
         @Override
         public List<Token> getTokens() {
-            List<Token> tokens = new ArrayList<>();
-            tokens.add(new Token(Token.Type.RIGHT_PARENTHESIS, "(", new Position(0, 0))); // Add opening parenthesis
-            tokens.addAll(left.getTokens());
-            tokens.add(operator);
-            tokens.addAll(right.getTokens());
-            tokens.add(new Token(Token.Type.LEFT_PARENTHESIS, ")", new Position(0, 0))); // Add closing parenthesis
             return tokens;
         }
     }
 
     public static class Literal extends ExpressionNode {
         private final Token value;
+        private final List<Token> tokens = new ArrayList<>(1);
 
         public Literal(Token value) {
             this.value = value;
+            tokens.add(value);
         }
 
         public Token getValue() {
@@ -77,36 +81,32 @@ public abstract class ExpressionNode{
 
         @Override
         public String toString() {
-
-            System.out.println("Value: " + value.getValue());
-
-            return value.getValue();
+            return value.getLexeme();
         }
 
         @Override
         public List<Token> getTokens() {
-            List<Token> tokens = new ArrayList<>();
-            tokens.add(value);
             return tokens;
         }
 
         @Override
         public Token getToken(int index) {
-            List<Token> tokens = getTokens();
             return tokens.get(index);
         }
 
         @Override
         public int countTokens() {
-            return getTokens().size();
+            return 1;
         }
     }
 
     public static class Variable extends ExpressionNode {
         private final Token name;
+        private final List<Token> tokens = new ArrayList<>(1);
 
         public Variable(Token name) {
             this.name = name;
+            tokens.add(name);
         }
 
         public Token getName() {
@@ -115,19 +115,16 @@ public abstract class ExpressionNode{
 
         @Override
         public String toString() {
-            return name.getValue();
+            return name.getLexeme();
         }
 
         @Override
         public List<Token> getTokens() {
-            List<Token> tokens = new ArrayList<>(1);
-            tokens.add(name);
             return tokens;
         }
 
         @Override
         public Token getToken(int index) {
-            List<Token> tokens = getTokens();
             return tokens.get(index);
         }
         
@@ -138,23 +135,20 @@ public abstract class ExpressionNode{
     }
 
     public static class Unary extends ExpressionNode {
-        private final OperatorNode operator;
+        private final Token operator;
         private final ExpressionNode operand;
+        private final List<Token> tokens = new ArrayList<>();
     
-        public Unary(OperatorNode operator, ExpressionNode operand) {
-
-            // create the new List of tokens
-
-            List<Token> tokens = new ArrayList<>();
-            tokens.addAll(operator.getTokens());
-            tokens.addAll(operand.getTokens());
-
+        public Unary(Token operator, ExpressionNode operand) {
             this.operator = operator;
             this.operand = operand;
+
+            tokens.add(operator);
+            tokens.addAll(operand.getTokens());
         }
     
-        public List<Token> getOperator() {
-            return operator.getTokens();
+        public Token getOperator() {
+            return operator;
         }
     
         public ExpressionNode getOperand() {
@@ -163,24 +157,22 @@ public abstract class ExpressionNode{
     
         @Override
         public String toString() {
-            return operator.getValue() + operand.toString();
+            return operator.getLexeme() + operand.toString();
         }
     
         @Override
         public int countTokens() {
-            return operand.countTokens() + operator.countTokens(); // Add 1 for the operator token
+            return operand.countTokens() + 1; // Add 1 for the operator token
         }
     
         @Override
         public List<Token> getTokens() {
-            List<Token> tokens = new ArrayList<>();
-            tokens.addAll(operator.getTokens());
-            tokens.addAll(operand.getTokens());
             return tokens;
         }
-    }
 
-    public static class Operator extends ExpressionNode{
-
+        @Override
+        public Token getToken(int index) {
+            return tokens.get(index);
+        }
     }
 }
