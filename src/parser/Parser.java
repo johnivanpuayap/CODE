@@ -98,42 +98,14 @@ public class Parser {
 
             declaredVariableNames.add(variableName);
             
-            switch(dataType.getType()) {
-                case Type.INT:
-                    if (match(Type.ASSIGNMENT)) {
-                        Token literal = consume(Type.INT_LITERAL, "Expected INT value");
-                        variables.add(new VariableDeclarationNode(dataType, identifier, literal));
-                    } else {
-                        variables.add(new VariableDeclarationNode(dataType, identifier));
-                    }
-                    break;
-                case Type.CHAR:
-                    if (match(Type.ASSIGNMENT)) {
-                        Token literal = consume(Type.CHAR_LITERAL, "Expected CHAR value");
-                        variables.add(new VariableDeclarationNode(dataType, identifier, literal));
-                    } else {
-                        variables.add(new VariableDeclarationNode("CHAR", identifier.getLexeme(), identifier.getPosition()));
-                    }
-                    break;
-                case Type.FLOAT:
-                    if(match(Type.ASSIGNMENT)) {
-                        Token value = consume(Type.FLOAT_LITERAL, "Expected FLOAT value");
-                        variables.add(new VariableDeclarationNode("FLOAT", identifier.getLexeme(), value.getLexeme(), identifier.getPosition()));
-                    } else {
-                        variables.add(new VariableDeclarationNode("FLOAT", identifier.getLexeme(), identifier.getPosition()));
-                    } 
-                    break;
-                case Type.BOOL:
-                    if(match(Type.ASSIGNMENT)) {
-                        Token value = consume(Type.BOOL_LITERAL, "Expected BOOL value");
-                        variables.add(new VariableDeclarationNode("BOOL", identifier.getLexeme(), value.getLexeme(), identifier.getPosition()));
-                    } else {
-                        variables.add(new VariableDeclarationNode("BOOL", identifier.getLexeme(), identifier.getPosition()));
-                    }
-                    break;
-                default:
-                    error("Invalid Data Type", peek());
+            
+            if (match(Type.ASSIGNMENT)) {
+                Token literal = consume(Type.LITERAL, "Expected a Literal");
+                variables.add(new VariableDeclarationNode(dataType, identifier, literal));
+            } else {
+                variables.add(new VariableDeclarationNode(dataType, identifier));
             }
+
         } while (match(Type.COMMA));
         
         return variables;
@@ -247,78 +219,17 @@ public class Parser {
         List<StatementNode> assignments = new ArrayList<>();
             
         // Parse assignment statement
-        Token variableToken = previous();
-        Token valueToken = tokens.get(currentTokenIndex + 1);
+        Token identifierToken = previous();
 
-        VariableNode variable = new VariableNode(variableToken, valueToken.getPosition());
-        ExpressionNode rightExpression = null;
-;
-
-        if(peek().getType() != Type.ASSIGNMENT && tokens.get(currentTokenIndex + 1).getType() == Type.IDENTIFIER) {
-            rightExpression = new ExpressionNode.Variable(valueToken);
-
-            boolean isDeclared = false;
-            
-            for (VariableDeclarationNode declaration: declarations) {
-                if(declaration.getVariableName().equals(valueToken.getLexeme())) {
-                    isDeclared = true;
-                } 
-            }
-
-            if(variableToken != valueToken) {
-                error("Type Mismatch", valueToken);
-            }
-
-            // Variable does not exist
-            if(!isDeclared) {
-                error("Variable not declared", valueToken);
-            }
-            
-            assignments.add(new AssignmentNode(variable, rightExpression, variableToken.getPosition()));
-            currentTokenIndex += 2; // Skip over the assignment and the right side
-            return assignments;
-
-        } else if(peek().getType() != Type.ASSIGNMENT && tokens.get(currentTokenIndex + 1).getType() == Type.INT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Type.FLOAT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Type.BOOL_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Type.CHAR_LITERAL) {
-
-            rightExpression = new ExpressionNode.Literal(valueToken);
-            
-            String variableDataType = null;
-            for (VariableDeclarationNode declaration: declarations) {
-                if(declaration.getVariableName().equals(variableToken.getLexeme())) {
-                    variableDataType = declaration.getDataType();
-                } 
-            }
-
-            switch (variableDataType) {
-                case "INT":
-                case "FLOAT":
-                    if(!(valueToken.getType() == Type.INT_LITERAL || valueToken.getType() == Type.FLOAT_LITERAL)) {
-                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
-                    }
-                    break;
-                case "BOOL":
-                    if(!(valueToken.getType() == Type.BOOL_LITERAL)) {
-                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
-                    }
-                    break;
-                case "CHAR":
-                    if(!(valueToken.getType() == Type.CHAR_LITERAL)) {
-                        error("Type Mismatch. Assigning " + valueToken.getType() + " to a " + variableDataType, valueToken);
-                    }
-                    break;
-                default:
-                    error("Data Type Invalid", valueToken);
-            }
-
-            
-            assignments.add(new AssignmentNode(variable, rightExpression, variableToken.getPosition()));
-            currentTokenIndex += 2; // Skip over the assignment and the right side
-            return assignments;
+        if(!match(Type.ASSIGNMENT)) {
+            error("Expected an assignment token. Found a ", peek());
         }
 
-        List<Token> variableTokens = new ArrayList<>();
-        variableTokens.add(variableToken);
-
+        Token literalToken = consume(Type.LITERAL, "Expected A Literal");
+        
+        ExpressionNode.Variable identifier = new ExpressionNode.Variable(identifierToken);
+        ExpressionNode rightExpression = null;
+        
         while(match(Type.ASSIGNMENT)) {
 
             if(peek().getType() == Type.IDENTIFIER) {
@@ -448,6 +359,28 @@ public class Parser {
             }
         }
 
+        if(match(Type.IDENTIFIER)) {
+            rightExpression = new ExpressionNode.Variable(previous());
+
+            
+            assignments.add(new AssignmentNode(identifier, rightExpression));
+            currentTokenIndex += 2;
+            return assignments;
+
+        } else if(peek().getType() != Type.ASSIGNMENT && tokens.get(currentTokenIndex + 1).getType() == Type.INT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Type.FLOAT_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Type.BOOL_LITERAL || tokens.get(currentTokenIndex + 1).getType() == Type.CHAR_LITERAL) {
+
+            rightExpression = new ExpressionNode.Literal(valueToken);
+            
+            String variableDataType = null;
+            
+            assignments.add(new AssignmentNode(variable, rightExpression, variableToken.getPosition()));
+            currentTokenIndex += 2; // Skip over the assignment and the right side
+            return assignments;
+        }
+
+        List<Token> variableTokens = new ArrayList<>();
+        variableTokens.add(variableToken);
+
         return assignments;
     }
 
@@ -493,7 +426,7 @@ public class Parser {
         while (match(Type.ADD) || match(Type.SUBTRACT)) {
             Token operatorToken = previous();
             ExpressionNode right = parseMultiplicationDivision();
-            left = new ExpressionNode.Binary(operatorToken, left, right);
+            left = new ExpressionNode.BinaryNode(operatorToken, left, right);
         }
         return left;
     }
@@ -503,7 +436,7 @@ public class Parser {
         while (match(Type.MULTIPLY) || match(Type.DIVIDE)) {
             Token operatorToken = previous();
             ExpressionNode right = parsePrimary();
-            left = new ExpressionNode.Binary(operatorToken, left, right);
+            left = new ExpressionNode.BinaryNode(operatorToken, left, right);
         }
         return left;
     }

@@ -1,14 +1,12 @@
 package src.nodes;
 
-import src.utils.Position;
-
 public class AssignmentNode extends StatementNode {
 
-    private final ExpressionNode.Variable variable;
+    private final VariableNode variable;
     private final ExpressionNode expressionNode;
 
-    public AssignmentNode(ExpressionNode.Variable variable, ExpressionNode expressionNode, Position position) {
-        super(position);
+    public AssignmentNode(VariableNode variable, ExpressionNode expressionNode) {
+        super(variable.getPosition());
         this.variable = variable;
         this.expressionNode = expressionNode;
     }
@@ -18,7 +16,7 @@ public class AssignmentNode extends StatementNode {
         return expressionNode;
     }
 
-    public ExpressionNode.Variable getVariable() {
+    public VariableNode getVariable() {
         return variable;
     }
     

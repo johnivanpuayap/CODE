@@ -2,6 +2,11 @@ package src.analyzer;
 
 import src.nodes.*;
 
+
+// Check if the variable was declared and initialized before using it
+
+
+
 class SemanticAnalyzer {
     private SymbolTable symbolTable;
 
