@@ -1,0 +1,4 @@
+BEGIN CODE
+    INT a = 100, b = 'a'
+    CHAR b = 'a, 'a
+END CODE

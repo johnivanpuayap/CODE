@@ -1,0 +1,4 @@
+BEGIN CODE
+    BOOL a = "TRUE", b = 'a'
+    CHAR b
+END CODE

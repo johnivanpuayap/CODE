@@ -241,7 +241,30 @@ public class Interpreter {
     
         scanner.close();
     }
-    
+
+    private VariableDeclarationNode findVariableDeclaration(String identifier) {
+        for (VariableDeclarationNode declaration : declarations) {
+            if (declaration.getVariableName().equals(identifier)) {
+                return declaration;
+            }
+        }
+        return null; // Return null if variable declaration not found
+    }
+
+    private boolean isCompatible(String variableType, String inputType) {
+        if (variableType.equals("INT") && (inputType.equals("INT") || inputType.equals("FLOAT"))) {
+            return true;
+        } else if (variableType.equals("FLOAT") && (inputType.equals("INT") || inputType.equals("FLOAT"))) {
+            return true;
+        } else if (variableType.equals("CHAR") && inputType.equals("CHAR")) {
+            return true;
+        } else if (variableType.equals("BOOL") && inputType.equals("BOOL")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void error(String message, Position position) {
         System.err.println("Error: " + message + " " + position);
         System.exit(1);
