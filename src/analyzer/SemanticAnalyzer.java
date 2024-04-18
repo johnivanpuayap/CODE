@@ -2,21 +2,26 @@ package src.analyzer;
 
 import src.nodes.*;
 import src.utils.Position;
+import src.utils.Symbol;
+import src.utils.SymbolTable;
 import src.utils.Token;
 
 import java.util.List;
 
 // Check if the variable was declared and initialized before using it
 
-class SemanticAnalyzer {
+public class SemanticAnalyzer {
     private SymbolTable symbolTable;
+    private SymbolTable initialSymbolTable;
+    private ProgramNode programNode;
 
-    public SemanticAnalyzer() {
+    public SemanticAnalyzer(ProgramNode programNode) {
+        this.programNode = programNode;
         symbolTable = new SymbolTable();
     }
 
     // Analyze the AST
-    public void analyze(ProgramNode programNode) {
+    public void analyze() {
 
         for (VariableDeclarationNode declaration: programNode.getDeclarations()) {
             
@@ -25,6 +30,8 @@ class SemanticAnalyzer {
                 error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
             }
         }
+
+        initialSymbolTable = symbolTable;
 
         for (StatementNode statement : programNode.getStatements()) {
             try {
@@ -109,5 +116,9 @@ class SemanticAnalyzer {
     // Report an error
     private void error(String message, Position position) {
         System.err.println("Error at " + position + ": " + message);
+    }
+
+    public SymbolTable getInitialSymbolTable() {
+        return initialSymbolTable;
     }
 }

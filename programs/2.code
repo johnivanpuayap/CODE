@@ -1,4 +1,4 @@
 BEGIN CODE
-    INT a, b, c, abc = 15
+    INT a, b, c, abc = 120
     DISPLAY: abc
 END CODE

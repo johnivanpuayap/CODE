@@ -1,24 +1,22 @@
-package src.analyzer;
+package src.utils;
 
-import src.utils.Type;
 
-// Represents a symbol in the symbol table
-class Symbol {
+public class Symbol {
     Type type;
     String name;
     String value;
-    boolean initialized; // Flag to track if the symbol is initialized
+    boolean initialized; 
 
     public Symbol(Type type, String name) {
         this.name = name;
         this.type = type;
-        this.initialized = false; // Initialize as not initialized
+        this.initialized = false;
     }
 
     public Symbol(Type type, String name, String value) {
         this(type, name);
         this.value = value;
-        this.initialized = true; // Initialize as initialized
+        this.initialized = true;
     }
 
     public void setValue(String value) {

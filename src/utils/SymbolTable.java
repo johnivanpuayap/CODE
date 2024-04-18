@@ -1,16 +1,15 @@
-package src.analyzer;
+package src.utils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-class SymbolTable {
+public class SymbolTable {
     private Map<String, Symbol> symbols;
 
     public SymbolTable() {
         symbols = new HashMap<>();
     }
 
-    // Insert a symbol into the symbol table
     public boolean insert(Symbol symbol) {
         if (symbols.containsKey(symbol.name)) {
             return false;
@@ -20,8 +19,13 @@ class SymbolTable {
         return true;
     }
 
-    // Lookup a symbol in the symbol table
     public Symbol lookup(String name) {
         return symbols.get(name);
+    }
+
+    public SymbolTable copy() {
+        SymbolTable newTable = new SymbolTable();
+        newTable.symbols = new HashMap<>(symbols);
+        return newTable;
     }
 }

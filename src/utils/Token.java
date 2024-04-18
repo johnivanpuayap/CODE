@@ -28,11 +28,11 @@ public class Token {
     public String toString() {
         if(
             type == Type.LITERAL || type == Type.SPECIAL_CHARACTER) {
-            return "<" + type + ", " + "Value: "  + lexeme + ">";   
+            return "<" + type + ", " + "Value: "  + lexeme + ">" + position;   
         } else if(type == Type.IDENTIFIER) {
-            return "<" + type + ", " + "Name: "  + lexeme + "> ";
+            return "<" + type + ", " + "Name: "  + lexeme + "> " + position;
         } else {
-            return "<" + type + ">";
+            return "<" + type + ">" + position;
         }
     }
 }

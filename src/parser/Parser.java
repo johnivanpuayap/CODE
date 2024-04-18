@@ -150,6 +150,10 @@ public class Parser {
             if(match(Type.DISPLAY)) {
                 statements.add(parseDisplayStatement());
 
+                if (!match(Type.NEWLINE)) {
+                    error("Expected a newline character after the statement. Please ensure each statement is on its own line.", peek());
+                }
+
                 continue;
             }
             
@@ -219,7 +223,7 @@ public class Parser {
             error("Expected an assignment token. Found a ", peek());
         }
 
-        Token literalToken = consume(Type.LITERAL, "Expected A Literal");
+        consume(Type.LITERAL, "Expected A Literal");
         
         VariableNode identifier = new VariableNode(identifierToken);
         
@@ -363,7 +367,7 @@ public class Parser {
         consume(Type.COLON, "Expected colon after Display Call");
         List<Token> arguments = new ArrayList<>();
 
-        while (!match(Type.NEWLINE)) {
+        while (peek().getType() != Type.NEWLINE) {
 
             if (match(Type.IDENTIFIER)) {
 
@@ -389,10 +393,6 @@ public class Parser {
 
         if (previous().getType() == Type.CONCATENATION) {
             error("Expected identifier or literal", previous());
-        }
-
-        if(!match(Type.NEWLINE)) {
-            error("One Statement per Line only", peek());
         }
 
         return new DisplayNode(arguments);

@@ -300,11 +300,14 @@ public class Lexer {
         StringBuilder literal = new StringBuilder();
 
         while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != ' ' && input.charAt(counter) != ',') {
-            int currentChar = input.charAt(counter);
+            char currentChar = input.charAt(counter);
+            System.out.println("Current char: " + input.charAt(counter) + " at position: " + position.getLine() + ":" + position.getColumn());
             literal.append(currentChar);
             counter++;
             position.add(1);
         }
+
+        System.out.println("Literal: " + literal.toString());
 
         return new Token(Type.LITERAL, literal.toString(), new Position(position.getLine(), position.getColumn()));
     }

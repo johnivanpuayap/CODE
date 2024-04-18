@@ -14,21 +14,25 @@ import src.utils.Token;
 import src.utils.Type;
 import src.utils.Position;
 import src.utils.Variable;
+import src.utils.SymbolTable;
 
 
 public class Interpreter {
     private Map<String, Variable> variables = new HashMap<>();
     private ProgramNode program;
-    private List<VariableDeclarationNode> declarations;
-    private List<StatementNode> statements;
+    private SymbolTable symbolTable;
 
-     public Interpreter(ProgramNode program) {
+    public Interpreter(ProgramNode program, SymbolTable symbolTable) {
         this.program = program;
-        declarations = this.program.getDeclarations();
-        statements = this.program.getStatements();
+        this.symbolTable = symbolTable;
     }
+    
 
     public void interpret() {
+
+        List<VariableDeclarationNode> declarations = program.getDeclarations();
+        List<StatementNode> statements = program.getStatements();
+
 
         System.out.println("\n\n\n\n\nPROGRAM RESULTS");
 
@@ -65,19 +69,8 @@ public class Interpreter {
 
                 Variable var = variables.get(assignment.getVariable().getName());
                 double result = evaluateExpression((ExpressionNode) assignment.getExpression());
-
-
                 String value = String.valueOf(result);
-
-
-                if (var.getDataType().equals("INT") && value.endsWith(".0")) {
-                    var.setValue(value.substring(0, value.length() -2));    
-                } else if(var.getDataType().equals("FLOAT")){
-                    var.setValue(value);
-                } else {
-                    error("Type mismatch. Assigning a number to a " + var.getDataType() + " data type", var.position());
-                }
-                
+                var.setValue(value);
             }
         } else if(statement instanceof DisplayNode) {
             interpretDisplay((DisplayNode) statement);
@@ -222,7 +215,7 @@ public class Interpreter {
     private void interpretScan(ScanNode scanStatement) {
         Scanner scanner = new Scanner(System.in);
     
-        for (String identifier : scanStatement.getIdentifiers()) {
+        for (Token identifier : scanStatement.getIdentifiers()) {
             System.out.print(identifier + ": ");
             String input = scanner.nextLine();
 
@@ -240,17 +233,6 @@ public class Interpreter {
                 inputDataType = "BOOL";
             } else {
                 error("Invalid input", null);
-            }
-    
-            for(VariableDeclarationNode declaration: declarations) {
-                if(declaration.getName().equals(identifier)) {
-                    if(declaration.getType().equals(inputDataType)) {
-                        variables.get(identifier).setValue(input);
-                    } else {
-                        error("Type mismatch. Assigning " + inputDataType + " to " + declaration.getType(), declaration.getPosition());
-                    }
-                }
-            
             }
         }
     
