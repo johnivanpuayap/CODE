@@ -251,7 +251,43 @@ public class Interpreter {
     
         scanner.close();
     }
-    
+
+    private boolean interpretBooleanExpression(ExpressionNode expression) {
+        if (expression instanceof BinaryNode) {
+            BinaryNode binaryNode = (BinaryNode) expression;
+            Token operatorToken = binaryNode.getOperator();
+
+            switch (operatorToken.getType()) {
+                case AND:
+                    return interpretBooleanExpression(binaryNode.getLeft()) && interpretBooleanExpression(binaryNode.getRight());
+                case OR:
+                    return interpretBooleanExpression(binaryNode.getLeft()) || interpretBooleanExpression(binaryNode.getRight());
+                default:
+                    error("Unsupported binary operator for boolean expression: " + operatorToken.getLexeme(), operatorToken.getPosition());
+            }
+        } else if (expression instanceof UnaryNode) {
+            UnaryNode unaryNode = (UnaryNode) expression;
+            Token operatorToken = unaryNode.getOperator();
+
+            if (operatorToken.getType() == Type.NOT) {
+                return !interpretBooleanExpression(unaryNode.getOperand());
+            } else {
+                error("Unsupported unary operator for boolean expression: " + operatorToken.getLexeme(), operatorToken.getPosition());
+            }
+        } else if (expression instanceof LiteralNode) {
+            LiteralNode literalNode = (LiteralNode) expression;
+            // Assuming the value of the literal node is a string representation of a boolean
+            String value = literalNode.getValue().toString();
+            return Boolean.parseBoolean(value);
+        }
+        else {
+            error("Unsupported expression type for boolean expression: " + expression.getClass().getSimpleName(), null);
+        }
+
+        return false;
+    }
+
+
     private void error(String message, Position position) {
         System.err.println("Error: " + message + " " + position);
         System.exit(1);

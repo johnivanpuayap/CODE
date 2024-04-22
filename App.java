@@ -2,7 +2,6 @@ import java.util.List;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
 import src.Interpreter;
 import src.analyzer.SemanticAnalyzer;
 import src.lexer.Lexer;
