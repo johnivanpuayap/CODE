@@ -35,6 +35,13 @@ The interpreter works in several stages:
 
 4. Interpretation: The Interpreter class interprets the AST and executes the code.
 
+
+# Coding Consistency
+
+- Parser, every function should return a node
+- Peek() after function is the start of the next line
+- Throw errors early, e.g. If ()
+
 # TODO
 
 Increment 1

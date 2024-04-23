@@ -19,8 +19,8 @@ public class BinaryNode extends ExpressionNode {
         this.left = left;
         this.right = right;
 
-        System.out.println("Left tokens: " + left.getTokens());  // Debug print
-        System.out.println("Right tokens: " + right.getTokens());  // Debug print
+        System.out.println("Left tokens: " + left.getTokens()); // Debug print
+        System.out.println("Right tokens: " + right.getTokens()); // Debug print
 
         tokens.add(new Token(Type.RIGHT_PARENTHESIS, "(", new Position(0, 0)));
         tokens.addAll(left.getTokens());
@@ -45,7 +45,6 @@ public class BinaryNode extends ExpressionNode {
     public String toString() {
         return "(" + left.toString() + operator.getLexeme() + right.toString() + ")";
     }
-
 
     @Override
     public int countTokens() {

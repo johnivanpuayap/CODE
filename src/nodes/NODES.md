@@ -1,8 +1,10 @@
 # AST Node Types
 
 - ASTNode
+
   - ProgramNode
   - StatementNode
+
     - VariableDeclarationNode
     - AssignmentNode
     - DisplayNode
@@ -13,11 +15,10 @@
     - WhileStatementNode
 
   - ExpressionNode
-    - BinaryExpressionNode
-    - UnaryExpressionNode
+    - LogicalExpressionNode
+    - ArithmeticExpressionNode
+    - ConditionalExpressionNode
+    - BinaryNode
+    - UnaryNode
     - LiteralNode
     - VariableNode
-    - OperatorNode
-    - LogicalNode
-    - ComparisonNode
-    - ConditionNode
