@@ -17,7 +17,7 @@ public class ElseIfNode extends StatementNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("If Statement {\n");
+        sb.append("Else If Statement {\n");
         sb.append("  condition = ").append(condition).append(",\n");
         sb.append("  statements = [\n");
         for (StatementNode statement : statements) {

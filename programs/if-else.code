@@ -1,8 +1,9 @@
 BEGIN CODE
-    INT a, b, c, abc = 15
+    INT a=1, b, c, abc = 15
     DISPLAY: abc
     IF (abc == 15)
     BEGIN IF
-        DISPLAY: 1
+        a = 20
     END IF
+    DISPLAY: a
 END CODE

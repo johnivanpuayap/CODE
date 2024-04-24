@@ -8,6 +8,8 @@ import src.utils.Token;
 import src.utils.Type;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // Check if the variable was declared and initialized before using it
 
@@ -95,6 +97,19 @@ public class SemanticAnalyzer {
 
         String name = node.getName();
 
+        String regex = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
+        // Compile the regular expression
+        Pattern pattern = Pattern.compile(regex);
+
+        // Create a matcher to match the input string with the pattern
+        Matcher matcher = pattern.matcher(name);
+
+        // Return true if the input string matches the pattern, otherwise false
+        if (!matcher.matches()) {
+            error("Variable '" + name + "' is not a valid variable", node.getPosition());
+        }
+
         Symbol symbol = symbolTable.lookup(name);
         if (symbol == null) {
             error("Variable '" + name + "' is not declared", node.getPosition());
@@ -119,15 +134,8 @@ public class SemanticAnalyzer {
         for (Token argument : arguments) {
 
             if (argument.getType() == Type.IDENTIFIER) {
-                Symbol symbol = symbolTable.lookup(argument.getLexeme());
 
-                if (symbol == null) {
-                    error("Variable '" + argument.getLexeme() + "' is not declared", node.getPosition());
-                }
-
-                if (!symbol.isInitialized()) {
-                    error("Variable '" + argument.getLexeme() + "' is not initialized", node.getPosition());
-                }
+                visitVariableNode(new VariableNode(argument), null);
             }
         }
     }

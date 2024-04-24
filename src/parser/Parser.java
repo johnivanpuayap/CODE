@@ -424,6 +424,16 @@ public class Parser {
 
                 consume(Type.DELIMITER, "Expected closing delimiter after the string literal");
             }
+
+            if (match(Type.ESCAPE_CODE_CLOSE)) {
+
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
+                    error("Can't add another argument without concatention", previous());
+                }
+
+                error("Expected escape code open before escape code close", previous());
+            }
+
         }
 
         if (previous().getType() == Type.CONCATENATION) {
@@ -486,7 +496,7 @@ public class Parser {
 
         ifStatements.add(new IfNode(ifCondition, body, token.getPosition()));
 
-        if (match(Type.ELSE_IF)) {
+        while (match(Type.ELSE_IF)) {
 
             Token elseIfToken = previous();
 

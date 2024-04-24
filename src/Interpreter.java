@@ -26,8 +26,31 @@ public class Interpreter {
 
         System.out.println("\n\n\n\n\nPROGRAM RESULTS");
 
-        for (StatementNode statement : statements) {
-            interpretStatement(statement);
+        for (int i = 0; i < statements.size(); i++) {
+
+            StatementNode statement = statements.get(i);
+
+            if (statement instanceof IfNode) {
+                List<StatementNode> ifStatements = new ArrayList<>();
+
+                ifStatements.add(statement);
+                i++;
+
+                while (i < statements.size() && statements.get(i) instanceof ElseIfNode) {
+                    ifStatements.add(statements.get(i));
+                    i++;
+                }
+
+                if (i < statements.size() && statements.get(i) instanceof ElseNode) {
+                    ifStatements.add(statements.get(i));
+                    i++;
+                }
+
+                interpretIf(ifStatements);
+
+            } else {
+                interpretStatement(statement);
+            }
         }
     }
 
@@ -75,8 +98,9 @@ public class Interpreter {
             interpretDisplay((DisplayNode) statement);
         } else if (statement instanceof ScanNode) {
             interpretScan((ScanNode) statement);
+        } else if (statement instanceof WhileNode) {
+            interpretWhile((WhileNode) statement);
         }
-
     }
 
     public double evaluateExpression(ExpressionNode expression) {
@@ -136,7 +160,6 @@ public class Interpreter {
         for (int i = 0; i < postfixExpression.size(); i++) {
 
             Token token = postfixExpression.get(i);
-            System.out.println("Evaluating " + token.getLexeme());
 
             String lexeme = token.getLexeme();
 
@@ -218,6 +241,8 @@ public class Interpreter {
             }
         }
 
+        System.out.println();
+
     }
 
     private void interpretScan(ScanNode scanStatement) {
@@ -254,6 +279,158 @@ public class Interpreter {
         }
 
         scanner.close();
+    }
+
+    private void interpretIf(List<StatementNode> ifStatements) {
+
+        StatementNode firstStatement = ifStatements.get(0);
+
+        if (firstStatement instanceof IfNode) {
+            IfNode ifNode = (IfNode) firstStatement;
+
+            ExpressionNode condition = ifNode.getCondition();
+            List<StatementNode> branchStatements = ifNode.getStatements();
+
+            boolean conditionResult = evaluateCondition(condition);
+
+            if (conditionResult) {
+                // Execute the statements in the current branch if the condition is true
+                for (StatementNode branchStatement : branchStatements) {
+                    interpretStatement(branchStatement);
+                }
+                return;
+            }
+
+            if (ifStatements.size() > 0) {
+                if (!ifStatements.isEmpty()) {
+                    ifStatements.remove(0);
+                    interpretIf(ifStatements);
+                }
+            }
+
+        } else if (firstStatement instanceof ElseIfNode) {
+            ElseIfNode ifNode = (ElseIfNode) firstStatement;
+
+            ExpressionNode condition = ifNode.getCondition();
+            List<StatementNode> branchStatements = ifNode.getStatements();
+
+            boolean conditionResult = evaluateCondition(condition);
+
+            if (conditionResult) {
+                // Execute the statements in the current branch if the condition is true
+                for (StatementNode branchStatement : branchStatements) {
+                    interpretStatement(branchStatement);
+                }
+                return;
+            }
+
+            // If none of the conditions are true, execute the statements in the final
+            // "else" branch, if it exists
+            if (ifStatements.size() > 0) {
+
+                if (!ifStatements.isEmpty()) {
+                    ifStatements.remove(0);
+                    interpretIf(ifStatements);
+                }
+            }
+        } else {
+            ElseNode elseNode = (ElseNode) firstStatement;
+            List<StatementNode> elseBranchStatements = elseNode.getStatements();
+
+            for (StatementNode branchStatement : elseBranchStatements) {
+                interpretStatement(branchStatement);
+            }
+        }
+    }
+
+    private void interpretWhile(WhileNode whileStatement) {
+        ExpressionNode condition = whileStatement.getCondition();
+        List<StatementNode> statements = whileStatement.getStatements();
+
+        double result = evaluateExpression(condition);
+
+        while (result != 0) {
+            for (StatementNode statement : statements) {
+                interpretStatement(statement);
+            }
+            result = evaluateExpression(condition);
+        }
+    }
+
+    private boolean evaluateCondition(ExpressionNode condition) {
+
+        if (condition instanceof BinaryNode) {
+            BinaryNode binaryNode = (BinaryNode) condition;
+
+            double left, right;
+            boolean boolLeft, boolRight;
+
+            switch (binaryNode.getOperator().getLexeme()) {
+                case "==":
+                case ">":
+                case "<":
+                case "!=":
+                case ">=":
+                case "<=":
+                    left = evaluateExpression(binaryNode.getLeft());
+                    right = evaluateExpression(binaryNode.getRight());
+                    switch (binaryNode.getOperator().getLexeme()) {
+                        case "==":
+                            return left == right;
+                        case ">":
+                            return left > right;
+                        case "<":
+                            return left < right;
+                        case "!=":
+                            return left != right;
+                        case ">=":
+                            return left >= right;
+                        case "<=":
+                            return left <= right;
+                        default:
+                            error("Invalid operator", condition.getPosition());
+                    }
+                case "AND":
+                case "OR":
+                    boolLeft = evaluateCondition(binaryNode.getLeft());
+                    boolRight = evaluateCondition(binaryNode.getRight());
+                    switch (binaryNode.getOperator().getLexeme()) {
+                        case "AND":
+                            return boolLeft && boolRight;
+                        case "OR":
+                            return boolLeft || boolRight;
+                        default:
+                            error("Invalid operator", condition.getPosition());
+                    }
+                default:
+                    error("Invalid operator", condition.getPosition());
+            }
+        } else if (condition instanceof UnaryNode) {
+            UnaryNode unaryNode = (UnaryNode) condition;
+
+            boolean operand = evaluateCondition(unaryNode.getOperand());
+
+            switch (unaryNode.getOperator().getLexeme()) {
+                case "NOT":
+                    return !operand;
+                default:
+                    error("Invalid operator", condition.getPosition());
+            }
+        } else if (condition instanceof LiteralNode) {
+            LiteralNode literalNode = (LiteralNode) condition;
+
+            return literalNode.getValue().getLexeme().equals("TRUE");
+        } else if (condition instanceof VariableNode) {
+            VariableNode variableNode = (VariableNode) condition;
+
+            Symbol symbol = symbolTable.lookup(variableNode.getName());
+
+            return symbol.getValue().equals("TRUE");
+        } else {
+            error("Invalid condition", condition.getPosition());
+        }
+
+        return false;
     }
 
     private void error(String message, Position position) {

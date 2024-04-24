@@ -12,6 +12,10 @@ public class ElseNode extends StatementNode {
         this.statements = statements;
     }
 
+    public List<StatementNode> getStatements() {
+        return statements;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
