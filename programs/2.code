@@ -1,4 +1,4 @@
 BEGIN CODE
-    INT a, b, c, abc = 120
-    DISPLAY: abc
+    INT x = -5
+    DISPLAY: x
 END CODE

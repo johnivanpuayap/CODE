@@ -32,7 +32,7 @@ public class App {
             while ((line = reader.readLine()) != null) {
                 sb.append(line).append("\n");
             }
-            
+
             String input = sb.toString();
             Lexer lexer = new Lexer(input);
 
@@ -41,14 +41,14 @@ public class App {
             for (Token token : tokens) {
                 System.out.println(token);
             }
-            
+
             System.out.println("Parsing...");
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
             System.out.println(programNode);
 
-            
             System.out.println("Analyzing...");
+
             SemanticAnalyzer analyzer = new SemanticAnalyzer(programNode);
             analyzer.analyze();
 
@@ -61,6 +61,6 @@ public class App {
         } catch (IOException e) {
             System.err.println("Error reading file: " + e.getMessage());
             System.exit(1);
-        }     
+        }
     }
 }

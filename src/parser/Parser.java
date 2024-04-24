@@ -31,10 +31,17 @@ public class Parser {
         }
 
         if (!match(Type.NEWLINE)) {
-            error("EWLINE AFTER BEGIN CODE", peek());
+            error("Expected NEWLINE AFTER BEGIN CODE", peek());
         }
 
         if (!match(Type.INDENT)) {
+
+            if (match(Type.END_CODE)) {
+                match(Type.NEWLINE);
+                match(Type.EOF);
+                return new ProgramNode(declarations, programStatements);
+            }
+
             error("Expected INDENTION AFTER BEGIN CODE", peek());
         }
 
@@ -566,12 +573,12 @@ public class Parser {
     }
 
     private void error(String message, Token token) {
-        // System.err.println("Syntax error " + token + ": " + message);
-        // System.exit(1);
+        System.err.println("Syntax error " + token + ": " + message);
+        System.exit(1);
 
         // for debugging purposes so we know where the error is
         // Remove when checking
-        throw new RuntimeException("Syntax error " + token + ": " + message);
+        // throw new RuntimeException("Syntax error " + token + ": " + message);
     }
 
     private Token peek() {
