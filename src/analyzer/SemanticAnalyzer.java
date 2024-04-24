@@ -163,7 +163,6 @@ public class SemanticAnalyzer {
     }
 
     private Type evaluateCondition(ExpressionNode condition) {
-        System.out.println("Evaluating condition: " + condition.toString());
 
         if (condition instanceof BinaryNode) {
             BinaryNode binaryNode = (BinaryNode) condition;

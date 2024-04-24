@@ -34,14 +34,13 @@ public class Interpreter {
                 List<StatementNode> ifStatements = new ArrayList<>();
 
                 ifStatements.add(statement);
-                i++;
 
-                while (i < statements.size() && statements.get(i) instanceof ElseIfNode) {
+                while (i < statements.size() && statements.get(i + 1) instanceof ElseIfNode) {
                     ifStatements.add(statements.get(i));
                     i++;
                 }
 
-                if (i < statements.size() && statements.get(i) instanceof ElseNode) {
+                if (i < statements.size() && statements.get(i + 1) instanceof ElseNode) {
                     ifStatements.add(statements.get(i));
                     i++;
                 }
@@ -60,6 +59,16 @@ public class Interpreter {
 
             AssignmentNode assignment = (AssignmentNode) statement;
             if (assignment.getExpression() instanceof LiteralNode) {
+                Symbol s = symbolTable.lookup(assignment.getVariable().getName());
+
+                LiteralNode literal = (LiteralNode) assignment.getExpression();
+
+                if (s.getType() != literal.getDataType()) {
+                    error("Type mismatch. Assigning a " + literal.getDataType() + " to a " + s.getType(),
+                            assignment.getVariable().getPosition());
+                }
+
+                s.setValue(literal.toString());
 
             } else if (assignment.getExpression() instanceof UnaryNode) {
                 Symbol s = symbolTable.lookup(assignment.getVariable().getName());
@@ -289,13 +298,13 @@ public class Interpreter {
             IfNode ifNode = (IfNode) firstStatement;
 
             ExpressionNode condition = ifNode.getCondition();
-            List<StatementNode> branchStatements = ifNode.getStatements();
+            List<StatementNode> ifBranchStatements = ifNode.getStatements();
 
             boolean conditionResult = evaluateCondition(condition);
 
             if (conditionResult) {
                 // Execute the statements in the current branch if the condition is true
-                for (StatementNode branchStatement : branchStatements) {
+                for (StatementNode branchStatement : ifBranchStatements) {
                     interpretStatement(branchStatement);
                 }
                 return;
@@ -309,17 +318,20 @@ public class Interpreter {
             }
 
         } else if (firstStatement instanceof ElseIfNode) {
-            ElseIfNode ifNode = (ElseIfNode) firstStatement;
+            ElseIfNode elseIfNode = (ElseIfNode) firstStatement;
 
-            ExpressionNode condition = ifNode.getCondition();
-            List<StatementNode> branchStatements = ifNode.getStatements();
+            ExpressionNode condition = elseIfNode.getCondition();
+            List<StatementNode> ifElseBranchStatements = elseIfNode.getStatements();
 
             boolean conditionResult = evaluateCondition(condition);
 
             if (conditionResult) {
-                // Execute the statements in the current branch if the condition is true
-                for (StatementNode branchStatement : branchStatements) {
+
+                for (StatementNode branchStatement : ifElseBranchStatements) {
+                    System.out.println(branchStatement.toString());
+
                     interpretStatement(branchStatement);
+
                 }
                 return;
             }

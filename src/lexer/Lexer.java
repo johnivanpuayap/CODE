@@ -25,9 +25,6 @@ public class Lexer {
 
         while (counter < input.length()) {
             char currentChar = input.charAt(counter);
-
-            System.out.println("Current Char: " + currentChar);
-
             if (input.startsWith("BEGIN CODE", counter)) {
                 tokens.add(new Token(Type.BEGIN_CODE, "BEGIN CODE",
                         new Position(position.getLine(), position.getColumn())));
@@ -263,14 +260,29 @@ public class Lexer {
             else if (Character.isWhitespace(currentChar)) {
                 // Skip whitespace
                 if (currentChar == '\n') {
-                    tokens.add(new Token(Type.NEWLINE, "\n", new Position(position.getLine(), position.getColumn())));
-                    position.newLine();
-                    counter++;
 
-                    List<Token> indentions = checkIndentLevel(position);
-                    if (indentions != null) {
-                        tokens.addAll(indentions);
+                    if (tokens.getLast().getType() == Type.NEWLINE) {
+                        counter++;
+                        position.add(1);
+
+                        while (counter < input.length()
+                                && (input.charAt(counter) == '\n')) {
+                            counter++;
+                            position.add(1);
+                        }
+
+                    } else {
+                        tokens.add(
+                                new Token(Type.NEWLINE, "\n", new Position(position.getLine(), position.getColumn())));
+                        position.newLine();
+                        counter++;
+
+                        List<Token> indentions = checkIndentLevel(position);
+                        if (indentions != null) {
+                            tokens.addAll(indentions);
+                        }
                     }
+
                 } else {
                     position.add(1);
                     counter++;

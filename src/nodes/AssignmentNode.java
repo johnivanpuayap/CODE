@@ -11,7 +11,6 @@ public class AssignmentNode extends StatementNode {
         this.expressionNode = expressionNode;
     }
 
-
     public ExpressionNode getExpression() {
         return expressionNode;
     }
@@ -19,10 +18,10 @@ public class AssignmentNode extends StatementNode {
     public VariableNode getVariable() {
         return variable;
     }
-    
+
     @Override
     public String toString() {
-        return "AssignmentStatementNode {" +
+        return "AssignmentNode {" +
                 "variable=" + variable +
                 ", expressionNode=" + expressionNode +
                 '}';

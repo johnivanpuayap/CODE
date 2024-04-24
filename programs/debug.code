@@ -1,4 +1,12 @@
 BEGIN CODE
-    INT xyz, abc=100
-    xyz= ((abc *5)/10 + 10) * -1
+    INT a, b, c, abc = 12
+    CHAR d, g='a'
+    BOOL e, h = "FALSE"
+    FLOAT f, q = 5.0
+
+    
+    e = "TRUE"
+    DISPLAY: e
+    e = h
+    DISPLAY: e
 END CODE

@@ -16,5 +16,5 @@ BEGIN CODE
     BEGIN IF
         a = 3
     END IF
-    DISPLAY: abc
+    DISPLAY: a
 END CODE
