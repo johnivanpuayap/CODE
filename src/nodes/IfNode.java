@@ -4,11 +4,11 @@ import java.util.List;
 
 import src.utils.Position;
 
-public class IfStatementNode extends StatementNode {
+public class IfNode extends StatementNode {
     private final ExpressionNode condition;
     private final List<StatementNode> statements;
 
-    public IfStatementNode(ExpressionNode condition, List<StatementNode> statements, Position position) {
+    public IfNode(ExpressionNode condition, List<StatementNode> statements, Position position) {
         super(position);
         this.condition = condition;
         this.statements = statements;

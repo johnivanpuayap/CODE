@@ -23,10 +23,10 @@ public class SemanticAnalyzer {
     // Analyze the AST
     public void analyze() {
 
-        for (VariableDeclarationNode declaration: programNode.getDeclarations()) {
-            
+        for (VariableDeclarationNode declaration : programNode.getDeclarations()) {
+
             Symbol symbol = new Symbol(declaration.getType(), declaration.getName(), declaration.getValue());
-            if(!symbolTable.insert(symbol)) {
+            if (!symbolTable.insert(symbol)) {
                 error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
             }
         }
@@ -50,6 +50,10 @@ public class SemanticAnalyzer {
             visitDisplayNode((DisplayNode) node);
         } else if (node instanceof ScanNode) {
             visitScanNode((ScanNode) node);
+        } else if (node instanceof IfNode) {
+            visitIfNode((IfNode) node);
+        } else if (node instanceof WhileNode) {
+            visitWhileNode((WhileNode) node);
         }
     }
 
@@ -57,10 +61,14 @@ public class SemanticAnalyzer {
     private void visitAssignmentNode(AssignmentNode node) {
 
         Symbol symbol = symbolTable.lookup(node.getVariable().getName());
-        
+
         visitVariableNode(node.getVariable());
 
         symbol.setValue(evaluate(node.getExpression()));
+    }
+
+    private String evaluate(ExpressionNode node) {
+        return null;
     }
 
     // Visit a variable node
@@ -95,23 +103,37 @@ public class SemanticAnalyzer {
 
     // Visit a scan node
     private void visitScanNode(ScanNode node) {
-        
+
         for (Token identifier : node.getIdentifiers()) {
             Symbol symbol = symbolTable.lookup(identifier.getLexeme());
-            
+
             if (symbol == null) {
                 error("Variable '" + identifier + "' is not declared", node.getPosition());
             }
         }
     }
 
-    // Evaluate the value of an expression node
-    private String evaluate(ExpressionNode node) {
-        // Dummy implementation for demonstration purposes
-        // You would implement actual evaluation logic based on the AST structure
-        return null;
+    // Visit an if node
+    private void visitIfNode(IfNode node) {
+        evaluateCondition((ExpressionNode) node.getCondition());
+
+        for (StatementNode statement : node.getStatements()) {
+            visit(statement);
+        }
     }
 
+    private void evaluateCondition(ExpressionNode condition) {
+
+    }
+
+    // Visit a while node
+    private void visitWhileNode(WhileNode node) {
+        evaluateCondition(node.getCondition());
+
+        for (StatementNode statement : node.getStatements()) {
+            visit(statement);
+        }
+    }
 
     // Report an error
     private void error(String message, Position position) {

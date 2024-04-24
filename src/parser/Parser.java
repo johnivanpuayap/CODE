@@ -78,7 +78,6 @@ public class Parser {
             error("Invalid Data Type Detected", peek());
         }
 
-        System.out.println(declarations);
         System.out.println("Parsing Statements");
         programStatements.addAll(parseStatements(false));
     }
@@ -160,8 +159,8 @@ public class Parser {
             }
 
             if (match(Type.IF)) {
-                statements.add(parseIfStatement());
-                checkForNewline();
+                statements.addAll(parseIfStatement());
+                System.out.println(statements.getLast());
                 continue;
             }
 
@@ -181,13 +180,13 @@ public class Parser {
 
             if (peek().getType() == Type.DEDENT) {
                 if (isIfStatement) {
-                    if (peek().getType() == Type.END_IF) {
+                    if (peekNext(1).getType() == Type.END_IF) {
                         return statements;
                     } else {
                         error("Expected END IF after DEDENTION", peek());
                     }
                 } else {
-                    if (peek().getType() == Type.END_CODE) {
+                    if (peekNext(1).getType() == Type.END_CODE) {
                         return statements;
                     } else {
                         error("Expected END CODE after DEDENTION", peek());
@@ -425,8 +424,9 @@ public class Parser {
         return new ScanNode(identifiers, scanToken.getPosition());
     }
 
-    private StatementNode parseIfStatement() {
+    private List<StatementNode> parseIfStatement() {
 
+        List<StatementNode> ifStatements = new ArrayList<>();
         Token token = previous();
         System.out.println("Parsing If Statement");
 
@@ -444,13 +444,65 @@ public class Parser {
 
         consume(Type.NEWLINE, "Expected new line after the BEGIN IF statement");
 
+        consume(Type.INDENT, "Expected INDENT after the BEGIN IF statement");
+
         // Parse the body of the if statement
         List<StatementNode> body = parseStatements(true);
 
-        // peek() should be 'NEW LINE'
+        consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
+
+        consume(Type.END_IF, "Expected 'END IF' after the body of the if statement");
+
+        consume(Type.NEWLINE, "Expected new line after the END IF statement");
+
+        ifStatements.add(new IfNode(condition, body, token.getPosition()));
+
+        if (peek().getType() == Type.ELSE_IF) {
+
+            consume(Type.NEWLINE, "Expected new line after the ELSE IF statement");
+            consume(Type.BEGIN_IF, "Expected 'BEGIN ELSE IF' after the conditional expression");
+
+            consume(Type.NEWLINE, "Expected new line after the BEGIN ELSE IF statement");
+
+            consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE IF statement");
+
+            // Parse the body of the if statement
+            List<StatementNode> elseIfBody = parseStatements(true);
+
+            consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
+
+            consume(Type.END_IF, "Expected 'END ELSE IF' after the body of the if statement");
+
+            consume(Type.NEWLINE, "Expected new line after the END ELSE IF statement");
+
+            ifStatements.add(new ElseIfNode(condition, elseIfBody, token.getPosition()));
+        }
+
+        if (peek().getType() == Type.ELSE) {
+
+            Token elseToken = previous();
+
+            consume(Type.NEWLINE, "Expected new line after the END IF statement");
+            consume(Type.BEGIN_IF, "Expected 'BEGIN ELSE' after the conditional expression");
+
+            consume(Type.NEWLINE, "Expected new line after the BEGIN ELSE statement");
+
+            consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE statement");
+
+            // Parse the body of the if statement
+            List<StatementNode> elseBody = parseStatements(true);
+
+            consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
+
+            consume(Type.END_IF, "Expected 'END ELSE' after the body of the if statement");
+
+            consume(Type.NEWLINE, "Expected new line after the END ELSE statement");
+
+            ifStatements.add(new ElseNode(elseBody, elseToken.getPosition()));
+        }
 
         // Create and return the IfStatementNode
-        return new IfStatementNode(condition, body, token.getPosition());
+        return ifStatements;
     }
 
     private StatementNode parseWhileStatement() {
@@ -465,8 +517,11 @@ public class Parser {
     }
 
     private void error(String message, Token token) {
-        System.err.println("Syntax error " + token + ": " + message);
-        System.exit(1);
+        // System.err.println("Syntax error " + token + ": " + message);
+        // System.exit(1);
+
+        // for debugging purposes
+        throw new RuntimeException("Syntax error " + token + ": " + message);
     }
 
     private Token peek() {
@@ -497,6 +552,9 @@ public class Parser {
         Token token = peek();
         if (token.getType() == expectedType) {
             currentTokenIndex++;
+
+            System.out.println("Consumed a Token: " + previous());
+
             return token;
         } else {
             error(errorMessage, token);
