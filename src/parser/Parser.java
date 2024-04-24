@@ -433,7 +433,7 @@ public class Parser {
         // Expect '('
         consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'IF' keyword");
         // Parse the conditional expression
-        ExpressionNode condition = parseConditionalExpression();
+        ExpressionNode ifCondition = parseConditionalExpression();
 
         // Expect ')'
         consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
@@ -455,11 +455,21 @@ public class Parser {
 
         consume(Type.NEWLINE, "Expected new line after the END IF statement");
 
-        ifStatements.add(new IfNode(condition, body, token.getPosition()));
+        ifStatements.add(new IfNode(ifCondition, body, token.getPosition()));
 
-        if (peek().getType() == Type.ELSE_IF) {
+        if (match(Type.ELSE_IF)) {
+
+            Token elseIfToken = previous();
+
+            consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'ELSE IF' keyword");
+            // Parse the conditional expression
+            ExpressionNode elseIfCondition = parseConditionalExpression();
+
+            // Expect ')'
+            consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
 
             consume(Type.NEWLINE, "Expected new line after the ELSE IF statement");
+
             consume(Type.BEGIN_IF, "Expected 'BEGIN ELSE IF' after the conditional expression");
 
             consume(Type.NEWLINE, "Expected new line after the BEGIN ELSE IF statement");
@@ -473,12 +483,12 @@ public class Parser {
 
             consume(Type.END_IF, "Expected 'END ELSE IF' after the body of the if statement");
 
-            consume(Type.NEWLINE, "Expected new line after the END ELSE IF statement");
+            consume(Type.NEWLINE, "Expected new line after the END IF statement");
 
-            ifStatements.add(new ElseIfNode(condition, elseIfBody, token.getPosition()));
+            ifStatements.add(new ElseIfNode(elseIfCondition, elseIfBody, elseIfToken.getPosition()));
         }
 
-        if (peek().getType() == Type.ELSE) {
+        if (match(Type.ELSE)) {
 
             Token elseToken = previous();
 
@@ -496,7 +506,7 @@ public class Parser {
 
             consume(Type.END_IF, "Expected 'END ELSE' after the body of the if statement");
 
-            consume(Type.NEWLINE, "Expected new line after the END ELSE statement");
+            consume(Type.NEWLINE, "Expected new line after the END IF statement");
 
             ifStatements.add(new ElseNode(elseBody, elseToken.getPosition()));
         }
@@ -520,7 +530,8 @@ public class Parser {
         // System.err.println("Syntax error " + token + ": " + message);
         // System.exit(1);
 
-        // for debugging purposes
+        // for debugging purposes so we know where the error is
+        // Remove when checking
         throw new RuntimeException("Syntax error " + token + ": " + message);
     }
 

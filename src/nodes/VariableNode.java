@@ -33,7 +33,7 @@ public class VariableNode extends ExpressionNode {
     public Token getToken(int index) {
         return tokens.get(index);
     }
-    
+
     @Override
     public int countTokens() {
         return 1; // Variables will always have one token

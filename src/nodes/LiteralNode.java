@@ -3,6 +3,7 @@ package src.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import src.utils.Token;
+import src.utils.Type;
 
 public class LiteralNode extends ExpressionNode {
 
@@ -17,6 +18,22 @@ public class LiteralNode extends ExpressionNode {
 
     public Token getValue() {
         return value;
+    }
+
+    public Type getDataType() {
+        String lexeme = value.getLexeme();
+
+        if (lexeme.matches("[0-9]+")) {
+            return Type.INT;
+        } else if (lexeme.matches("[0-9]+\\.[0-9]+")) {
+            return Type.FLOAT;
+        } else if (lexeme.matches("'[^']*'")) { // Updated regex for characters
+            return Type.CHAR;
+        } else if (lexeme.equals("TRUE") || lexeme.equals("FALSE")) {
+            return Type.BOOL;
+        }
+
+        return null;
     }
 
     @Override

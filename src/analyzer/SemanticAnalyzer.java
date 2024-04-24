@@ -5,6 +5,7 @@ import src.utils.Position;
 import src.utils.Symbol;
 import src.utils.SymbolTable;
 import src.utils.Token;
+import src.utils.Type;
 
 import java.util.List;
 
@@ -34,11 +35,7 @@ public class SemanticAnalyzer {
         initialSymbolTable = symbolTable;
 
         for (StatementNode statement : programNode.getStatements()) {
-            try {
-                visit(statement);
-            } catch (Exception e) {
-                System.err.println(e.getMessage());
-            }
+            visit(statement);
         }
     }
 
@@ -60,11 +57,31 @@ public class SemanticAnalyzer {
     // Visit an assignment node
     private void visitAssignmentNode(AssignmentNode node) {
 
-        Symbol symbol = symbolTable.lookup(node.getVariable().getName());
+        VariableNode variableNode = node.getVariable();
+        ExpressionNode expressionNode = node.getExpression();
 
-        visitVariableNode(node.getVariable());
+        // We pass the type of the variable to the visitVariableNode method since we
+        // don't need to check the type of the variable
+        visitVariableNode(variableNode, variableNode.getToken(0).getType());
 
-        symbol.setValue(evaluate(node.getExpression()));
+        Symbol leftSymbol = symbolTable.lookup(node.getVariable().getName());
+
+        if (expressionNode instanceof VariableNode) {
+
+            visitVariableNode((VariableNode) expressionNode, variableNode.getToken(0).getType());
+
+            Symbol rightSymbol = symbolTable.lookup(((VariableNode) expressionNode).getName());
+
+            leftSymbol.setValue(rightSymbol.getValue());
+
+        } else if (expressionNode instanceof LiteralNode) {
+
+            if (variableNode.getToken(1).getType() != ((LiteralNode) expressionNode).getDataType()) {
+                error("Invalid type in assignment", expressionNode.getPosition());
+            }
+
+            leftSymbol.setValue(((LiteralNode) expressionNode).getValue().getLexeme());
+        }
     }
 
     private String evaluate(ExpressionNode node) {
@@ -72,7 +89,7 @@ public class SemanticAnalyzer {
     }
 
     // Visit a variable node
-    private void visitVariableNode(VariableNode node) {
+    private void visitVariableNode(VariableNode node, Type type) {
 
         String name = node.getName();
 
@@ -82,6 +99,14 @@ public class SemanticAnalyzer {
         }
         if (!symbol.isInitialized()) {
             error("Variable '" + name + "' is not initialized", node.getPosition());
+        }
+
+        if (type == null) {
+            return;
+        }
+
+        if (symbol.getType() != type) {
+            error("Variable '" + name + "' is not of type " + type, node.getPosition());
         }
     }
 
@@ -122,8 +147,53 @@ public class SemanticAnalyzer {
         }
     }
 
-    private void evaluateCondition(ExpressionNode condition) {
+    private Type evaluateCondition(ExpressionNode condition) {
+        System.out.println("Evaluating condition: " + condition.toString());
 
+        if (condition instanceof BinaryNode) {
+            BinaryNode binaryNode = (BinaryNode) condition;
+
+            Type left = evaluateCondition(binaryNode.getLeft());
+            Type right = evaluateCondition(binaryNode.getRight());
+
+            if (binaryNode.getOperator().getType() == Type.EQUAL
+                    || binaryNode.getOperator().getType() == Type.NOT_EQUAL) {
+
+                if (left != right) {
+
+                    error("Invalid types in condition. Left is " + left + " and right is " + right,
+                            condition.getPosition());
+                }
+            } else {
+                if (left != Type.INT || right != Type.INT) {
+                    error("Invalid types in condition", condition.getPosition());
+                }
+            }
+
+        } else if (condition instanceof VariableNode) {
+
+            VariableNode variableNode = (VariableNode) condition;
+
+            System.out.println("Variable: " + variableNode.getName());
+
+            // We pass the type of the variable to the visitVariableNode method since we
+            // don't need to check the type of the variable
+            visitVariableNode(variableNode, null);
+
+            Symbol symbol = symbolTable.lookup(variableNode.getName());
+
+            return symbol.getType();
+
+        } else if (condition instanceof LiteralNode) {
+
+            System.out.println("Literal: " + ((LiteralNode) condition).getValue().getLexeme());
+
+            return ((LiteralNode) condition).getDataType();
+        } else {
+            error("Invalid condition", condition.getPosition());
+        }
+
+        return null;
     }
 
     // Visit a while node
@@ -137,7 +207,12 @@ public class SemanticAnalyzer {
 
     // Report an error
     private void error(String message, Position position) {
-        System.err.println("Error at " + position + ": " + message);
+        // System.err.println("Error at " + position + ": " + message);
+        // System.exit(1);
+
+        // for debugging purposes so we know where the error is
+        // Remove when checking
+        throw new RuntimeException("Error at " + position + ": " + message);
     }
 
     public SymbolTable getInitialSymbolTable() {

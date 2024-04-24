@@ -13,7 +13,7 @@
             "request": "launch",
             "mainClass": "App",
             "projectName": "CODE_33f30762",
-            "args": ["programs\\if-else.code"] // Add your arguments here
+            "args": ["programs\\else-if.code"] // Add your arguments here
         },
         {
             "type": "java",

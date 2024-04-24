@@ -1,11 +1,10 @@
 package src.utils;
 
-
 public class Symbol {
     Type type;
     String name;
     String value;
-    boolean initialized; 
+    boolean initialized;
 
     public Symbol(Type type, String name) {
         this.name = name;

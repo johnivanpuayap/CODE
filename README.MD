@@ -4,24 +4,25 @@ This is a simple interpreter written in Java. It interprets code written in a cu
 
 ## How to Run
 
-1. Compile the Java files: 
+1. Compile the Java files:
 
-    ```sh
-    javac javac App.java
-    ```
+   ```sh
+   javac javac App.java
+   ```
 
 2. Run the Interpreter class.
-    
-    ```sh
-    java App <input file directory>
-    ```
 
-    E.G.
-    
-    ```sh
-    java App programs/basic.code
-    ```
-    Note: file should end in .code
+   ```sh
+   java App <input file directory>
+   ```
+
+   E.G.
+
+   ```sh
+   java App programs/basic.code
+   ```
+
+   Note: file should end in .code
 
 # How It Works
 
@@ -35,7 +36,6 @@ The interpreter works in several stages:
 
 4. Interpretation: The Interpreter class interprets the AST and executes the code.
 
-
 # Coding Consistency
 
 - Parser, every function should return a node
@@ -45,75 +45,75 @@ The interpreter works in several stages:
 # TODO
 
 Increment 1
-- [X] Basic Program Structure (BEGIN CODE END CODE block)
-    - [X] Check for Indentation
-    - [X] Variable Declaration should only happen after begin code
-    - [X] Executable Code must only happen after the declaration
-    - [X] Only one Statement per line
-- [X] Comments
-    - [X] Comments Ignore Indentation
-    - [ ] Comments Can Be Put Anywhere, Create a function to ignore comments
-- [X] Variable Declaration and Initialization
-    - [X] Check if the Variable Name is valid
-    - [X] INT
-        - [X] Check if variable type is valid
-        - [ ] Check if the it only uses 4 bytes
-    - [X] FLOAT
-        - [ ] Check if variable type is valid
-        - [ ] Check if the it only uses 4 bytes
-    - [X] CHAR
-    - [X] BOOLEAN
+
+- [x] Basic Program Structure (BEGIN CODE END CODE block)
+  - [x] Check for Indentation
+  - [x] Variable Declaration should only happen after begin code
+  - [x] Executable Code must only happen after the declaration
+  - [x] Only one Statement per line
+- [x] Comments
+  - [x] Comments Ignore Indentation
+  - [ ] Comments Can Be Put Anywhere, Create a function to ignore comments
+- [x] Variable Declaration and Initialization
+  - [x] Check if the Variable Name is valid
+  - [x] INT
+    - [x] Check if variable type is valid
+    - [ ] Check if the it only uses 4 bytes
+  - [x] FLOAT
+    - [ ] Check if variable type is valid
+    - [ ] Check if the it only uses 4 bytes
+  - [x] CHAR
+  - [x] BOOLEAN
 - [ ] Reserved words
-    - [X] Check for variable names that are only similar in uppercase
-    - [ ] Check for Usage of Reserved Words in Variable Declaration
-    - [ ] Check for Usage of Reserved Words in Statements
+  - [x] Check for variable names that are only similar in uppercase
+  - [ ] Check for Usage of Reserved Words in Variable Declaration
+  - [ ] Check for Usage of Reserved Words in Statements
 - [ ] DISPLAY function
-    - [X] concatenation (&)
-    - [X] next line ($)
-    - [X] escape code
-- [X] SCAN function
+  - [ ] concatenation (&)
+  - [x] next line ($)
+  - [x] escape code
+- [x] SCAN function
 
-- [X] Arithmetic operation
-    - [X] Operator Precendence
-    - [X] Parentheses
-    - [ ] Unary Operation
-    - [ ] Modulo Operation
-- [X] Assignment Statements
-    - [X] Single Assignment
-        - [X] Check if assignment is valid
-        - [ ] Check if the all the variable is defined
-        - [X] If assignee is variable, check if it is initialized
-    - [X] Multiple Assignment like x=y=z or x=y=5
-        - [X] Check if all the identifiers exist
-        - [X] Check if the last one is initialized
-        - [ ] Check if all the data types are the same as the last one
+- [x] Arithmetic operation
+  - [x] Operator Precendence
+  - [x] Parentheses
+  - [ ] Unary Operation
+  - [ ] Modulo Operation
+- [x] Assignment Statements
+  - [x] Single Assignment
+    - [x] Check if assignment is valid
+    - [ ] Check if the all the variable is defined
+    - [x] If assignee is variable, check if it is initialized
+  - [x] Multiple Assignment like x=y=z or x=y=5
+    - [x] Check if all the identifiers exist
+    - [x] Check if the last one is initialized
+    - [ ] Check if all the data types are the same as the last one
 - [ ] Comparison Operators
-    - [ ] Greater than >, Lesser than <
-    - [ ] Greater than or Equal to >=, Less than or Equal to <=
-    - [ ] Equal ==, Not Equal <>
+  - [ ] Greater than >, Lesser than <
+  - [ ] Greater than or Equal to >=, Less than or Equal to <=
+  - [ ] Equal ==, Not Equal <>
 - [ ] Logical Operators
-    - [ ] AND
-    - [ ] OR
-    - [ ] NOT
 
-- [X] Unary Operators
-    - [X] - Negative
-    - [X] + Positive
-    - [ ] Multiple Unary Operators
+  - [ ] AND
+  - [ ] OR
+  - [ ] NOT
+
+- [x] Unary Operators
+
+  - [x] - Negative
+  - [x] - Positive
+  - [ ] Multiple Unary Operators
 
 - [ ] If-Else
-    - [ ] Tokenize 
-    - [ ] Check Syntax
+
+  - [ ] Tokenize
+  - [ ] Check Syntax
 
 - [ ] If-Else With Else IF
 
 - [ ] If-Else with Mutlitple Else If
 - [ ] Check for Indention Errors
 
-
 Increment 5
-- [ ] LOOPS
 
-Final Presentation
-- [ ] Fix Semantics Analyzer
-- [ ] Improve Error Handling
+- [ ] LOOPS
