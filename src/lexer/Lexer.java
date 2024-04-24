@@ -59,9 +59,7 @@ public class Lexer {
                 tokens.add(new Token(Type.OR, "NOT", new Position(position.getLine(), position.getColumn())));
                 position.add("NOT".length());
                 counter += "NOT".length();
-            }
-
-            else if (input.startsWith("IF", counter)) {
+            } else if (input.startsWith("IF", counter)) {
                 tokens.add(new Token(Type.IF, "IF", new Position(position.getLine(), position.getColumn())));
                 position.add("IF".length());
                 counter += "IF".length();
@@ -82,9 +80,7 @@ public class Lexer {
                 tokens.add(new Token(Type.END_IF, "END IF", new Position(position.getLine(), position.getColumn())));
                 position.add("END IF".length());
                 counter += "END IF".length();
-            }
-
-            else if (input.startsWith("WHILE", counter)) {
+            } else if (input.startsWith("WHILE", counter)) {
                 tokens.add(new Token(Type.WHILE, "WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("WHILE".length());
                 counter += "WHILE".length();
@@ -98,9 +94,7 @@ public class Lexer {
                         new Token(Type.END_WHILE, "END WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("END WHILE".length());
                 counter += "END WHILE".length();
-            }
-
-            else if (Character.isLetter(currentChar) || currentChar == '_') {
+            } else if (Character.isLetter(currentChar) || currentChar == '_') {
                 tokens.add(tokenizeIdentifier());
             } else if (Character.isDigit(currentChar)) {
                 tokens.add(tokenizeLiteral());
@@ -317,6 +311,7 @@ public class Lexer {
     }
 
     private Token tokenizeLiteral() {
+
         StringBuilder literal = new StringBuilder();
 
         while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != ' '

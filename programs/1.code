@@ -1,3 +1,5 @@
 BEGIN CODE
-    int
+    INT a = 1, b
+    b = a + 100
+    DISPLAY: a & b
 END CODE

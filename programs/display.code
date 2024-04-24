@@ -1,4 +1,4 @@
 BEGIN CODE
-    INT a1=10
-    DISPLAY: a1
+    INT xyz = 100
+    DISPLAY: & "a"
 END CODE

@@ -333,6 +333,11 @@ public class Parser {
             return new VariableNode(previous());
         } else if (match(Type.LEFT_PARENTHESIS)) {
             ExpressionNode expression = parseExpression();
+
+            if (!match(Type.RIGHT_PARENTHESIS)) {
+                error("Expected ')' after expression.", peek());
+            }
+
             return expression;
 
         } else if (match(Type.POSITIVE) || match(Type.NEGATIVE)) {
@@ -375,30 +380,54 @@ public class Parser {
 
         while (peek().getType() != Type.NEWLINE) {
 
-            if (match(Type.IDENTIFIER)) {
+            System.out.println("Current Token: " + peek());
+
+            if (match(Type.CONCATENATION)) {
+
+                if (arguments.size() == 0) {
+                    error("Missing argument before concatenation", previous());
+                }
+
+                if (arguments.getLast().getType() == Type.CONCATENATION) {
+                    error("Can't add another concatenation after a concatenation", previous());
+                }
 
                 arguments.add(previous());
+            }
 
-                if (peek().getType() == Type.CONCATENATION ||
-                        peek().getType() == Type.NEXT_LINE) {
-                    arguments.add(consume(peek().getType(), "Expected concatenation symbol or newline"));
+            if (match(Type.IDENTIFIER) || match(Type.NEXT_LINE)) {
 
-                } else if (peek().getType() == Type.ESCAPE_CODE_OPEN) {
-                    arguments.add(peek());
-                    currentTokenIndex++;
-                    arguments.add(consume(Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
-                    consume(Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
-
-                } else if (peek().getType() != Type.NEWLINE) {
-                    error("Expected concatenation symbol (&)", peek());
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
+                    error("Can't add another argument without concatention", previous());
                 }
-            } else {
-                error("Expected an identifier or literal after concatenation symbol", peek());
+
+                arguments.add(previous());
+            }
+
+            if (match(Type.ESCAPE_CODE_OPEN)) {
+
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
+                    error("Can't add another argument without concatention", previous());
+                }
+
+                arguments.add(consume(Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
+                consume(Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
+            }
+
+            if (match(Type.DELIMITER)) {
+
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
+                    error("Can't add another argument without concatention", previous());
+                }
+
+                arguments.add(consume(Type.STRING_LITERAL, "Expected string literal after delimiter"));
+
+                consume(Type.DELIMITER, "Expected closing delimiter after the string literal");
             }
         }
 
         if (previous().getType() == Type.CONCATENATION) {
-            error("Expected identifier or literal", previous());
+            error("Missing argument after concatenation symbol", previous());
         }
 
         return new DisplayNode(arguments);

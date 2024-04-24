@@ -62,13 +62,13 @@ public class SemanticAnalyzer {
 
         // We pass the type of the variable to the visitVariableNode method since we
         // don't need to check the type of the variable
-        visitVariableNode(variableNode, variableNode.getToken(0).getType());
+        visitVariableNode(variableNode, null);
 
         Symbol leftSymbol = symbolTable.lookup(node.getVariable().getName());
 
         if (expressionNode instanceof VariableNode) {
 
-            visitVariableNode((VariableNode) expressionNode, variableNode.getToken(0).getType());
+            visitVariableNode((VariableNode) expressionNode, leftSymbol.getType());
 
             Symbol rightSymbol = symbolTable.lookup(((VariableNode) expressionNode).getName());
 
@@ -76,8 +76,10 @@ public class SemanticAnalyzer {
 
         } else if (expressionNode instanceof LiteralNode) {
 
-            if (variableNode.getToken(1).getType() != ((LiteralNode) expressionNode).getDataType()) {
-                error("Invalid type in assignment", expressionNode.getPosition());
+            if (leftSymbol.getType() != ((LiteralNode) expressionNode).getDataType()) {
+
+                error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
+                        + ((LiteralNode) expressionNode).getDataType(), expressionNode.getPosition());
             }
 
             leftSymbol.setValue(((LiteralNode) expressionNode).getValue().getLexeme());
@@ -116,12 +118,16 @@ public class SemanticAnalyzer {
 
         for (Token argument : arguments) {
 
-            Symbol symbol = symbolTable.lookup(argument.getLexeme());
-            if (symbol == null) {
-                error("Variable '" + argument.getLexeme() + "' is not declared", node.getPosition());
-            }
-            if (!symbol.isInitialized()) {
-                error("Variable '" + argument.getLexeme() + "' is not initialized", node.getPosition());
+            if (argument.getType() == Type.IDENTIFIER) {
+                Symbol symbol = symbolTable.lookup(argument.getLexeme());
+
+                if (symbol == null) {
+                    error("Variable '" + argument.getLexeme() + "' is not declared", node.getPosition());
+                }
+
+                if (!symbol.isInitialized()) {
+                    error("Variable '" + argument.getLexeme() + "' is not initialized", node.getPosition());
+                }
             }
         }
     }
@@ -130,6 +136,7 @@ public class SemanticAnalyzer {
     private void visitScanNode(ScanNode node) {
 
         for (Token identifier : node.getIdentifiers()) {
+
             Symbol symbol = symbolTable.lookup(identifier.getLexeme());
 
             if (symbol == null) {
