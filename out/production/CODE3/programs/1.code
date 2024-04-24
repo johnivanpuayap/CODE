@@ -1,3 +1,4 @@
 BEGIN CODE
-    int
+    int a
+    SCAN: a
 END CODE

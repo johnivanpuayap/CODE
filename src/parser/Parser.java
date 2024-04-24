@@ -9,6 +9,8 @@ import src.utils.Token;
 import src.utils.Type;
 import src.nodes.*;
 
+import static java.lang.Boolean.parseBoolean;
+
 public class Parser {
     private final List<Token> tokens;
     private int currentTokenIndex = 0;
@@ -310,6 +312,7 @@ public class Parser {
         return new AssignmentNode(variable, expression);
     }
 
+
     private ExpressionNode parseExpression() {
         if (peek().getType() == Type.BOOL) {
             return parseBooleanExpression();
@@ -321,19 +324,86 @@ public class Parser {
     private ExpressionNode parseBooleanExpression() {
         if (match(Type.NOT)) {
             Token notToken = previous();
-            ExpressionNode right = parsePrimary();
+            ExpressionNode right = parseBooleanExpression(); // Parse the right expression
             return new UnaryNode(notToken, right);
         } else {
-            ExpressionNode left = parsePrimary();
+            ExpressionNode left = parseExpression(); // Parse the left expression
 
+            // Check if the left expression contains comparison tokens
+            if (containsComparisonTokens(left)) {
+                // If it does, parse it as a comparison
+                left = parseComparison();
+            } else {
+                // Otherwise, parse it as a boolean primary
+                left = parseBooleanPrimary();
+            }
+
+            // Check for logical operators (AND or OR)
             while (match(Type.AND) || match(Type.OR)) {
                 Token operatorToken = previous();
-                ExpressionNode right = parsePrimary();
+                ExpressionNode right = parseExpression(); // Parse the right expression
+
+                // Check if the right expression contains comparison tokens
+                if (containsComparisonTokens(right)) {
+                    // If it does, parse it as a comparison
+                    right = parseComparison();
+                } else {
+                    // Otherwise, parse it as a boolean primary
+                    right = parseBooleanPrimary();
+                }
+
+                // Create a binary node with the left and right expressions
                 left = new BinaryNode(left, operatorToken, right);
             }
 
             return left;
         }
+    }
+
+    private boolean containsComparisonTokens(ExpressionNode expression) {
+        if (expression instanceof BinaryNode) {
+            BinaryNode binaryNode = (BinaryNode) expression;
+            Token operatorToken = binaryNode.getOperator();
+
+            // Check if the operator token is a comparison token
+            return operatorToken.getType() == Type.GREATER || operatorToken.getType() == Type.LESS ||
+                    operatorToken.getType() == Type.EQUAL || operatorToken.getType() == Type.NOT_EQUAL ||
+                    operatorToken.getType() == Type.GREATER_EQUAL || operatorToken.getType() == Type.LESS_EQUAL;
+        }
+
+        return false; // If the expression is not a binary node, it doesn't contain comparison tokens
+    }
+
+
+    private ExpressionNode parseBooleanPrimary() {
+        if (match(Type.LITERAL)) {
+            // If the token is a boolean literal, create a LiteralNode
+            Token literalToken = previous();
+            return new LiteralNode(literalToken);
+        } else if (match(Type.IDENTIFIER)) {
+            // If the token is an identifier, create a VariableNode
+            Token identifierToken = previous();
+            return new VariableNode(identifierToken);
+        } else {
+            // Otherwise, it's an error
+            error("Expect boolean primary expression.", peek());
+            return null;
+        }
+    }
+
+
+
+
+    private ExpressionNode parseComparison() {
+        ExpressionNode left = parseAdditionSubtraction(); // Parse the first expression
+
+        while (match(Type.GREATER) || match(Type.LESS) || match(Type.EQUAL) || match(Type.NOT_EQUAL) || match(Type.GREATER_EQUAL) || match(Type.LESS_EQUAL)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseAdditionSubtraction(); // Parse the next expression
+            left = new BinaryNode(left, operatorToken, right);
+        }
+
+        return left;
     }
 
 
