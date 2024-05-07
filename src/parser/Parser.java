@@ -144,6 +144,14 @@ public class Parser {
                     statements.add(parseArithmeticStatement());
                     checkForNewline();
 
+                } else if (peekNext(2).getType() == Type.LESS ||
+                        peekNext(2).getType() == Type.GREATER ||
+                        peekNext(2).getType() == Type.LESS_EQUAL ||
+                        peekNext(2).getType() == Type.GREATER_EQUAL ||
+                        peekNext(2).getType() == Type.NOT_EQUAL ||
+                        peekNext(2).getType() == Type.EQUAL) {
+                    statements.add(parseLogicalStatement());
+                    checkForNewline();
                 } else {
 
                     statements.addAll(parseAssignmentStatement());
@@ -288,6 +296,33 @@ public class Parser {
         return assignments;
     }
 
+
+    private StatementNode parseLogicalStatement() {
+        // Consume left parenthesis '('
+        consume(Type.LEFT_PARENTHESIS, "Expected '('");
+        ExpressionNode leftExpression = parseExpression(); // Parse the left boolean expression
+
+        Token operatorToken = peek(); // Peek the next token
+        Type operatorType = operatorToken.getType(); // Get the type of the next token
+
+        if (operatorType == Type.AND || operatorType == Type.OR || operatorType == Type.NOT) {
+            // Consume the operator token
+            operatorToken = consume(operatorType, "Expected logical operator (AND, OR, NOT)");
+        } else {
+            error("Invalid Logical Operator", operatorToken);
+        }
+
+        ExpressionNode rightExpression = parseExpression(); // Parse the right boolean expression
+
+        // Consume right parenthesis
+        consume(Type.RIGHT_PARENTHESIS, "Expected ')'");
+
+        return new LogicalStatementNode(leftExpression, operatorToken, rightExpression); // Passing operatorToken instead of operatorType
+    }
+
+
+
+
     private StatementNode parseArithmeticStatement() {
         // Ensure that there are enough tokens to represent an assignment statement
         if (currentTokenIndex + 4 >= tokens.size()) {
@@ -310,8 +345,36 @@ public class Parser {
     private ExpressionNode parseExpression() {
         ExpressionNode left = parseAdditionSubtraction();
 
+        // Peek the next token
+        Token operatorToken = peek();
+        Type operatorType = operatorToken.getType();
+
+        // Check if the operator is a comparison operator
+        if (isComparisonOperator(operatorType)) {
+            // Parse comparison expression
+            return parseComparisonExpression(left);
+        }
         return left;
     }
+
+    private ExpressionNode parseComparisonExpression(ExpressionNode left) {
+        Token operatorToken = previous(); // Get the comparison operator token
+        // Parse the right expression
+        ExpressionNode right = parseExpression();
+        // Create a BinaryNode with left expression, operator token, and right expression
+        return new BinaryNode(left, operatorToken, right);
+    }
+
+
+    // Helper method to check if the token type is a comparison operator
+    private boolean isComparisonOperator(Type type) {
+        return type == Type.GREATER ||
+                type == Type.LESS ||
+                type == Type.NOT_EQUAL ||
+                type == Type.GREATER_EQUAL ||
+                type == Type.LESS_EQUAL;
+    }
+
 
     private ExpressionNode parseAdditionSubtraction() {
         ExpressionNode left = parseMultiplicationDivision();
@@ -540,20 +603,13 @@ public class Parser {
 
             consume(Type.NEWLINE, "Expected new line after the END IF statement");
             consume(Type.BEGIN_IF, "Expected 'BEGIN ELSE' after the conditional expression");
-
             consume(Type.NEWLINE, "Expected new line after the BEGIN ELSE statement");
-
             consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE statement");
-
             // Parse the body of the if statement
             List<StatementNode> elseBody = parseStatements(true);
-
             consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
-
             consume(Type.END_IF, "Expected 'END ELSE' after the body of the if statement");
-
             consume(Type.NEWLINE, "Expected new line after the END IF statement");
-
             ifStatements.add(new ElseNode(elseBody, elseToken.getPosition()));
         }
 
