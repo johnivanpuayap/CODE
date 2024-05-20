@@ -1,0 +1,6 @@
+BEGIN CODE
+	INT x, z 
+	BOOL int="TRUE"
+	x=z=6
+	# this is a comment
+END CODE

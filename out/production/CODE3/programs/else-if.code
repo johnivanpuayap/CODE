@@ -1,14 +1,20 @@
 BEGIN CODE
-    INT a, b, c, abc = 15
-    DISPLAY: abc
+    INT a, b, c, abc = 12
     IF (abc == 15)
     BEGIN IF
         a = 1
     END IF
     ELSE IF (abc == 12)
     BEGIN IF
-        b = 1
+        a = 2
+    END IF
+    ELSE IF (abc == 13)
+    BEGIN IF
+        a = 4
     END IF
     ELSE 
-        c = 1
+    BEGIN IF
+        a = 3
+    END IF
+    DISPLAY: a
 END CODE

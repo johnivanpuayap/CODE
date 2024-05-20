@@ -1,4 +1,5 @@
 BEGIN CODE
     INT xyz, abc=100
-    a=b=c
+    xyz = abc
+    DISPLAY: xyz $ []
 END CODE

@@ -1,4 +1,0 @@
-BEGIN CODE
-    INT a1=10, b=100, s2, _a=1
-    INT TRUE
-END CODE

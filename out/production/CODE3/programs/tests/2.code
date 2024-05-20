@@ -1,0 +1,4 @@
+BEGIN CODE
+    INT a, b, c, abc = 15
+    DISPLAY: abc
+END CODE

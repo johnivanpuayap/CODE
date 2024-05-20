@@ -3,5 +3,5 @@ BEGIN CODE
     CHAR s1
     #This is a comment
     SCAN: s1, s2
-    DISPLAY: s1 & s2
+    DISPLAY: s1
 END CODE    

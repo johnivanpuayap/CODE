@@ -1,9 +1,6 @@
 package src.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 import src.utils.Token;
 import src.utils.Type;
@@ -152,12 +149,27 @@ public class Parser {
 
                 } else if (peek().getType() == Type.ASSIGNMENT &&
                         (peekNext(1).getType() == Type.LEFT_PARENTHESIS)) {
+                    Token notToken = peekNext(2);
+                    Token nextToken = peekNext(3); // 3 tokens after the = sign
+                    Token nextnextToken = peekNext(5); // 5 tokens after = should check if AND , OR is present
+                    Set<Type> comparisonOperators = EnumSet.of(
+                            Type.EQUAL, Type.NOT_EQUAL, Type.GREATER, Type.GREATER_EQUAL,
+                            Type.LESS, Type.LESS_EQUAL
+                    );
 
-                    statements.add(parseArithmeticStatement());
-                    checkForNewline();
+                    Set<Type> logicalOperators = EnumSet.of(
+                            Type.AND, Type.OR
+                    );
+
+                    if(nextToken == comparisonOperators && nextnextToken == logicalOperators){
+                        parseLogicalOperation();
+                    }else if(notToken.getType() == Type.NOT){
+                        parseNotOperation();
+                    }else{
+                        statements.add(parseArithmeticStatement());
+                    }
 
                 } else {
-
                     statements.addAll(parseAssignmentStatement());
                     checkForNewline();
                 }
@@ -334,6 +346,45 @@ public class Parser {
         }
         return left;
     }
+
+    private ExpressionNode parseNotOperation() {
+        if (match(Type.NOT)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseNotOperation(); // Recursively handle nested NOT operations
+            if (right == null) {
+                right = parsePrimary(); // Fall back to parsing primary expression if no nested NOT found
+            }
+            return new UnaryNode(operatorToken, right);
+        } else {
+            return parsePrimary(); // If no NOT operator, parse as a primary expression
+        }
+    }
+    //just copied from parseAdditionSubtraction not yet implemented
+    private ExpressionNode parseLogicalOperation() {
+        ExpressionNode left = parseComparison(); // Parse left-hand side of the logical operation
+
+        while (match(Type.AND) || match(Type.OR)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseComparison(); // Parse right-hand side of the logical operation
+            left = new BinaryNode(left, operatorToken, right); // Create a BinaryNode for the logical operation
+        }
+
+        return left;
+    }
+
+    private ExpressionNode parseComparison() {
+        ExpressionNode left = parseAdditionSubtraction(); // Parse left-hand side of the comparison
+
+        while (match(Type.EQUAL) || match(Type.NOT_EQUAL) || match(Type.GREATER) ||
+                match(Type.GREATER_EQUAL) || match(Type.LESS) || match(Type.LESS_EQUAL)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseAdditionSubtraction(); // Parse right-hand side of the comparison
+            left = new BinaryNode(left, operatorToken, right); // Create a BinaryNode for the comparison
+        }
+
+        return left;
+    }
+
 
     private ExpressionNode parseMultiplicationDivision() {
         ExpressionNode left = parsePrimary();

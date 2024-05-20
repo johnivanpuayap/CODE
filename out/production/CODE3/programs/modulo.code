@@ -1,0 +1,5 @@
+BEGIN CODE
+    INT abc = 5
+    abc = 10 % 4
+    DISPLAY: abc
+END CODE

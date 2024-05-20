@@ -25,12 +25,14 @@ public class Lexer {
 
         while (counter < input.length()) {
             char currentChar = input.charAt(counter);
+
             if (input.startsWith("BEGIN CODE", counter)) {
                 tokens.add(new Token(Type.BEGIN_CODE, "BEGIN CODE",
                         new Position(position.getLine(), position.getColumn())));
                 position.add("BEGIN CODE".length());
                 counter += "BEGIN CODE".length();
-            } else if (input.startsWith("END CODE", counter)) {
+            }
+            else if (input.startsWith("END CODE", counter)) {
                 tokens.add(
                         new Token(Type.END_CODE, "END CODE", new Position(position.getLine(), position.getColumn())));
                 position.add("END CODE".length());

@@ -1,4 +1,26 @@
 BEGIN CODE
-    INT a1=10
-    DISPLAY: a1
+    INT a, b, c, abc = 12
+    CHAR d, g='a'
+    BOOL e, h = "FALSE"
+    FLOAT f, q = 5.0
+
+    d = 'c'
+    DISPLAY: d
+    d = g
+    DISPLAY: d
+
+    e = "TRUE"
+    DISPLAY: e
+    e = f
+    DISPLAY: f
+
+    f = 4.05
+    DISPLAY: f
+    f = 5
+    DISPLAY: f
+    f = q
+    DISPLAY: f
+    f = abc
+    DISPLAY: f
+
 END CODE

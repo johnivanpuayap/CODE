@@ -371,7 +371,6 @@ public class Interpreter {
     }
 
     private boolean evaluateCondition(ExpressionNode condition) {
-
         if (condition instanceof BinaryNode) {
             BinaryNode binaryNode = (BinaryNode) condition;
 
@@ -380,41 +379,37 @@ public class Interpreter {
 
             switch (binaryNode.getOperator().getLexeme()) {
                 case "==":
+                    left = evaluateExpression(binaryNode.getLeft());
+                    right = evaluateExpression(binaryNode.getRight());
+                    return left == right;
                 case ">":
+                    left = evaluateExpression(binaryNode.getLeft());
+                    right = evaluateExpression(binaryNode.getRight());
+                    return left > right;
                 case "<":
+                    left = evaluateExpression(binaryNode.getLeft());
+                    right = evaluateExpression(binaryNode.getRight());
+                    return left < right;
                 case "!=":
+                    left = evaluateExpression(binaryNode.getLeft());
+                    right = evaluateExpression(binaryNode.getRight());
+                    return left != right;
                 case ">=":
+                    left = evaluateExpression(binaryNode.getLeft());
+                    right = evaluateExpression(binaryNode.getRight());
+                    return left >= right;
                 case "<=":
                     left = evaluateExpression(binaryNode.getLeft());
                     right = evaluateExpression(binaryNode.getRight());
-                    switch (binaryNode.getOperator().getLexeme()) {
-                        case "==":
-                            return left == right;
-                        case ">":
-                            return left > right;
-                        case "<":
-                            return left < right;
-                        case "!=":
-                            return left != right;
-                        case ">=":
-                            return left >= right;
-                        case "<=":
-                            return left <= right;
-                        default:
-                            error("Invalid operator", condition.getPosition());
-                    }
+                    return left <= right;
                 case "AND":
+                    boolLeft = evaluateCondition(binaryNode.getLeft());
+                    boolRight = evaluateCondition(binaryNode.getRight());
+                    return boolLeft && boolRight;
                 case "OR":
                     boolLeft = evaluateCondition(binaryNode.getLeft());
                     boolRight = evaluateCondition(binaryNode.getRight());
-                    switch (binaryNode.getOperator().getLexeme()) {
-                        case "AND":
-                            return boolLeft && boolRight;
-                        case "OR":
-                            return boolLeft || boolRight;
-                        default:
-                            error("Invalid operator", condition.getPosition());
-                    }
+                    return boolLeft || boolRight;
                 default:
                     error("Invalid operator", condition.getPosition());
             }
@@ -445,6 +440,7 @@ public class Interpreter {
 
         return false;
     }
+
 
     private void error(String message, Position position) {
         System.err.println("Error: " + message + " " + position);
