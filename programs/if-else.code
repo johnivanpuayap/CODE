@@ -5,5 +5,4 @@ BEGIN CODE
     BEGIN IF
         a = 20
     END IF
-    DISPLAY: a
 END CODE

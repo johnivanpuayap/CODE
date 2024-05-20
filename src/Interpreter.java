@@ -359,13 +359,14 @@ public class Interpreter {
         ExpressionNode condition = whileStatement.getCondition();
         List<StatementNode> statements = whileStatement.getStatements();
 
-        double result = evaluateExpression(condition);
+        boolean result = evaluateCondition(condition);
 
-        while (result != 0) {
+        while (result) {
             for (StatementNode statement : statements) {
                 interpretStatement(statement);
             }
-            result = evaluateExpression(condition);
+
+            result = evaluateCondition(condition);
         }
     }
 

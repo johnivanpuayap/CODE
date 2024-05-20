@@ -1,0 +1,5 @@
+BEGIN CODE
+	BOOL a = "TRUE", b 
+	SCAN: b
+	DISPLAY: a AND b
+END CODE

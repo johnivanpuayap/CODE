@@ -1,8 +1,5 @@
 BEGIN CODE
     INT a, b, c=5, abc=100
-    a=b=-c
-    xyz= ((abc *5)/10 + 10) * --1
-
     WHILE(c < 0)
     BEGIN WHILE
         DISPLAY: c

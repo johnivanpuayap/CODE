@@ -104,8 +104,20 @@ public class Parser {
             declaredVariableNames.add(variableName);
 
             if (match(Type.ASSIGNMENT)) {
-                Token literal = consume(Type.LITERAL, "Expected a Literal");
-                variables.add(new VariableDeclarationNode(dataType, identifier, literal));
+                Token unary = null;
+                if (match(Type.NEGATIVE) || match(Type.POSITIVE)) {
+                    unary = previous();
+                    Token literal = consume(Type.LITERAL, "Expected literal after assignment token");
+
+                    variables.add(new VariableDeclarationNode(dataType, identifier,
+                            new Token(Type.LITERAL, unary.getLexeme() + literal.getLexeme(), null)));
+                } else {
+                    Token literal = consume(Type.LITERAL, "Expected literal after assignment token");
+
+                    variables.add(new VariableDeclarationNode(dataType, identifier,
+                            new Token(Type.LITERAL, literal.getLexeme(), null)));
+                }
+
             } else {
                 variables.add(new VariableDeclarationNode(dataType, identifier));
             }
@@ -187,7 +199,7 @@ public class Parser {
 
             if (peek().getType() == Type.DEDENT) {
                 if (isIfStatement) {
-                    if (peekNext(1).getType() == Type.END_IF) {
+                    if (peekNext(1).getType() == Type.END_IF || peekNext(1).getType() == Type.END_WHILE) {
                         return statements;
                     } else {
                         error("Expected END IF after DEDENTION", peek());
@@ -562,7 +574,30 @@ public class Parser {
     }
 
     private StatementNode parseWhileStatement() {
-        return null;
+
+        Token token = previous();
+
+        consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'WHILE' keyword");
+
+        ExpressionNode condition = parseConditionalExpression();
+
+        consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
+
+        consume(Type.NEWLINE, "Expected new line before the BEGIN WHILE statement");
+
+        consume(Type.BEGIN_WHILE, "Expected 'BEGIN WHILE' after the conditional expression");
+
+        consume(Type.NEWLINE, "Expected new line after the BEGIN WHILE statement");
+
+        consume(Type.INDENT, "Expected INDENT after the BEGIN WHILE statement");
+
+        List<StatementNode> body = parseStatements(true);
+
+        consume(Type.DEDENT, "Expected DEDENTION after the body of the while statement");
+
+        consume(Type.END_WHILE, "Expected 'END WHILE' after the body of the while statement");
+
+        return new WhileNode(condition, body, token.getPosition());
     }
 
     private void checkForNewline() {
@@ -575,10 +610,6 @@ public class Parser {
     private void error(String message, Token token) {
         System.err.println("Syntax error " + token + ": " + message);
         System.exit(1);
-
-        // for debugging purposes so we know where the error is
-        // Remove when checking
-        // throw new RuntimeException("Syntax error " + token + ": " + message);
     }
 
     private Token peek() {

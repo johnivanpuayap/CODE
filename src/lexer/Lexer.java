@@ -500,13 +500,21 @@ public class Lexer {
                 indentLevel = newIndentLevel;
 
             } else if (newIndentLevel < indentLevel) {
+
                 while (newIndentLevel < indentLevel) {
                     tokens.add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
                     indentLevel--;
                 }
             }
         } else {
-            return null;
+            newIndentLevel = 0;
+
+            if (newIndentLevel < indentLevel) {
+                while (newIndentLevel < indentLevel) {
+                    tokens.add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
+                    indentLevel--;
+                }
+            }
         }
         return tokens;
     }

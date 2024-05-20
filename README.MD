@@ -46,12 +46,26 @@ The interpreter works in several stages:
 
 Increment 5
 
+- [ ] ConditionalExpression
 - [ ] Operations in Display
-- [ ] Conditional
-- [ ] Better Error Handling
-- [ ] Tabs and Spaces for Indention
+- [ ] Improve Error Handling
+- [x] Tabs and Spaces for Indention
 - [ ] WHILE Loops
+- [ ] Test Case 1
+- [ ] Test Case 2
+- [ ] Test Case 3
+- [ ] Test Case 4
+- [ ] Test Case 5
+- [ ] Test Case 6
+- [ ] Test Case 7
+- [ ] Test Case 8
+- [ ] Test Case 9
+- [ ] Test Case 10
+- [ ] Test Case 11
+- [ ] Test Case 12
 
 Extra
 
+- [ ] Improve Parser
+- [ ] Improve Semantics Analyzer
 - [ ] Functions
