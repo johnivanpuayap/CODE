@@ -1,16 +1,6 @@
 BEGIN CODE
-    INT c = 5, e = 5
-	BOOL a = "TRUE", b = "FALSE" 
-    IF (a AND NOT b)
-	BEGIN IF
-		DISPLAY: e
-	END IF
-	ELSE
-	BEGIN IF
-		WHILE(c > 0)
-		BEGIN WHILE
-			DISPLAY: c
-			c = c - 1
-		END WHILE	
-	END IF
+	INT a=100, b=200, c=300
+	BOOL d="FALSE"
+	d = (a < b AND c <> 200)
+	DISPLAY: d
 END CODE

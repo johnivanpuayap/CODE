@@ -1,6 +1,5 @@
 package src.parser;
 
-import java.beans.Expression;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -141,24 +140,43 @@ public class Parser {
             }
 
             if (match(Type.IDENTIFIER)) {
-                if (peek().getType() == Type.ASSIGNMENT &&
-                        (peekNext(2).getType() == Type.ADD ||
-                                peekNext(2).getType() == Type.SUBTRACT ||
-                                peekNext(2).getType() == Type.MULTIPLY ||
-                                peekNext(2).getType() == Type.DIVIDE ||
-                                peekNext(2).getType() == Type.MODULO)) {
 
-                    statements.add(parseArithmeticStatement());
-                    checkForNewline();
+                int counter = 1;
+                boolean isAssignment = true;
 
-                } else if (peek().getType() == Type.ASSIGNMENT &&
-                        (peekNext(1).getType() == Type.LEFT_PARENTHESIS)) {
+                while (currentTokenIndex + counter < tokens.size() && peekNext(counter).getType() != Type.NEWLINE) {
 
-                    statements.add(parseArithmeticStatement());
-                    checkForNewline();
+                    if (peekNext(counter).getType() == Type.ADD
+                            || peekNext(counter).getType() == Type.SUBTRACT
+                            || peekNext(counter).getType() == Type.MULTIPLY
+                            || peekNext(counter).getType() == Type.DIVIDE
+                            || peekNext(counter).getType() == Type.MODULO) {
 
-                } else {
+                        statements.add(parseArithmeticStatement());
+                        checkForNewline();
+                        isAssignment = false;
+                        continue;
 
+                    } else if (peekNext(counter).getType() == Type.LESS ||
+                            peekNext(counter).getType() == Type.GREATER ||
+                            peekNext(counter).getType() == Type.LESS_EQUAL ||
+                            peekNext(counter).getType() == Type.GREATER_EQUAL ||
+                            peekNext(counter).getType() == Type.NOT_EQUAL ||
+                            peekNext(counter).getType() == Type.EQUAL ||
+                            peekNext(counter).getType() == Type.AND ||
+                            peekNext(counter).getType() == Type.OR ||
+                            peekNext(counter).getType() == Type.NOT) {
+                        ;
+                        statements.add(parseLogicalStatement());
+                        checkForNewline();
+                        isAssignment = false;
+                        continue;
+
+                    }
+                    counter++;
+                }
+
+                if (isAssignment) {
                     statements.addAll(parseAssignmentStatement());
                     checkForNewline();
                 }
@@ -340,7 +358,6 @@ public class Parser {
     }
 
     private AssignmentNode parseArithmeticStatement() {
-        // Ensure that there are enough tokens to represent an assignment statement
         if (currentTokenIndex + 4 >= tokens.size()) {
             error("Invalid arithmetic statement", peek());
         }
@@ -358,29 +375,87 @@ public class Parser {
         return new AssignmentNode(variable, expression);
     }
 
+    private AssignmentNode parseLogicalStatement() {
+        if (currentTokenIndex + 4 >= tokens.size()) {
+            error("Invalid logical statement", peek());
+            return null;
+        }
+
+        Token variableName = previous();
+
+        if (!match(Type.ASSIGNMENT)) {
+            error("Invalid logical statement", peek());
+            return null;
+        }
+
+        VariableNode variable = new VariableNode(variableName);
+        ExpressionNode expression = parseExpression();
+
+        return new AssignmentNode(variable, expression);
+    }
+
     private ExpressionNode parseExpression() {
+        return parseLogicalOr();
+    }
+
+    private ExpressionNode parseLogicalOr() {
+        ExpressionNode left = parseLogicalAnd();
+
+        while (match(Type.OR)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseLogicalAnd();
+            left = new BinaryNode(left, operatorToken, right);
+        }
+
+        return left;
+    }
+
+    private ExpressionNode parseLogicalAnd() {
+        ExpressionNode left = parseComparisonExpression();
+
+        while (match(Type.AND)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseComparisonExpression();
+            left = new BinaryNode(left, operatorToken, right);
+        }
+
+        return left;
+    }
+
+    private ExpressionNode parseComparisonExpression() {
         ExpressionNode left = parseAdditionSubtraction();
+
+        while (match(Type.GREATER) || match(Type.LESS) || match(Type.GREATER_EQUAL) || match(Type.LESS_EQUAL)
+                || match(Type.NOT_EQUAL) || match(Type.EQUAL)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseAdditionSubtraction();
+            left = new BinaryNode(left, operatorToken, right);
+        }
 
         return left;
     }
 
     private ExpressionNode parseAdditionSubtraction() {
         ExpressionNode left = parseMultiplicationDivision();
+
         while (match(Type.ADD) || match(Type.SUBTRACT)) {
             Token operatorToken = previous();
             ExpressionNode right = parseMultiplicationDivision();
             left = new BinaryNode(left, operatorToken, right);
         }
+
         return left;
     }
 
     private ExpressionNode parseMultiplicationDivision() {
         ExpressionNode left = parsePrimary();
+
         while (match(Type.MULTIPLY) || match(Type.DIVIDE) || match(Type.MODULO)) {
             Token operatorToken = previous();
             ExpressionNode right = parsePrimary();
             left = new BinaryNode(left, operatorToken, right);
         }
+
         return left;
     }
 
@@ -398,53 +473,15 @@ public class Parser {
 
             return expression;
 
-        } else if (match(Type.POSITIVE) || match(Type.NEGATIVE)) {
-
+        } else if (match(Type.POSITIVE) || match(Type.NEGATIVE) || match(Type.NOT)) {
             Token operatorToken = previous();
-            ExpressionNode expression = null;
-
-            if (match(Type.LITERAL)) {
-                expression = new LiteralNode(previous());
-            } else if (match(Type.IDENTIFIER)) {
-                expression = new VariableNode(previous());
-            }
+            ExpressionNode expression = parsePrimary();
             return new UnaryNode(operatorToken, expression);
         } else {
             error("Expect primary expression.", peek());
         }
 
         return null;
-    }
-
-    private ExpressionNode parseConditionalExpression() {
-
-        if (match(Type.NOT)) {
-            Token operatorToken = previous();
-            ExpressionNode right = parseExpression();
-
-            return new UnaryNode(operatorToken, right);
-        }
-
-        ExpressionNode left = parseExpression();
-
-        if (match(Type.EQUAL) || match(Type.NOT_EQUAL) || match(Type.GREATER) ||
-                match(Type.GREATER_EQUAL) || match(Type.LESS) || match(Type.LESS_EQUAL) || match(Type.AND)
-                || match(Type.OR)) {
-
-            Token operatorToken = previous();
-
-            ExpressionNode right = null;
-
-            if (peek().getType() == Type.NOT) {
-                right = parseConditionalExpression();
-            } else {
-                right = parseExpression();
-            }
-
-            return new BinaryNode(left, operatorToken, right);
-        }
-
-        return left;
     }
 
     private StatementNode parseDisplayStatement() {
@@ -546,7 +583,7 @@ public class Parser {
         // Expect '('
         consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'IF' keyword");
         // Parse the conditional expression
-        ExpressionNode ifCondition = parseConditionalExpression();
+        ExpressionNode ifCondition = parseExpression();
 
         // Expect ')'
         consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
@@ -576,7 +613,7 @@ public class Parser {
 
             consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'ELSE IF' keyword");
             // Parse the conditional expression
-            ExpressionNode elseIfCondition = parseConditionalExpression();
+            ExpressionNode elseIfCondition = parseExpression();
 
             // Expect ')'
             consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
@@ -634,7 +671,7 @@ public class Parser {
 
         consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'WHILE' keyword");
 
-        ExpressionNode condition = parseConditionalExpression();
+        ExpressionNode condition = parseExpression();
 
         consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
 
@@ -685,7 +722,7 @@ public class Parser {
 
         consume(Type.DELIMITER, "Expected a SEMI-COLON after the initialization statement");
 
-        ExpressionNode condition = parseConditionalExpression();
+        ExpressionNode condition = parseExpression();
 
         consume(Type.DELIMITER, "Expected a SEMI-COLON after the conditional expression");
 
