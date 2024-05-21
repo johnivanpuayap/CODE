@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// Check if the variable was declared and initialized before using it
-
 public class SemanticAnalyzer {
     private SymbolTable symbolTable;
     private SymbolTable initialSymbolTable;
@@ -111,6 +109,7 @@ public class SemanticAnalyzer {
         }
 
         Symbol symbol = symbolTable.lookup(name);
+
         if (symbol == null) {
             error("Variable '" + name + "' is not declared", node.getPosition());
         }

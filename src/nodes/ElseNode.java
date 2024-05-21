@@ -1,7 +1,6 @@
 package src.nodes;
 
 import java.util.List;
-
 import src.utils.Position;
 
 public class ElseNode extends StatementNode {

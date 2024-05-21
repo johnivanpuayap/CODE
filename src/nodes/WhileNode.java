@@ -1,7 +1,6 @@
 package src.nodes;
 
 import src.utils.Position;
-
 import java.util.List;
 
 public class WhileNode extends StatementNode {
@@ -22,5 +21,4 @@ public class WhileNode extends StatementNode {
     public List<StatementNode> getStatements() {
         return block;
     }
-
 }

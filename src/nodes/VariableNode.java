@@ -2,7 +2,6 @@ package src.nodes;
 
 import java.util.List;
 import java.util.ArrayList;
-
 import src.utils.Token;
 
 public class VariableNode extends ExpressionNode {
@@ -36,6 +35,6 @@ public class VariableNode extends ExpressionNode {
 
     @Override
     public int countTokens() {
-        return 1; // Variables will always have one token
+        return 1;
     }
 }

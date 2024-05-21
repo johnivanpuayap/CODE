@@ -46,14 +46,14 @@ The interpreter works in several stages:
 
 Increment 5
 
-- [ ] ConditionalExpression
+- [ ] Conditional Expression
 - [ ] Operations in Display
 - [ ] Improve Error Handling
 - [x] Tabs and Spaces for Indention
 - [ ] WHILE Loops
-- [ ] Test Case 1
-- [ ] Test Case 2
-- [ ] Test Case 3
+- [x] Test Case 1
+- [x] Test Case 2
+- [x] Test Case 3
 - [ ] Test Case 4
 - [ ] Test Case 5
 - [ ] Test Case 6
@@ -63,6 +63,7 @@ Increment 5
 - [ ] Test Case 10
 - [ ] Test Case 11
 - [ ] Test Case 12
+- [ ] Check Display to put an error when accessing an array that was not initialized
 
 Extra
 

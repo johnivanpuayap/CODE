@@ -2,9 +2,7 @@ package src.nodes;
 
 import java.util.List;
 import java.util.ArrayList;
-
 import src.utils.Token;
-
 
 public class UnaryNode extends ExpressionNode {
     private final Token operator;

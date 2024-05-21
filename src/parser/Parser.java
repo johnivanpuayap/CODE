@@ -226,6 +226,7 @@ public class Parser {
     }
 
     private List<StatementNode> parseAssignmentStatement() {
+
         List<StatementNode> assignments = new ArrayList<>();
 
         Token identifierToken = previous();
@@ -235,66 +236,73 @@ public class Parser {
             error("Expected an assignment token.", peek());
         }
 
-        if (match(Type.IDENTIFIER) && peek().getType() != Type.ASSIGNMENT) {
-
-            assignments.add(new AssignmentNode(identifier, new VariableNode(previous())));
-            return assignments;
-
-        } else if (match(Type.LITERAL) && peek().getType() != Type.ASSIGNMENT) {
-
-            assignments.add(new AssignmentNode(identifier, new LiteralNode(previous())));
-            return assignments;
-
-        } else {
-            error("Assignment Operation Error. Expected a LITERAL or an IDENTIFIER after an assigment token.",
-                    identifierToken);
-        }
-
-        List<Token> variableTokens = new ArrayList<>();
-        variableTokens.add(identifierToken);
-
-        while (match(Type.ASSIGNMENT)) {
-
-            if (peek().getType() == Type.NEWLINE) {
-                error("Expected an identifier or literal after an assigment token.", identifierToken);
-            }
+        if (peekNext(1).getType() != Type.ASSIGNMENT) {
 
             if (match(Type.IDENTIFIER)) {
+                assignments.add(new AssignmentNode(identifier, new VariableNode(previous())));
+            } else if (match(Type.LITERAL)) {
+                assignments.add(new AssignmentNode(identifier, new LiteralNode(previous())));
+            } else {
+                error("Expected an identifier or literal after an assignment token.", identifierToken);
+            }
 
-                Token var = previous();
+        } else {
 
-                if (match(Type.ASSIGNMENT)) {
+            System.out.println("Found a chained assignment: " + identifierToken.getLexeme());
 
-                    variableTokens.add(var);
+            List<Token> variableTokens = new ArrayList<>();
+            variableTokens.add(identifierToken);
 
-                } else {
+            do {
+
+                if (peek().getType() != Type.IDENTIFIER && peek().getType() != Type.LITERAL) {
+                    error("Expected an identifier or literal after an assigment token.", identifierToken);
+                }
+
+                if (match(Type.IDENTIFIER)) {
+
+                    Token var = previous();
+
+                    if (peek().getType() == Type.ASSIGNMENT) {
+
+                        variableTokens.add(var);
+
+                    } else {
+
+                        for (Token token : variableTokens) {
+                            System.out.println("Variable: " + token.getLexeme());
+
+                            VariableNode left = new VariableNode(token);
+                            VariableNode right = new VariableNode(var);
+
+                            assignments.add(new AssignmentNode(left, right));
+                        }
+                    }
+
+                } else if (match(Type.LITERAL)) {
+
+                    Token var = previous();
+
+                    System.out.println("\n\n\n Added a Literal: " + var.getLexeme());
+
+                    if (peek().getType() == Type.ASSIGNMENT) {
+                        error("Can't assign value to a Literal" + var, var);
+                    }
 
                     for (Token token : variableTokens) {
-                        System.out.println("Variable: " + token.getLexeme());
-
                         VariableNode left = new VariableNode(token);
-                        VariableNode right = new VariableNode(var);
+                        LiteralNode right = new LiteralNode(var);
+
+                        AssignmentNode assignment = new AssignmentNode(left, right);
+
+                        System.out.println("Assignment: " + assignment);
 
                         assignments.add(new AssignmentNode(left, right));
                     }
+
                 }
+            } while (match(Type.ASSIGNMENT));
 
-            } else if (match(Type.LITERAL)) {
-
-                Token var = previous();
-
-                if (match(Type.ASSIGNMENT)) {
-                    error("Can't assign value to a Literal" + var, var);
-                }
-
-                for (Token token : variableTokens) {
-                    VariableNode left = new VariableNode(token);
-                    LiteralNode right = new LiteralNode(var);
-
-                    assignments.add(new AssignmentNode(left, right));
-                }
-
-            }
         }
 
         return assignments;

@@ -2,7 +2,6 @@ package src.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import src.utils.Position;
 import src.utils.Token;
 import src.utils.Type;
@@ -18,9 +17,6 @@ public class BinaryNode extends ExpressionNode {
         this.operator = operator;
         this.left = left;
         this.right = right;
-
-        System.out.println("Left tokens: " + left.getTokens()); // Debug print
-        System.out.println("Right tokens: " + right.getTokens()); // Debug print
 
         tokens.add(new Token(Type.RIGHT_PARENTHESIS, "(", new Position(0, 0)));
         tokens.addAll(left.getTokens());
@@ -48,7 +44,7 @@ public class BinaryNode extends ExpressionNode {
 
     @Override
     public int countTokens() {
-        return left.countTokens() + right.countTokens() + 1; // Add 1 for the operator token
+        return left.countTokens() + right.countTokens() + 1;
     }
 
     @Override

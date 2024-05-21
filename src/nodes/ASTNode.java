@@ -4,7 +4,6 @@ import src.utils.Position;
 
 public abstract class ASTNode {
     private Position position;
-    // Implement common AST node methods here
 
     public ASTNode(Position position) {
         this.position = position;

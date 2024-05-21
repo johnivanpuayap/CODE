@@ -1,4 +1,5 @@
 package src.nodes;
+
 import src.utils.Position;
 
 public class StringLiteralNode extends ASTNode {

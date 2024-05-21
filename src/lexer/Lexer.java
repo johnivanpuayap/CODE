@@ -91,10 +91,6 @@ public class Lexer {
                         new Token(Type.END_WHILE, "END WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("END WHILE".length());
                 counter += "END WHILE".length();
-            } else if (Character.isLetter(currentChar) || currentChar == '_') {
-                tokens.add(tokenizeIdentifier());
-            } else if (Character.isDigit(currentChar)) {
-                tokens.add(tokenizeLiteral());
             } else if (currentChar == '=') {
                 if (input.charAt(counter + 1) == '=') {
                     tokens.add(new Token(Type.EQUAL, "==", new Position(position.getLine(), position.getColumn())));
@@ -241,15 +237,26 @@ public class Lexer {
 
             } else if (currentChar == '#') {
 
+                // Skip comments
+
                 while (counter < input.length() && input.charAt(counter) != '\n') {
                     counter++;
                     position.add(1);
                 }
 
                 counter++;
-            }
+                position.newLine();
 
-            else if (Character.isWhitespace(currentChar)) {
+                List<Token> indents = checkIndentLevel(position);
+
+                if (indents != null) {
+                    tokens.addAll(indents);
+                }
+            } else if (Character.isLetter(currentChar) || currentChar == '_') {
+                tokens.add(tokenizeIdentifier());
+            } else if (Character.isDigit(currentChar)) {
+                tokens.add(tokenizeLiteral());
+            } else if (Character.isWhitespace(currentChar)) {
                 // Skip whitespace
                 if (currentChar == '\n') {
 
@@ -280,7 +287,9 @@ public class Lexer {
     }
 
     private Token tokenizeIdentifier() {
+
         StringBuilder identifier = new StringBuilder();
+
         while (counter < input.length()
                 && (Character.isLetterOrDigit(input.charAt(counter)) || input.charAt(counter) == '_')) {
             identifier.append(input.charAt(counter));
@@ -308,7 +317,8 @@ public class Lexer {
         StringBuilder literal = new StringBuilder();
 
         while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != ' '
-                && input.charAt(counter) != ',' && input.charAt(counter) != ')') {
+                && input.charAt(counter) != ',' && input.charAt(counter) != ')' && input.charAt(counter) != '('
+                && input.charAt(counter) != '=') {
             literal.append(input.charAt(counter));
             counter++;
             position.add(1);
@@ -426,21 +436,6 @@ public class Lexer {
         }
 
         return tokens;
-    }
-
-    private int countIndent() {
-        int indent = 0;
-        int temp = counter;
-
-        while (temp < input.length() && (input.charAt(temp) == ' ' || input.charAt(temp) == '\t')) {
-            if (input.charAt(temp) == ' ') {
-                indent++;
-            } else {
-                indent += 4;
-            }
-            temp++;
-        }
-        return indent / 4; // Divide by 4 to count four spaces as one level of indentation
     }
 
     private List<Token> checkIndentLevel(Position position) {

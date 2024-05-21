@@ -4,5 +4,6 @@ BEGIN CODE
     IF (abc == 15)
     BEGIN IF
         a = 20
+        DISPLAY: a
     END IF
 END CODE

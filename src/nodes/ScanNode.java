@@ -15,5 +15,4 @@ public class ScanNode extends StatementNode {
     public List<Token> getIdentifiers() {
         return identifiers;
     }
-
 }

@@ -4,18 +4,20 @@ public class Symbol {
     Type type;
     String name;
     String value;
-    boolean initialized;
+    boolean initialized = false;
 
     public Symbol(Type type, String name) {
         this.name = name;
         this.type = type;
-        this.initialized = false;
     }
 
     public Symbol(Type type, String name, String value) {
         this(type, name);
         this.value = value;
-        this.initialized = true;
+
+        if (value != null) {
+            this.initialized = true;
+        }
     }
 
     public Type getType() {

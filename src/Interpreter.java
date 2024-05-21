@@ -35,12 +35,12 @@ public class Interpreter {
 
                 ifStatements.add(statement);
 
-                while (i < statements.size() && statements.get(i + 1) instanceof ElseIfNode) {
+                while (i + 1 < statements.size() && statements.get(i + 1) instanceof ElseIfNode) {
                     ifStatements.add(statements.get(i));
                     i++;
                 }
 
-                if (i < statements.size() && statements.get(i + 1) instanceof ElseNode) {
+                if (i + 1 < statements.size() && statements.get(i + 1) instanceof ElseNode) {
                     ifStatements.add(statements.get(i));
                     i++;
                 }
