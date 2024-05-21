@@ -57,8 +57,8 @@ Increment 5
 - [x] Test Case 4
 - [x] Test Case 5
 - [x] Test Case 6
-- [ ] Test Case 7
-- [ ] Test Case 8
+- [x] Test Case 7
+- [x] Test Case 8
 - [ ] Test Case 9
 - [ ] Test Case 10
 - [ ] Test Case 11

@@ -114,8 +114,6 @@ public class Interpreter {
 
     public double evaluateExpression(ExpressionNode expression) {
 
-        System.out.println("Expression: " + expression.toString());
-
         List<Token> tokens = expression.getTokens();
 
         List<Token> postfixExpression = infixToPostfix(tokens);
@@ -361,7 +359,10 @@ public class Interpreter {
 
         boolean result = evaluateCondition(condition);
 
+        System.out.println(result);
+
         while (result) {
+
             for (StatementNode statement : statements) {
                 interpretStatement(statement);
             }
