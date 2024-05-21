@@ -359,14 +359,31 @@ public class Interpreter {
 
         boolean result = evaluateCondition(condition);
 
+        boolean breakFlag = false;
+
         while (result) {
 
             for (StatementNode statement : statements) {
+
+                if (statement instanceof BreakNode) {
+                    breakFlag = true;
+                    break;
+                }
+
+                if (statement instanceof ContinueNode) {
+                    break;
+                }
+
                 interpretStatement(statement);
+            }
+
+            if (breakFlag) {
+                break;
             }
 
             result = evaluateCondition(condition);
         }
+
     }
 
     private void interpretFor(ForNode forStatement) {
@@ -381,11 +398,26 @@ public class Interpreter {
 
         boolean result = evaluateCondition(condition);
 
+        boolean breakFlag = false;
+
         while (result) {
 
             for (StatementNode statement : statements) {
+
+                if (statement instanceof BreakNode) {
+                    breakFlag = true;
+                    break;
+                }
+
+                if (statement instanceof ContinueNode) {
+                    continue;
+                }
+
                 interpretStatement(statement);
             }
+
+            if (breakFlag)
+                break;
 
             interpretStatement(update);
 

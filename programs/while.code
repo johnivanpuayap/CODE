@@ -2,7 +2,7 @@ BEGIN CODE
     INT a, b, c=5, abc=100
     WHILE(c > 0)
     BEGIN WHILE
-        DISPLAY: c & c
+        DISPLAY: c    
         c = c - 1
     END WHILE
 END CODE

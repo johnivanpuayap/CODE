@@ -50,7 +50,7 @@ Increment 5
 - [ ] Operations in Display
 - [ ] Improve Error Handling
 - [x] Tabs and Spaces for Indention
-- [ ] WHILE Loops
+- [x] WHILE Loops
 - [x] Test Case 1
 - [x] Test Case 2
 - [x] Test Case 3
@@ -70,6 +70,6 @@ Increment 5
 
 Extra
 
-- [ ] For Loops
+- [x] For Loops
 - [ ] BREAK
 - [ ] CONTINUE

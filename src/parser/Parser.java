@@ -86,7 +86,7 @@ public class Parser {
         }
 
         System.out.println("Parsing Statements");
-        programStatements.addAll(parseStatements(false));
+        programStatements.addAll(parseStatements(false, false));
     }
 
     private List<VariableDeclarationNode> parseVariableDeclaration() {
@@ -129,7 +129,7 @@ public class Parser {
         return variables;
     }
 
-    private List<StatementNode> parseStatements(boolean isIfStatement) {
+    private List<StatementNode> parseStatements(boolean isIfStatement, boolean isLoopStatement) {
 
         List<StatementNode> statements = new ArrayList<>();
 
@@ -199,6 +199,29 @@ public class Parser {
 
             if (match(Type.FOR)) {
                 statements.add(parseForStatement());
+                checkForNewline();
+                continue;
+            }
+
+            if (match(Type.CONTINUE)) {
+
+                if (!isLoopStatement) {
+                    error("Continue statement can only be used inside a loop", previous());
+                }
+
+                statements.add(new ContinueNode(previous().getPosition()));
+                checkForNewline();
+                continue;
+            }
+
+            if (match(Type.BREAK)) {
+
+                if (!isLoopStatement) {
+                    error("Break statement can only be used inside a loop", previous());
+                }
+
+                statements.add(new BreakNode(previous().getPosition()));
+
                 checkForNewline();
                 continue;
             }
@@ -520,7 +543,7 @@ public class Parser {
         consume(Type.INDENT, "Expected INDENT after the BEGIN IF statement");
 
         // Parse the body of the if statement
-        List<StatementNode> body = parseStatements(true);
+        List<StatementNode> body = parseStatements(true, false);
 
         consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
 
@@ -550,7 +573,7 @@ public class Parser {
             consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE IF statement");
 
             // Parse the body of the if statement
-            List<StatementNode> elseIfBody = parseStatements(true);
+            List<StatementNode> elseIfBody = parseStatements(true, false);
 
             consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
 
@@ -573,7 +596,7 @@ public class Parser {
             consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE statement");
 
             // Parse the body of the if statement
-            List<StatementNode> elseBody = parseStatements(true);
+            List<StatementNode> elseBody = parseStatements(true, false);
 
             consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
 
@@ -606,11 +629,13 @@ public class Parser {
 
         consume(Type.INDENT, "Expected INDENT after the BEGIN WHILE statement");
 
-        List<StatementNode> body = parseStatements(true);
+        List<StatementNode> body = parseStatements(true, true);
 
         consume(Type.DEDENT, "Expected DEDENTION after the body of the while statement");
 
         consume(Type.END_WHILE, "Expected 'END WHILE' after the body of the while statement");
+
+        System.out.println(body);
 
         return new WhileNode(condition, body, token.getPosition());
     }
@@ -661,7 +686,7 @@ public class Parser {
 
         consume(Type.INDENT, "Expected INDENT after the BEGIN LOOP statement");
 
-        List<StatementNode> body = parseStatements(true);
+        List<StatementNode> body = parseStatements(true, true);
 
         consume(Type.DEDENT, "Expected DEDENTION after the body of the loop statement");
 
