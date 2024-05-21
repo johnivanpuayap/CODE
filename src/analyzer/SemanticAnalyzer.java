@@ -27,6 +27,9 @@ public class SemanticAnalyzer {
         for (VariableDeclarationNode declaration : programNode.getDeclarations()) {
 
             Symbol symbol = new Symbol(declaration.getType(), declaration.getName(), declaration.getValue());
+
+            checkValidVariableName(declaration.getName(), declaration.getPosition());
+
             if (!symbolTable.insert(symbol)) {
                 error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
             }
@@ -62,13 +65,13 @@ public class SemanticAnalyzer {
 
         // We pass the type of the variable to the visitVariableNode method since we
         // don't need to check the type of the variable
-        visitVariableNode(variableNode, null);
+        visitVariableNode(variableNode, null, false);
 
         Symbol leftSymbol = symbolTable.lookup(node.getVariable().getName());
 
         if (expressionNode instanceof VariableNode) {
 
-            visitVariableNode((VariableNode) expressionNode, leftSymbol.getType());
+            visitVariableNode((VariableNode) expressionNode, leftSymbol.getType(), true);
 
             Symbol rightSymbol = symbolTable.lookup(((VariableNode) expressionNode).getName());
 
@@ -86,34 +89,19 @@ public class SemanticAnalyzer {
         }
     }
 
-    private String evaluate(ExpressionNode node) {
-        return null;
-    }
-
     // Visit a variable node
-    private void visitVariableNode(VariableNode node, Type type) {
+    private void visitVariableNode(VariableNode node, Type type, boolean checkInitialized) {
 
         String name = node.getName();
 
-        String regex = "^[a-zA-Z_][a-zA-Z0-9_]*$";
-
-        // Compile the regular expression
-        Pattern pattern = Pattern.compile(regex);
-
-        // Create a matcher to match the input string with the pattern
-        Matcher matcher = pattern.matcher(name);
-
-        // Return true if the input string matches the pattern, otherwise false
-        if (!matcher.matches()) {
-            error("Variable '" + name + "' is not a valid variable", node.getPosition());
-        }
+        checkValidVariableName(name, node.getPosition());
 
         Symbol symbol = symbolTable.lookup(name);
 
         if (symbol == null) {
             error("Variable '" + name + "' is not declared", node.getPosition());
         }
-        if (!symbol.isInitialized()) {
+        if (checkInitialized && !symbol.isInitialized()) {
             error("Variable '" + name + "' is not initialized", node.getPosition());
         }
 
@@ -134,7 +122,7 @@ public class SemanticAnalyzer {
 
             if (argument.getType() == Type.IDENTIFIER) {
 
-                visitVariableNode(new VariableNode(argument), null);
+                visitVariableNode(new VariableNode(argument), null, true);
             }
         }
     }
@@ -191,7 +179,7 @@ public class SemanticAnalyzer {
 
             // We pass the type of the variable to the visitVariableNode method since we
             // don't need to check the type of the variable
-            visitVariableNode(variableNode, null);
+            visitVariableNode(variableNode, null, true);
 
             Symbol symbol = symbolTable.lookup(variableNode.getName());
 
@@ -230,5 +218,20 @@ public class SemanticAnalyzer {
 
     public SymbolTable getInitialSymbolTable() {
         return initialSymbolTable;
+    }
+
+    private void checkValidVariableName(String name, Position position) {
+        String regex = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
+        // Compile the regular expression
+        Pattern pattern = Pattern.compile(regex);
+
+        // Create a matcher to match the input string with the pattern
+        Matcher matcher = pattern.matcher(name);
+
+        // Return true if the input string matches the pattern, otherwise false
+        if (!matcher.matches()) {
+            error("Variable '" + name + "' is not a valid variable name", position);
+        }
     }
 }

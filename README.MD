@@ -39,8 +39,8 @@ The interpreter works in several stages:
 # Coding Consistency
 
 - Parser, every function should return a node
-- Peek() after function is the start of the next line
-- Throw errors early, e.g. If ()
+- Peek() after every statement should be the start of the next line
+- Throw the errors early
 
 # TODO
 
@@ -54,9 +54,9 @@ Increment 5
 - [x] Test Case 1
 - [x] Test Case 2
 - [x] Test Case 3
-- [ ] Test Case 4
-- [ ] Test Case 5
-- [ ] Test Case 6
+- [x] Test Case 4
+- [x] Test Case 5
+- [x] Test Case 6
 - [ ] Test Case 7
 - [ ] Test Case 8
 - [ ] Test Case 9
@@ -64,9 +64,11 @@ Increment 5
 - [ ] Test Case 11
 - [ ] Test Case 12
 - [ ] Check Display to put an error when accessing an array that was not initialized
+- [ ] Fix if there are blank spaces between code
 
 Extra
 
 - [ ] Improve Parser
 - [ ] Improve Semantics Analyzer
+- [ ] Compound Assignments???
 - [ ] Functions

@@ -11,6 +11,7 @@ public class Lexer {
     private Position position;
     private int counter;
     private int indentLevel;
+    private List<Token> tokens = new ArrayList<>();
 
     public Lexer(String input) {
         this.input = input;
@@ -20,8 +21,6 @@ public class Lexer {
     }
 
     public List<Token> tokenize() {
-
-        List<Token> tokens = new ArrayList<>();
 
         while (counter < input.length()) {
             char currentChar = input.charAt(counter);
@@ -322,6 +321,14 @@ public class Lexer {
             literal.append(input.charAt(counter));
             counter++;
             position.add(1);
+        }
+
+        if (tokens.getLast().getType() == Type.COMMA || tokens.getLast().getType() == Type.CHAR
+                || tokens.getLast().getType() == Type.INT || tokens.getLast().getType() == Type.FLOAT
+                || tokens.getLast().getType() == Type.BOOL) {
+
+            return new Token(Type.IDENTIFIER, literal.toString(),
+                    new Position(position.getLine(), position.getColumn()));
         }
 
         return new Token(Type.LITERAL, literal.toString(), new Position(position.getLine(), position.getColumn()));
