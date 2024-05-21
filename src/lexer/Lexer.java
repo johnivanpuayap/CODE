@@ -52,7 +52,7 @@ public class Lexer {
                 position.add("OR".length());
                 counter += "OR".length();
             } else if (input.startsWith("NOT", counter)) {
-                tokens.add(new Token(Type.OR, "NOT", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Type.NOT, "NOT", new Position(position.getLine(), position.getColumn())));
                 position.add("NOT".length());
                 counter += "NOT".length();
             } else if (input.startsWith("IF", counter)) {

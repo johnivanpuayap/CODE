@@ -31,7 +31,9 @@ public class SemanticAnalyzer {
 
             Symbol symbol = new Symbol(declaration.getType(), declaration.getName(), declaration.getValue());
 
+            checkUsingReservedKeyword(declaration.getName(), declaration.getPosition());
             checkValidVariableName(declaration.getName(), declaration.getPosition());
+            checkValidDataType(declaration.getType(), declaration.getValue(), declaration.getPosition());
 
             if (!symbolTable.insert(symbol)) {
                 error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
@@ -163,19 +165,10 @@ public class SemanticAnalyzer {
 
             Type left = evaluateCondition(binaryNode.getLeft());
             Type right = evaluateCondition(binaryNode.getRight());
+            if (left != right) {
 
-            if (binaryNode.getOperator().getType() == Type.EQUAL
-                    || binaryNode.getOperator().getType() == Type.NOT_EQUAL) {
-
-                if (left != right) {
-
-                    error("Invalid types in condition. Left is " + left + " and right is " + right,
-                            condition.getPosition());
-                }
-            } else {
-                if (left != Type.INT || right != Type.INT) {
-                    error("Invalid types in condition", condition.getPosition());
-                }
+                error("Invalid types in condition. Left is " + left + " and right is " + right,
+                        condition.getPosition());
             }
 
         } else if (condition instanceof VariableNode) {
@@ -193,10 +186,43 @@ public class SemanticAnalyzer {
             return symbol.getType();
 
         } else if (condition instanceof LiteralNode) {
-
-            System.out.println("Literal: " + ((LiteralNode) condition).getValue().getLexeme());
-
             return ((LiteralNode) condition).getDataType();
+        } else if (condition instanceof UnaryNode) {
+            UnaryNode unaryNode = (UnaryNode) condition;
+
+            if (unaryNode.getOperator().getType() == Type.NOT) {
+
+                if (unaryNode.getOperand() instanceof VariableNode) {
+                    visitVariableNode((VariableNode) unaryNode.getOperand(), Type.BOOL, true);
+
+                    Symbol symbol = symbolTable.lookup(((VariableNode) unaryNode.getOperand()).getName());
+
+                    return symbol.getType();
+
+                } else if (unaryNode.getOperand() instanceof LiteralNode) {
+
+                    System.out.println("Literal: " + ((LiteralNode) unaryNode.getOperand()).getValue().getLexeme());
+
+                    return ((LiteralNode) unaryNode.getOperand()).getDataType();
+                } else {
+                    error("Invalid Unary Node", condition.getPosition());
+                }
+
+            } else {
+
+                if (unaryNode.getOperand() instanceof VariableNode) {
+
+                    visitVariableNode((VariableNode) unaryNode.getOperand(), null, true);
+
+                    Symbol symbol = symbolTable.lookup(((VariableNode) unaryNode.getOperand()).getName());
+
+                    return symbol.getType();
+
+                } else if (unaryNode.getOperand() instanceof LiteralNode) {
+                    return ((LiteralNode) unaryNode.getOperand()).getDataType();
+                }
+            }
+
         } else {
             error("Invalid condition", condition.getPosition());
         }
@@ -261,6 +287,31 @@ public class SemanticAnalyzer {
 
         if (reservedKeywords.contains(name)) {
             error("Variable name: '" + name + "' can't be used because it is a reserved keyword", position);
+        }
+    }
+
+    private void checkValidDataType(Type type, String value, Position position) {
+
+        if (type == Type.INT) {
+            try {
+                Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                error("Invalid value for INT datatype", position);
+            }
+        } else if (type == Type.FLOAT) {
+            try {
+                Float.parseFloat(value);
+            } catch (NumberFormatException e) {
+                error("Invalid value for FLOAT datatype", position);
+            }
+        } else if (type == Type.CHAR) {
+            if (value.length() != 3 || value.charAt(0) != '\'' || value.charAt(2) != '\'') {
+                error("Invalid value for CHAR datatype", position);
+            }
+        } else if (type == Type.BOOL) {
+            if (!value.equals("\"TRUE\"") && !value.equals("\"FALSE\"")) {
+                error("Invalid value for BOOL datatype", position);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package src.parser;
 
+import java.beans.Expression;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -227,7 +228,7 @@ public class Parser {
             }
 
             if (peek().getType() == Type.DEDENT) {
-                if (isIfStatement) {
+                if (isIfStatement || isLoopStatement) {
                     if (peekNext(1).getType() == Type.END_IF || peekNext(1).getType() == Type.END_WHILE
                             || peekNext(1).getType() == Type.END_FOR) {
                         return statements;
@@ -416,13 +417,29 @@ public class Parser {
     }
 
     private ExpressionNode parseConditionalExpression() {
+
+        if (match(Type.NOT)) {
+            Token operatorToken = previous();
+            ExpressionNode right = parseExpression();
+
+            return new UnaryNode(operatorToken, right);
+        }
+
         ExpressionNode left = parseExpression();
 
         if (match(Type.EQUAL) || match(Type.NOT_EQUAL) || match(Type.GREATER) ||
-                match(Type.GREATER_EQUAL) || match(Type.LESS) || match(Type.LESS_EQUAL)) {
+                match(Type.GREATER_EQUAL) || match(Type.LESS) || match(Type.LESS_EQUAL) || match(Type.AND)
+                || match(Type.OR)) {
 
             Token operatorToken = previous();
-            ExpressionNode right = parseExpression();
+
+            ExpressionNode right = null;
+
+            if (peek().getType() == Type.NOT) {
+                right = parseConditionalExpression();
+            } else {
+                right = parseExpression();
+            }
 
             return new BinaryNode(left, operatorToken, right);
         }
@@ -629,7 +646,7 @@ public class Parser {
 
         consume(Type.INDENT, "Expected INDENT after the BEGIN WHILE statement");
 
-        List<StatementNode> body = parseStatements(true, true);
+        List<StatementNode> body = parseStatements(false, true);
 
         consume(Type.DEDENT, "Expected DEDENTION after the body of the while statement");
 
@@ -686,7 +703,7 @@ public class Parser {
 
         consume(Type.INDENT, "Expected INDENT after the BEGIN LOOP statement");
 
-        List<StatementNode> body = parseStatements(true, true);
+        List<StatementNode> body = parseStatements(false, true);
 
         consume(Type.DEDENT, "Expected DEDENTION after the body of the loop statement");
 

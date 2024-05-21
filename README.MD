@@ -64,12 +64,10 @@ Increment 5
 - [ ] Test Case 11
 - [ ] Test Case 12
 - [ ] Check Display to put an error when accessing an array that was not initialized
-- [ ] Fix if there are blank spaces between code
+- [ ] Fix error when there are blank lines between code
+- [ ] Better error handling for conditional statements
+- [x] For Loops
+- [x] BREAK
+- [x] CONTINUE
 - [ ] Improve Parser
 - [ ] Improve Semantics Analyzer
-
-Extra
-
-- [x] For Loops
-- [ ] BREAK
-- [ ] CONTINUE
