@@ -65,10 +65,11 @@ Increment 5
 - [ ] Test Case 12
 - [ ] Check Display to put an error when accessing an array that was not initialized
 - [ ] Fix if there are blank spaces between code
+- [ ] Improve Parser
+- [ ] Improve Semantics Analyzer
 
 Extra
 
-- [ ] Improve Parser
-- [ ] Improve Semantics Analyzer
-- [ ] Compound Assignments???
-- [ ] Functions
+- [ ] For Loops
+- [ ] BREAK
+- [ ] CONTINUE

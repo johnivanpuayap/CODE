@@ -109,6 +109,8 @@ public class Interpreter {
             interpretScan((ScanNode) statement);
         } else if (statement instanceof WhileNode) {
             interpretWhile((WhileNode) statement);
+        } else if (statement instanceof ForNode) {
+            interpretFor((ForNode) statement);
         }
     }
 
@@ -326,10 +328,7 @@ public class Interpreter {
             if (conditionResult) {
 
                 for (StatementNode branchStatement : ifElseBranchStatements) {
-                    System.out.println(branchStatement.toString());
-
                     interpretStatement(branchStatement);
-
                 }
                 return;
             }
@@ -359,13 +358,35 @@ public class Interpreter {
 
         boolean result = evaluateCondition(condition);
 
-        System.out.println(result);
+        while (result) {
+
+            for (StatementNode statement : statements) {
+                interpretStatement(statement);
+            }
+
+            result = evaluateCondition(condition);
+        }
+    }
+
+    private void interpretFor(ForNode forStatement) {
+
+        AssignmentNode initialization = forStatement.getInitialization();
+        ExpressionNode condition = forStatement.getCondition();
+        StatementNode update = forStatement.getUpdate();
+
+        List<StatementNode> statements = forStatement.getStatements();
+
+        interpretStatement(initialization);
+
+        boolean result = evaluateCondition(condition);
 
         while (result) {
 
             for (StatementNode statement : statements) {
                 interpretStatement(statement);
             }
+
+            interpretStatement(update);
 
             result = evaluateCondition(condition);
         }
@@ -448,7 +469,7 @@ public class Interpreter {
     }
 
     private void error(String message, Position position) {
-        System.err.println("Error: " + message + " " + position);
+        System.err.println("Runtime Error: " + message + " " + position);
         System.exit(1);
     }
 }

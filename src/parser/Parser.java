@@ -197,12 +197,19 @@ public class Parser {
                 error("Found an ELSE_IF block without an IF block", previous());
             }
 
+            if (match(Type.FOR)) {
+                statements.add(parseForStatement());
+                checkForNewline();
+                continue;
+            }
+
             if (peek().getType() == Type.DEDENT) {
                 if (isIfStatement) {
-                    if (peekNext(1).getType() == Type.END_IF || peekNext(1).getType() == Type.END_WHILE) {
+                    if (peekNext(1).getType() == Type.END_IF || peekNext(1).getType() == Type.END_WHILE
+                            || peekNext(1).getType() == Type.END_FOR) {
                         return statements;
                     } else {
-                        error("Expected END IF after DEDENTION", peek());
+                        error("Expected END IF/END WHILE/ END FOR after DEDENTION", peek());
                     }
                 } else {
                     if (peekNext(1).getType() == Type.END_CODE) {
@@ -308,7 +315,7 @@ public class Parser {
         return assignments;
     }
 
-    private StatementNode parseArithmeticStatement() {
+    private AssignmentNode parseArithmeticStatement() {
         // Ensure that there are enough tokens to represent an assignment statement
         if (currentTokenIndex + 4 >= tokens.size()) {
             error("Invalid arithmetic statement", peek());
@@ -606,6 +613,61 @@ public class Parser {
         consume(Type.END_WHILE, "Expected 'END WHILE' after the body of the while statement");
 
         return new WhileNode(condition, body, token.getPosition());
+    }
+
+    private StatementNode parseForStatement() {
+        Token token = previous();
+
+        consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'FOR' keyword");
+
+        AssignmentNode initialization = null;
+
+        if (!match(Type.DELIMITER)) {
+
+            System.out.println("Parsing FOR LOOP initialization");
+
+            match(Type.IDENTIFIER); // Consume the identifier token (variable name
+
+            List<StatementNode> initializations = parseAssignmentStatement();
+
+            if (initializations.size() > 1) {
+                error("Expected a single assignment inside the FOR LOOP initialization", token);
+            }
+
+            initialization = (AssignmentNode) initializations.get(0);
+
+            System.out.println("Initialization: " + initialization);
+
+            System.out.println("Peek: " + peek());
+        }
+
+        consume(Type.DELIMITER, "Expected a SEMI-COLON after the initialization statement");
+
+        ExpressionNode condition = parseConditionalExpression();
+
+        consume(Type.DELIMITER, "Expected a SEMI-COLON after the conditional expression");
+
+        consume(Type.IDENTIFIER, "Expected an identifier after the conditional expression");
+
+        AssignmentNode update = parseArithmeticStatement();
+
+        consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
+
+        consume(Type.NEWLINE, "Expected new line before the BEGIN LOOP statement");
+
+        consume(Type.BEGIN_FOR, "Expected 'BEGIN LOOP' after the conditional expression");
+
+        consume(Type.NEWLINE, "Expected new line after the BEGIN LOOP statement");
+
+        consume(Type.INDENT, "Expected INDENT after the BEGIN LOOP statement");
+
+        List<StatementNode> body = parseStatements(true);
+
+        consume(Type.DEDENT, "Expected DEDENTION after the body of the loop statement");
+
+        consume(Type.END_FOR, "Expected 'END LOOP' after the body of the loop statement");
+
+        return new ForNode(initialization, condition, update, body, token.getPosition());
     }
 
     private void checkForNewline() {

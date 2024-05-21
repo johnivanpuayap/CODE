@@ -7,7 +7,10 @@ import src.utils.SymbolTable;
 import src.utils.Token;
 import src.utils.Type;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +57,8 @@ public class SemanticAnalyzer {
             visitIfNode((IfNode) node);
         } else if (node instanceof WhileNode) {
             visitWhileNode((WhileNode) node);
+        } else if (node instanceof ForNode) {
+            visitForNode((ForNode) node);
         }
     }
 
@@ -93,6 +98,8 @@ public class SemanticAnalyzer {
     private void visitVariableNode(VariableNode node, Type type, boolean checkInitialized) {
 
         String name = node.getName();
+
+        checkUsingReservedKeyword(name, node.getPosition());
 
         checkValidVariableName(name, node.getPosition());
 
@@ -206,6 +213,17 @@ public class SemanticAnalyzer {
         }
     }
 
+    // Visit a for node
+    private void visitForNode(ForNode node) {
+        visitAssignmentNode(node.getInitialization());
+        evaluateCondition(node.getCondition());
+        visitAssignmentNode((AssignmentNode) node.getUpdate());
+
+        for (StatementNode statement : node.getStatements()) {
+            visit(statement);
+        }
+    }
+
     // Report an error
     private void error(String message, Position position) {
         // System.err.println("Error at " + position + ": " + message);
@@ -232,6 +250,17 @@ public class SemanticAnalyzer {
         // Return true if the input string matches the pattern, otherwise false
         if (!matcher.matches()) {
             error("Variable '" + name + "' is not a valid variable name", position);
+        }
+    }
+
+    private void checkUsingReservedKeyword(String name, Position position) {
+
+        Set<String> reservedKeywords = new HashSet<>(
+                Arrays.asList("IF", "ELSE", "FOR", "WHILE", "BEGIN", "END", "DISPLAY", "SCAN", "INT", "CHAR", "BOOL",
+                        "FLOAT", "AND", "OR", "NOT", "TRUE", "FALSE"));
+
+        if (reservedKeywords.contains(name)) {
+            error("Variable name: '" + name + "' can't be used because it is a reserved keyword", position);
         }
     }
 }

@@ -90,6 +90,29 @@ public class Lexer {
                         new Token(Type.END_WHILE, "END WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("END WHILE".length());
                 counter += "END WHILE".length();
+            } else if (input.startsWith("FOR", counter)) {
+                tokens.add(new Token(Type.FOR, "FOR", new Position(position.getLine(), position.getColumn())));
+                position.add("FOR".length());
+                counter += "FOR".length();
+            } else if (input.startsWith("BEGIN FOR", counter)) {
+                tokens.add(new Token(Type.BEGIN_FOR, "BEGIN FOR",
+                        new Position(position.getLine(), position.getColumn())));
+                position.add("BEGIN FOR".length());
+                counter += "BEGIN FOR".length();
+            } else if (input.startsWith("END FOR", counter)) {
+                tokens.add(
+                        new Token(Type.END_FOR, "END FOR", new Position(position.getLine(), position.getColumn())));
+                position.add("END FOR".length());
+                counter += "END FOR".length();
+            } else if (input.startsWith("CONTINUE", counter)) {
+                tokens.add(
+                        new Token(Type.CONTINUE, "CONTINUE", new Position(position.getLine(), position.getColumn())));
+                position.add("CONTINUE".length());
+                counter += "CONTINUE".length();
+            } else if (input.startsWith("BREAK", counter)) {
+                tokens.add(new Token(Type.BREAK, "BREAK", new Position(position.getLine(), position.getColumn())));
+                position.add("BREAK".length());
+                counter += "BREAK".length();
             } else if (currentChar == '=') {
                 if (input.charAt(counter + 1) == '=') {
                     tokens.add(new Token(Type.EQUAL, "==", new Position(position.getLine(), position.getColumn())));
@@ -251,6 +274,10 @@ public class Lexer {
                 if (indents != null) {
                     tokens.addAll(indents);
                 }
+            } else if (currentChar == ';') {
+                tokens.add(new Token(Type.DELIMITER, ";", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
             } else if (Character.isLetter(currentChar) || currentChar == '_') {
                 tokens.add(tokenizeIdentifier());
             } else if (Character.isDigit(currentChar)) {
@@ -317,7 +344,7 @@ public class Lexer {
 
         while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != ' '
                 && input.charAt(counter) != ',' && input.charAt(counter) != ')' && input.charAt(counter) != '('
-                && input.charAt(counter) != '=') {
+                && input.charAt(counter) != '=' && input.charAt(counter) != ';') {
             literal.append(input.charAt(counter));
             counter++;
             position.add(1);
