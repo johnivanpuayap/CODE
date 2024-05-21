@@ -59,6 +59,7 @@ public class Interpreter {
 
             AssignmentNode assignment = (AssignmentNode) statement;
             if (assignment.getExpression() instanceof LiteralNode) {
+
                 Symbol s = symbolTable.lookup(assignment.getVariable().getName());
 
                 LiteralNode literal = (LiteralNode) assignment.getExpression();

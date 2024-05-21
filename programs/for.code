@@ -1,8 +1,4 @@
 BEGIN CODE
     INT counter
-    FOR (counter = 0; counter < 10; counter = counter + 1)
-    BEGIN FOR
-        DISPLAY: counter & " "
-    END FOR
-    DISPLAY: $ & "Loop finished!"
+    counter = 0
 END CODE
