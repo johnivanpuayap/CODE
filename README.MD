@@ -67,7 +67,7 @@ Final Project Presentation
 - [ ] Test Case 11
 - [ ] Test Case 12
 - [x] Check Display to put an error when accessing an array that was not initialized
-- [ ] Fix error when there are blank lines between code
+- [x] Fix error when there are blank lines between code
 - [x] Better error handling for conditional statements
 - [x] Improved Logical and Arithmetic Examples
 - [ ] Improve Parser

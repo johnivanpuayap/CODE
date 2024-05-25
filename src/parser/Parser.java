@@ -37,8 +37,11 @@ public class Parser {
         if (!match(Type.INDENT)) {
 
             if (match(Type.END_CODE)) {
-                match(Type.NEWLINE);
-                match(Type.EOF);
+
+                System.out.println("Was here" + peek().getPosition());
+
+                consume(Type.NEWLINE, "Expected NEWLINE AFTER END CODE");
+                consume(Type.EOF, "Expected EOF after END CODE but found " + peek().getType());
                 return new ProgramNode(declarations, programStatements);
             }
 
@@ -270,6 +273,10 @@ public class Parser {
 
             if (match(Type.END_CODE)) {
                 error("Unexpected END CODE", peek());
+            }
+
+            if (match(Type.BEGIN_CODE)) {
+                error("Unexpected BEGIN CODE", peek());
             }
         }
 

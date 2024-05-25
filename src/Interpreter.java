@@ -15,6 +15,7 @@ import src.utils.Symbol;
 public class Interpreter {
     private ProgramNode program;
     private SymbolTable symbolTable;
+    private boolean displayError = true;
 
     public Interpreter(ProgramNode program, SymbolTable symbolTable) {
         this.program = program;
@@ -23,7 +24,6 @@ public class Interpreter {
 
     public void interpret() {
         List<StatementNode> statements = program.getStatements();
-        int displayCounter = 0;
 
         System.out.println("\n\n\n\n\nPROGRAM RESULTS");
 
@@ -50,16 +50,11 @@ public class Interpreter {
 
             } else {
 
-                // Display Counter
-                if (statement instanceof DisplayNode) {
-                    displayCounter++;
-                }
-
                 interpretStatement(statement);
             }
         }
 
-        if (displayCounter == 0) {
+        if (displayError) {
             System.out.println("No Error");
         }
     }
@@ -116,8 +111,10 @@ public class Interpreter {
 
             }
         } else if (statement instanceof DisplayNode) {
+            displayError = false;
             interpretDisplay((DisplayNode) statement);
         } else if (statement instanceof ScanNode) {
+            displayError = false;
             interpretScan((ScanNode) statement);
         } else if (statement instanceof WhileNode) {
             interpretWhile((WhileNode) statement);

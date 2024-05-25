@@ -33,7 +33,10 @@ public class SemanticAnalyzer {
 
             checkUsingReservedKeyword(declaration.getName(), declaration.getPosition());
             checkValidVariableName(declaration.getName(), declaration.getPosition());
-            checkValidDataType(declaration.getType(), declaration.getValue(), declaration.getPosition());
+
+            if (declaration.getValue() != null) {
+                checkValidDataType(declaration.getType(), declaration.getValue(), declaration.getPosition());
+            }
 
             if (!symbolTable.insert(symbol)) {
                 error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
@@ -146,6 +149,9 @@ public class SemanticAnalyzer {
             if (symbol == null) {
                 error("Variable '" + identifier + "' is not declared", node.getPosition());
             }
+
+            symbol.setInitialized(true);
+
         }
     }
 
