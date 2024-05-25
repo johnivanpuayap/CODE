@@ -152,10 +152,12 @@ public class Parser {
                             || peekNext(counter).getType() == Type.DIVIDE
                             || peekNext(counter).getType() == Type.MODULO) {
 
+                        System.out.println("Currnet Token: " + peek());
+
                         statements.add(parseArithmeticStatement());
                         checkForNewline();
                         isAssignment = false;
-                        continue;
+                        break;
 
                     } else if (peekNext(counter).getType() == Type.LESS ||
                             peekNext(counter).getType() == Type.GREATER ||
@@ -166,12 +168,13 @@ public class Parser {
                             peekNext(counter).getType() == Type.AND ||
                             peekNext(counter).getType() == Type.OR ||
                             peekNext(counter).getType() == Type.NOT) {
-                        ;
                         statements.add(parseLogicalStatement());
+
+                        System.out.println("Currnet Token: " + peek());
+
                         checkForNewline();
                         isAssignment = false;
-                        continue;
-
+                        break;
                     }
                     counter++;
                 }
@@ -198,7 +201,6 @@ public class Parser {
 
             if (match(Type.IF)) {
                 statements.addAll(parseIfStatement());
-                System.out.println(statements.getLast());
                 continue;
             }
 
@@ -358,10 +360,6 @@ public class Parser {
     }
 
     private AssignmentNode parseArithmeticStatement() {
-        if (currentTokenIndex + 4 >= tokens.size()) {
-            error("Invalid arithmetic statement", peek());
-        }
-
         Token variableName = previous();
 
         if (!match(Type.ASSIGNMENT)) {
@@ -376,12 +374,12 @@ public class Parser {
     }
 
     private AssignmentNode parseLogicalStatement() {
-        if (currentTokenIndex + 4 >= tokens.size()) {
-            error("Invalid logical statement", peek());
-            return null;
-        }
 
         Token variableName = previous();
+
+        System.out.println("Variable Name: " + variableName);
+
+        System.out.println("Peek: " + peek());
 
         if (!match(Type.ASSIGNMENT)) {
             error("Invalid logical statement", peek());
@@ -757,8 +755,11 @@ public class Parser {
     }
 
     private void error(String message, Token token) {
-        System.err.println("Syntax error " + token + ": " + message);
-        System.exit(1);
+        // System.err.println("Syntax error " + token + ": " + message);
+        // System.exit(1);
+
+        throw new RuntimeException("Syntax error " + token + ": " + message);
+
     }
 
     private Token peek() {

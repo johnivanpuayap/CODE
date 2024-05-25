@@ -23,6 +23,7 @@ public class Interpreter {
 
     public void interpret() {
         List<StatementNode> statements = program.getStatements();
+        int displayCounter = 0;
 
         System.out.println("\n\n\n\n\nPROGRAM RESULTS");
 
@@ -48,8 +49,18 @@ public class Interpreter {
                 interpretIf(ifStatements);
 
             } else {
+
+                // Display Counter
+                if (statement instanceof DisplayNode) {
+                    displayCounter++;
+                }
+
                 interpretStatement(statement);
             }
+        }
+
+        if (displayCounter == 0) {
+            System.out.println("No Error");
         }
     }
 

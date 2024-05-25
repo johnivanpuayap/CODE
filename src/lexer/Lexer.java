@@ -278,29 +278,34 @@ public class Lexer {
                 tokens.add(new Token(Type.DELIMITER, ";", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (Character.isLetter(currentChar) || currentChar == '_') {
+            } else if (currentChar == '\n') {
+
+                if (input.charAt(counter - 1) == '\n') {
+                    counter++;
+                    position.newLine();
+                } else {
+                    tokens.add(new Token(Type.NEWLINE, "\n", new Position(position.getLine(), position.getColumn())));
+                    counter++;
+                    position.newLine();
+                }
+
+                if (counter + 1 < input.length() && input.charAt(counter) != '\n') {
+                    List<Token> indents = checkIndentLevel(position);
+
+                    if (indents != null) {
+                        tokens.addAll(indents);
+                    }
+                }
+
+            }
+
+            else if (Character.isLetter(currentChar) || currentChar == '_') {
                 tokens.add(tokenizeIdentifier());
             } else if (Character.isDigit(currentChar)) {
                 tokens.add(tokenizeLiteral());
             } else if (Character.isWhitespace(currentChar)) {
-                // Skip whitespace
-                if (currentChar == '\n') {
-
-                    tokens.add(
-                            new Token(Type.NEWLINE, "\n", new Position(position.getLine(),
-                                    position.getColumn())));
-                    position.newLine();
-                    counter++;
-
-                    List<Token> indentions = checkIndentLevel(position);
-                    if (indentions != null) {
-                        tokens.addAll(indentions);
-                    }
-
-                } else {
-                    position.add(1);
-                    counter++;
-                }
+                position.add(1);
+                counter++;
             } else {
                 System.err.println("Lexer Error: Invalid character found: " + currentChar
                         + new Position(position.getLine(), position.getColumn()));
@@ -476,7 +481,7 @@ public class Lexer {
 
         int spaces = 0, tabs = 0, newIndentLevel;
         int temp = counter;
-        List<Token> tokens = new ArrayList<>();
+        List<Token> indentTokens = new ArrayList<>();
 
         while (temp < input.length() && (input.charAt(temp) == ' ' || input.charAt(temp) == '\t')) {
             if (input.charAt(temp) == ' ') {
@@ -502,7 +507,8 @@ public class Lexer {
 
             if (newIndentLevel > indentLevel) {
                 for (int i = 0; i < newIndentLevel - indentLevel; i++) {
-                    tokens.add(new Token(Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
+                    indentTokens
+                            .add(new Token(Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
                     position.add(4);
                     counter += 4;
                 }
@@ -510,7 +516,8 @@ public class Lexer {
 
             } else if (newIndentLevel < indentLevel) {
                 while (newIndentLevel < indentLevel) {
-                    tokens.add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
+                    indentTokens
+                            .add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
                     indentLevel--;
                 }
             }
@@ -522,7 +529,8 @@ public class Lexer {
 
             if (newIndentLevel > indentLevel) {
                 for (int i = 0; i < newIndentLevel - indentLevel; i++) {
-                    tokens.add(new Token(Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
+                    indentTokens
+                            .add(new Token(Type.INDENT, "", new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter += 1;
                 }
@@ -531,20 +539,24 @@ public class Lexer {
             } else if (newIndentLevel < indentLevel) {
 
                 while (newIndentLevel < indentLevel) {
-                    tokens.add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
+                    indentTokens
+                            .add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
                     indentLevel--;
                 }
             }
         } else {
             newIndentLevel = 0;
 
+            System.out.println("New Indent Level: " + newIndentLevel + " Indent Level: " + indentLevel);
+
             if (newIndentLevel < indentLevel) {
                 while (newIndentLevel < indentLevel) {
-                    tokens.add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
+                    indentTokens
+                            .add(new Token(Type.DEDENT, "", new Position(position.getLine(), position.getColumn())));
                     indentLevel--;
                 }
             }
         }
-        return tokens;
+        return indentTokens;
     }
 }
