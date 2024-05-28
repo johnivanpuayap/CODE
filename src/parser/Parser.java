@@ -493,10 +493,12 @@ public class Parser {
 
         consume(Type.COLON, "Expected colon after Display Call");
         List<Token> arguments = new ArrayList<>();
+        List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
         while (peek().getType() != Type.NEWLINE) {
-
-            System.out.println("Current Token: " + peek());
+            
+            Token currentToken = peek();
+            System.out.println("Current Token: " + currentToken);
 
             if (match(Type.CONCATENATION)) {
 
@@ -511,26 +513,31 @@ public class Parser {
                 arguments.add(previous());
             }
 
-            if (match(Type.IDENTIFIER) || match(Type.NEXT_LINE)) {
+            else if (match(Type.IDENTIFIER)) {
 
-                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
-                    error("Can't add another argument without concatention", previous());
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION &&
+                                                arguments.getLast().getType() != Type.ADD &&
+                                                arguments.getLast().getType() != Type.SUBTRACT &&
+                                                arguments.getLast().getType() != Type.MULTIPLY &&
+                                                arguments.getLast().getType() != Type.DIVIDE &&
+                                                arguments.getLast().getType() != Type.MODULO) {
+                    error("Can't add another argument without concatenation", previous());
                 }
 
                 arguments.add(previous());
             }
 
-            if (match(Type.ESCAPE_CODE_OPEN)) {
+            else if (match(Type.ESCAPE_CODE_OPEN)) {
 
                 if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
-                    error("Can't add another argument without concatention", previous());
+                    error("Can't add another argument without concatenation", previous());
                 }
 
                 arguments.add(consume(Type.SPECIAL_CHARACTER, "Expected special character after escape code open"));
                 consume(Type.ESCAPE_CODE_CLOSE, "Expected escape code close");
             }
 
-            if (match(Type.DELIMITER)) {
+            else if (match(Type.DELIMITER)) {
 
                 if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
                     error("Can't add another argument without concatention", previous());
@@ -541,7 +548,7 @@ public class Parser {
                 consume(Type.DELIMITER, "Expected closing delimiter after the string literal");
             }
 
-            if (match(Type.ESCAPE_CODE_CLOSE)) {
+            else if (match(Type.ESCAPE_CODE_CLOSE)) {
 
                 if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
                     error("Can't add another argument without concatention", previous());
@@ -550,13 +557,58 @@ public class Parser {
                 error("Expected escape code open before escape code close", previous());
             }
 
+            else if (match(Type.LITERAL)) {
+                
+                Token currentArgument = arguments.getLast();
+
+                if (arguments.size() != 0 && (currentArgument.getType() != Type.CONCATENATION &&
+                                                currentArgument.getType() != Type.ADD &&
+                                                currentArgument.getType() != Type.SUBTRACT &&
+                                                currentArgument.getType() != Type.MULTIPLY &&
+                                                currentArgument.getType() != Type.DIVIDE &&
+                                                currentArgument.getType() != Type.MODULO)) {
+                    error("Can't add another number literal without concatenation or arithmetic operation", previous());
+                }
+                
+                arguments.add(previous());
+            }
+
+            else if (currentToken.getType() == Type.ADD || currentToken.getType() == Type.SUBTRACT || 
+                        currentToken.getType() == Type.MULTIPLY || currentToken.getType() == Type.DIVIDE || 
+                        currentToken.getType() == Type.MODULO) {
+                
+                if (arguments.size() == 0 && arguments.getLast().getType() != Type.LITERAL && arguments.getLast().getType() != Type.IDENTIFIER) {
+                    error("Can't perform arithmetic operation without a left-side identifier or number literal", previous());
+                }
+
+                currentTokenIndex--;
+                arguments.remove(arguments.size() - 1);
+                ExpressionNode expression = parseExpression();
+                expressions.add(expression);
+
+                StringBuilder sb = new StringBuilder();
+                for (Token token : expression.getTokens()) {
+                    sb.append(token.getLexeme() + " ");
+                }
+
+                arguments.add(new Token(Type.EXPRESSION, sb.toString(), expression.getToken(expression.countTokens() - 1).getPosition()));
+            }
+
+            else if (match(Type.NEXT_LINE)) {
+                
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
+                    error("Can't add another argument without concatenation", previous());
+                }
+
+                arguments.add(previous());
+            }
         }
 
         if (previous().getType() == Type.CONCATENATION) {
             error("Missing argument after concatenation symbol", previous());
         }
 
-        return new DisplayNode(arguments);
+        return new DisplayNode(arguments, expressions);
     }
 
     private StatementNode parseScanStatement() {
