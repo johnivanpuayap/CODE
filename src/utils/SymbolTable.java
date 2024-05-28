@@ -2,6 +2,8 @@ package src.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 public class SymbolTable {
     private Map<String, Symbol> symbols;
@@ -27,5 +29,9 @@ public class SymbolTable {
         SymbolTable newTable = new SymbolTable();
         newTable.symbols = new HashMap<>(symbols);
         return newTable;
+    }
+
+    public List<Symbol> getSymbols() {
+        return new ArrayList<>(symbols.values());
     }
 }
