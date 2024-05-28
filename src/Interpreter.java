@@ -114,7 +114,7 @@ public class Interpreter {
 
     public double evaluateExpression(ExpressionNode expression) {
 
-        System.out.println("Expression: " + expression.toString());
+        // System.out.println("Expression: " + expression.toString());
 
         List<Token> tokens = expression.getTokens();
 
@@ -230,28 +230,66 @@ public class Interpreter {
     }
 
     private void interpretDisplay(DisplayNode display) {
+        List<Token> arguments = display.getArguments();
+        List<ExpressionNode> expressions = display.getExpressions();
 
-        for (Token token : display.getArguments()) {
-            if (token.getType() == Type.STRING_LITERAL) {
+        // System.out.println("Expressions: " + expressions);
+
+        int currentIndex = 0;
+        int currentIndexExpression = 0;
+
+        while (currentIndex < arguments.size()) {
+            Token token = arguments.get(currentIndex);
+
+            // System.out.println("Token: " + token.getLexeme());
+
+            if (token.getType() == Type.STRING_LITERAL || token.getType() == Type.SPECIAL_CHARACTER) {
                 System.out.print(token.getLexeme());
+                currentIndex++;
                 continue;
             }
+
             if (token.getType() == Type.IDENTIFIER) {
-
                 Symbol symbol = symbolTable.lookup(token.getLexeme());
-
                 String value = symbol.getValue();
-
                 System.out.print(value);
+                currentIndex++;
                 continue;
             }
-            if (token.getType() == Type.SPECIAL_CHARACTER) {
+
+            if (token.getType() == Type.LITERAL) {
                 System.out.print(token.getLexeme());
+                currentIndex++;
+                continue;
+            }
+
+            if (token.getType() == Type.EXPRESSION) {
+                ExpressionNode expression = expressions.get(currentIndexExpression);
+                double result = evaluateExpression(expression);
+
+                if (result == (int) result) {
+                    System.out.print(Integer.toString((int) result));
+                } else {
+                    System.out.print(Double.toString(result));
+                }
+                currentIndexExpression++;
+                currentIndex++;
+                continue;
+            }
+
+            if (token.getType() == Type.NEXT_LINE) {
+                System.out.println();
+                currentIndex++;
+                continue;
+            }
+
+            if (token.getType() == Type.CONCATENATION) {
+                currentIndex++;
+                continue;
             }
         }
 
         System.out.println();
-
     }
 
     private void interpretScan(ScanNode scanStatement) {

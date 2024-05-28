@@ -416,12 +416,51 @@ public class Lexer {
                     counter++;
                     position.add(1);
                 }
-            } else {
+            } 
+            // Tokenize Number Literals
+            else if (Character.isDigit(input.charAt(counter))) {
+                StringBuilder number = new StringBuilder();
+                while (counter < input.length() && Character.isDigit(input.charAt(counter))) {
+                    number.append(input.charAt(counter));
+                    counter++;
+                    position.add(1);
+                }
+                tokens.add(new Token(Type.LITERAL, number.toString(), new Position(position.getLine(), position.getColumn())));
+                continue;
+            }
+            else if (input.charAt(counter) == '+') {
+                tokens.add(new Token(Type.ADD, "+", new Position(position.getLine(), position.getColumn())));
+                counter++;
+                continue;
+            }
+            else if (input.charAt(counter) == '-') {
+                tokens.add(new Token(Type.SUBTRACT, "-", new Position(position.getLine(), position.getColumn())));
+                counter++;
+                continue;
+            }
+            else if (input.charAt(counter) == '*') {
+                tokens.add(new Token(Type.MULTIPLY, "*", new Position(position.getLine(), position.getColumn())));
+                counter++;
+                continue;
+            }
+            else if (input.charAt(counter) == '/') {
+                tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(), position.getColumn())));
+                counter++;
+                continue;
+            }
+            else if (input.charAt(counter) == '%') {
+                tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(), position.getColumn())));
+                counter++;
+                continue;
+            }
+
+            else {
                 if (Character.isWhitespace(input.charAt(counter))) {
                     counter++;
                     position.add(1);
                     continue;
                 }
+                // Tokenize Identifiers
                 // Parse the variable name
                 StringBuilder variableName = new StringBuilder();
                 while (counter < input.length() && !Character.isWhitespace(input.charAt(counter))
