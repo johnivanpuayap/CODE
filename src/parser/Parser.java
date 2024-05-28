@@ -138,6 +138,8 @@ public class Parser {
 
         while (!match(Type.EOF) && !(currentTokenIndex >= tokens.size())) {
 
+            System.out.println("Current Token: " + peek());
+
             if (match(Type.INT) || match(Type.CHAR) || match(Type.FLOAT) || match(Type.BOOL)) {
                 error("Found a variable declaration after the executable code", previous());
             }
@@ -155,7 +157,7 @@ public class Parser {
                             || peekNext(counter).getType() == Type.DIVIDE
                             || peekNext(counter).getType() == Type.MODULO) {
 
-                        System.out.println("Currnet Token: " + peek());
+                        System.out.println("Current Token: " + peek());
 
                         statements.add(parseArithmeticStatement());
                         checkForNewline();
