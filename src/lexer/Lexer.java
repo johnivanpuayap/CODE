@@ -349,7 +349,10 @@ public class Lexer {
 
         while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != ' '
                 && input.charAt(counter) != ',' && input.charAt(counter) != ')' && input.charAt(counter) != '('
-                && input.charAt(counter) != '=' && input.charAt(counter) != ';') {
+                && input.charAt(counter) != '=' && input.charAt(counter) != ';' && input.charAt(counter) != '/'
+                && input.charAt(counter) != '*' && input.charAt(counter) != '+' && input.charAt(counter) != '-'
+                && input.charAt(counter) != '%' && input.charAt(counter) != '<' && input.charAt(counter) != '>'
+                && input.charAt(counter) != '&' && input.charAt(counter) != '|' && input.charAt(counter) != '!') {
             literal.append(input.charAt(counter));
             counter++;
             position.add(1);
@@ -403,7 +406,9 @@ public class Lexer {
                 tokens.add(new Token(Type.NEXT_LINE, "$", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
+
             } else if (input.charAt(counter) == '[') {
+
                 tokens.add(
                         new Token(Type.ESCAPE_CODE_OPEN, "[", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
@@ -440,6 +445,7 @@ public class Lexer {
                 position.add(1);
                 counter++;
             }
+
             // Tokenize quotation marks and string literal
             else if (input.charAt(counter) == '"') {
                 tokens.add(new Token(Type.DELIMITER, Character.toString('"'),
@@ -463,7 +469,7 @@ public class Lexer {
                     counter++;
                     position.add(1);
                 }
-            } 
+            }
             // Tokenize Number Literals
             else if (Character.isDigit(input.charAt(counter))) {
                 StringBuilder number = new StringBuilder();
@@ -472,30 +478,26 @@ public class Lexer {
                     counter++;
                     position.add(1);
                 }
-                tokens.add(new Token(Type.LITERAL, number.toString(), new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Type.LITERAL, number.toString(),
+                        new Position(position.getLine(), position.getColumn())));
                 continue;
-            }
-            else if (input.charAt(counter) == '+') {
+            } else if (input.charAt(counter) == '+') {
                 tokens.add(new Token(Type.ADD, "+", new Position(position.getLine(), position.getColumn())));
                 counter++;
                 continue;
-            }
-            else if (input.charAt(counter) == '-') {
+            } else if (input.charAt(counter) == '-') {
                 tokens.add(new Token(Type.SUBTRACT, "-", new Position(position.getLine(), position.getColumn())));
                 counter++;
                 continue;
-            }
-            else if (input.charAt(counter) == '*') {
+            } else if (input.charAt(counter) == '*') {
                 tokens.add(new Token(Type.MULTIPLY, "*", new Position(position.getLine(), position.getColumn())));
                 counter++;
                 continue;
-            }
-            else if (input.charAt(counter) == '/') {
+            } else if (input.charAt(counter) == '/') {
                 tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(), position.getColumn())));
                 counter++;
                 continue;
-            }
-            else if (input.charAt(counter) == '%') {
+            } else if (input.charAt(counter) == '%') {
                 tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(), position.getColumn())));
                 counter++;
                 continue;
@@ -511,7 +513,11 @@ public class Lexer {
                 // Parse the variable name
                 StringBuilder variableName = new StringBuilder();
                 while (counter < input.length() && !Character.isWhitespace(input.charAt(counter))
-                        && input.charAt(counter) != '&') {
+                        && input.charAt(counter) != '&' && input.charAt(counter) != '\n' && input.charAt(counter) != '+'
+                        && input.charAt(counter) != '-' && input.charAt(counter) != '*' && input.charAt(counter) != '/'
+                        && input.charAt(counter) != '%' && input.charAt(counter) != '<' && input.charAt(counter) != '>'
+                        && input.charAt(counter) != '(' && input.charAt(counter) != ')'
+                        && input.charAt(counter) != '=') {
                     variableName.append(input.charAt(counter));
                     counter++;
                     position.add(1);

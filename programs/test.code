@@ -1,13 +1,5 @@
 BEGIN CODE
     INT a = 5
-    IF(a + 0)
-    BEGIN IF
-        a = a + 10
-        DISPLAY: a
-    END IF
-    ELSE
-    BEGIN IF
-        a = a + 10
-        DISPLAY: b
-    END IF
+    a = 12
+    DISPLAY: a+1.0
 END CODE

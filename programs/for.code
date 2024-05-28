@@ -4,5 +4,6 @@ BEGIN CODE
     BEGIN FOR
         DISPLAY: counter & "+"
     END FOR
-    DISPLAY: $ & "Loop finished!"
+
+    DISPLAY: "Loop finished!"
 END CODE
