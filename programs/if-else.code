@@ -3,7 +3,10 @@ BEGIN CODE
     DISPLAY: abc
     IF (abc == 15)
     BEGIN IF
-        a = 20
-        DISPLAY: a
+        WHILE (a < abc)
+        BEGIN WHILE
+            DISPLAY: a / 1
+            a = a + 1
+        END WHILE
     END IF
 END CODE

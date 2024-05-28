@@ -49,9 +49,8 @@ We will use the same symbol table that we use on semantic analysis in the interp
 
 Final Project Presentation
 
-- [ ] Conditional Expression
 - [ ] Operations in Display
-- [ ] Improve Error Handling
+- [x] Conditional Expression
 - [x] Tabs and Spaces for Indention
 - [x] WHILE Loops
 - [x] Test Case 1
@@ -62,14 +61,17 @@ Final Project Presentation
 - [x] Test Case 6
 - [x] Test Case 7
 - [x] Test Case 8
-- [ ] Test Case 9
-- [ ] Test Case 10
-- [ ] Test Case 11
-- [ ] Test Case 12
+- [x] Test Case 9
+- [x] Test Case 10
+- [x] Test Case 11
+- [x] Test Case 12
+- [x] Improved Logical and Arithmetic Expressions
 - [x] Check Display to put an error when accessing an array that was not initialized
 - [x] Fix error when there are blank lines between code
 - [x] Better error handling for conditional statements
-- [x] Improved Logical and Arithmetic Examples
+- [ ] Check if the conditions in a while, if and else if is returning a BOOL
+
+- [ ] Improve Error Handling
 - [ ] Improve Parser
 - [ ] Improve Semantics Analyzer
 
@@ -78,6 +80,7 @@ Final Project Presentation
 - [x] For Loops
 - [x] BREAK
 - [x] CONTINUE
+- [ ]
 
 Note: Since it was stated in the program specifications that all variable declaration is found after BEGIN CODE, our for loop should not declare a new variable, the format is like this
 

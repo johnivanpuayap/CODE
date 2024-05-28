@@ -3,7 +3,6 @@ package src.nodes;
 import java.util.List;
 import src.utils.Token;
 import src.utils.Type;
-import src.nodes.ExpressionNode;
 
 public class DisplayNode extends StatementNode {
     private List<Token> arguments;
@@ -47,7 +46,7 @@ public class DisplayNode extends StatementNode {
             sb.append(arguments.get(i) + " ");
 
             if (i < arguments.size() - 1) {
-                sb.append(" & "); // Add a concatenation symbol if it's not the last expression
+                sb.append(" & ");
             }
         }
 

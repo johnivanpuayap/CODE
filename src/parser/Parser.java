@@ -258,13 +258,13 @@ public class Parser {
                             || peekNext(1).getType() == Type.END_FOR) {
                         return statements;
                     } else {
-                        error("Expected END IF/END WHILE/ END FOR after DEDENTION", peek());
+                        error("Invalid Indentation found", peek());
                     }
                 } else {
                     if (peekNext(1).getType() == Type.END_CODE) {
                         return statements;
                     } else {
-                        error("Expected END CODE after DEDENTION", peek());
+                        error("Invalid Indentation found", peek());
                     }
                 }
             }
@@ -819,7 +819,8 @@ public class Parser {
         // System.err.println("Syntax error " + token + ": " + message);
         // System.exit(1);
 
-        throw new RuntimeException("Syntax error " + token + ": " + message);
+        throw new RuntimeException("Syntax error " + ": " + message + " at Line " + token.getPosition().getLine()
+                + " and column " + token.getPosition().getColumn());
 
     }
 
