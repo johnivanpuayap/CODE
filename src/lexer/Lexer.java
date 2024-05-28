@@ -280,7 +280,7 @@ public class Lexer {
                 counter++;
             } else if (currentChar == '\n') {
 
-                if (input.charAt(counter - 1) == '\n') {
+                if (input.charAt(counter - 1) == '\n' || tokens.get(tokens.size() - 1).getType() == Type.NEWLINE) {
                     counter++;
                     position.newLine();
                 } else {
@@ -289,7 +289,7 @@ public class Lexer {
                     position.newLine();
                 }
 
-                if (counter + 1 < input.length() && input.charAt(counter) != '\n') {
+                if (counter + 1 < input.length() && (input.charAt(counter) != '\n')) {
                     List<Token> indents = checkIndentLevel(position);
 
                     if (indents != null) {
@@ -360,6 +360,14 @@ public class Lexer {
                 || tokens.getLast().getType() == Type.BOOL) {
 
             return new Token(Type.IDENTIFIER, literal.toString(),
+                    new Position(position.getLine(), position.getColumn()));
+        }
+
+        if (literal.toString() == "\"TRUE\"") {
+            return new Token(Type.LITERAL, "TRUE",
+                    new Position(position.getLine(), position.getColumn()));
+        } else if (literal.toString() == "\"FALSE\"") {
+            return new Token(Type.LITERAL, "FALSE",
                     new Position(position.getLine(), position.getColumn()));
         }
 
