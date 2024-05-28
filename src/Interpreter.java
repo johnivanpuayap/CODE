@@ -210,13 +210,15 @@ public class Interpreter {
                 if (token.getLexeme().contains(".")) {
                     stack.push(Double.valueOf(lexeme));
                 } else {
-                    stack.push(Integer.valueOf(lexeme));
+                    // Convert the integer to a double before pushing it to the stack
+                    stack.push(Double.valueOf(Integer.parseInt(lexeme)));
                 }
             } else if (token.getType() == Type.IDENTIFIER) {
                 if (symbolTable.lookup(lexeme) != null) {
 
                     if (symbolTable.lookup(lexeme).getType() == Type.INT) {
-                        stack.push(Integer.parseInt(symbolTable.lookup(lexeme).getValue()));
+                        // Convert the integer to a double before pushing it to the stack
+                        stack.push(Double.valueOf(Integer.parseInt(symbolTable.lookup(lexeme).getValue())));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.FLOAT) {
                         stack.push(Double.parseDouble(symbolTable.lookup(lexeme).getValue()));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.BOOL) {
