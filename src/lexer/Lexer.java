@@ -509,6 +509,28 @@ public class Lexer {
                     position.add(1);
                     continue;
                 }
+
+                System.out.println(input);
+
+                if (input.substring(counter).startsWith("AND")) {
+                    tokens.add(new Token(Type.AND, "AND", new Position(position.getLine(), position.getColumn())));
+                    position.add("AND".length());
+                    counter += "AND".length();
+                    continue;
+
+                } else if (input.substring(counter).startsWith("OR")) {
+                    tokens.add(new Token(Type.OR, "OR", new Position(position.getLine(), position.getColumn())));
+                    position.add("OR".length());
+                    counter += "OR".length();
+                    continue;
+
+                } else if (input.substring(counter).startsWith("NOT")) {
+                    tokens.add(new Token(Type.NOT, "NOT", new Position(position.getLine(), position.getColumn())));
+                    position.add("NOT".length());
+                    counter += "NOT".length();
+                    continue;
+                }
+
                 // Tokenize Identifiers
                 // Parse the variable name
                 StringBuilder variableName = new StringBuilder();

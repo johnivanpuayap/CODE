@@ -498,6 +498,8 @@ public class Parser {
         List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
         while (peek().getType() != Type.NEWLINE) {
+
+            System.out.println("Arguments: " + arguments.size());
             
             Token currentToken = peek();
             System.out.println("Current Token: " + currentToken);
@@ -522,7 +524,10 @@ public class Parser {
                                                 arguments.getLast().getType() != Type.SUBTRACT &&
                                                 arguments.getLast().getType() != Type.MULTIPLY &&
                                                 arguments.getLast().getType() != Type.DIVIDE &&
-                                                arguments.getLast().getType() != Type.MODULO) {
+                                                arguments.getLast().getType() != Type.MODULO &&
+                                                arguments.getLast().getType() != Type.AND &&
+                                                arguments.getLast().getType() != Type.OR &&
+                                                arguments.getLast().getType() != Type.NOT) {
                     error("Can't add another argument without concatenation", previous());
                 }
 
@@ -577,7 +582,8 @@ public class Parser {
 
             else if (currentToken.getType() == Type.ADD || currentToken.getType() == Type.SUBTRACT || 
                         currentToken.getType() == Type.MULTIPLY || currentToken.getType() == Type.DIVIDE || 
-                        currentToken.getType() == Type.MODULO) {
+                        currentToken.getType() == Type.MODULO || currentToken.getType() == Type.AND || 
+                        currentToken.getType() == Type.OR || currentToken.getType() == Type.NOT) {
                 
                 if (arguments.size() == 0 && arguments.getLast().getType() != Type.LITERAL && arguments.getLast().getType() != Type.IDENTIFIER) {
                     error("Can't perform arithmetic operation without a left-side identifier or number literal", previous());
