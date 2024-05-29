@@ -1,8 +1,14 @@
 BEGIN CODE
-    INT counter
-    FOR (counter = 0; counter < 10; counter = counter + 1)
+    INT counter = 0, b = 2
+    FOR (; counter < 10; counter = counter + b)
     BEGIN FOR
-        DISPLAY: counter & "+"
+        DISPLAY: counter
+
+        FOR(b = 0; b < 10; b = b + 1)
+        BEGIN FOR
+            DISPLAY: b & " <- b : " &counter
+        END FOR
+
     END FOR
 
     DISPLAY: "Loop finished!"

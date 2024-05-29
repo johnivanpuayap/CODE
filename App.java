@@ -37,13 +37,13 @@ public class App {
             Lexer lexer = new Lexer(input);
 
             List<Token> tokens = lexer.tokenize();
+
             for (Token token : tokens) {
                 System.out.println(token);
             }
 
             Parser parser = new Parser(tokens);
             ProgramNode programNode = parser.parse();
-            System.out.println(programNode);
 
             SemanticAnalyzer analyzer = new SemanticAnalyzer(programNode);
             analyzer.analyze();

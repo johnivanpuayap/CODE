@@ -1,7 +1,21 @@
 BEGIN CODE
-    INT x, y, z=5
-    CHAR a_1='n'
-    BOOL t="TRUE"
-    x=y=4
-    DISPLAY: x & t & z & $ & a_1 & [#] & "last"
+    INT a, b, c, abc
+    SCAN: abc
+    IF (abc == 15)
+    BEGIN IF
+        a = 1
+    END IF
+    ELSE IF (abc == 12)
+    BEGIN IF
+        a = 2
+    END IF
+    ELSE IF (abc == 13)
+    BEGIN IF
+        a = 4
+    END IF
+    ELSE 
+    BEGIN IF
+        a = 3
+    END IF
+    DISPLAY: a
 END CODE

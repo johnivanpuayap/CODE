@@ -29,7 +29,7 @@ public class LiteralNode extends ExpressionNode {
             return Type.FLOAT;
         } else if (lexeme.equals("TRUE") || lexeme.equals("FALSE")) {
             return Type.BOOL;
-        } else if (lexeme.length() == 1) {
+        } else if (lexeme.length() == 3 && lexeme.charAt(0) == '\'' && lexeme.charAt(2) == '\'') {
             return Type.CHAR;
         }
 

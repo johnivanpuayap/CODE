@@ -8,6 +8,7 @@ import src.utils.SymbolTable;
 import src.utils.Token;
 import src.utils.Type;
 
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -249,11 +250,20 @@ public class SemanticAnalyzer {
     // Visit a display node
     private void visitDisplayNode(DisplayNode node) {
         List<Token> arguments = node.getArguments();
+        List<ExpressionNode> expressions = node.getExpressions();
+        int currentIndexExpression = 0;
 
         for (Token argument : arguments) {
 
             if (argument.getType() == Type.IDENTIFIER) {
                 visitVariableNode(new VariableNode(argument), null, true);
+            } else if (argument.getType() == Type.LITERAL) {
+                LiteralNode literalNode = new LiteralNode(argument);
+                checkValidDataType(literalNode.getDataType(), argument.getLexeme(), argument.getPosition());
+            } else if (argument.getType() == Type.EXPRESSION) {
+                ExpressionNode expression = expressions.get(currentIndexExpression);
+                evaluateExpression(expression);
+                currentIndexExpression++;
             }
         }
     }
@@ -270,7 +280,6 @@ public class SemanticAnalyzer {
             }
 
             symbol.setInitialized(true);
-
         }
     }
 
@@ -318,6 +327,7 @@ public class SemanticAnalyzer {
 
             EvaluationResult leftResult = evaluateExpression(binaryNode.getLeft());
             EvaluationResult rightResult = evaluateExpression(binaryNode.getRight());
+
             Type operatorType = binaryNode.getOperator().getType();
 
             if (leftResult.getType() != rightResult.getType()) {
@@ -348,16 +358,21 @@ public class SemanticAnalyzer {
                 return new EvaluationResult(Type.BOOL, result);
 
             } else if (operatorType == Type.EQUAL || operatorType == Type.NOT_EQUAL) {
-                if (leftResult.getType() != rightResult.getType()) {
-                    error("Invalid operation. Both operands must be of the same type", null);
-                    return null;
-                }
 
                 boolean boolResult;
                 if (operatorType == Type.EQUAL) {
-                    boolResult = leftResult.getValue().equals(rightResult.getValue());
+
+                    if (leftResult.getValue() != null && rightResult.getValue() != null) {
+                        boolResult = leftResult.getValue().equals(rightResult.getValue());
+                    } else {
+                        boolResult = false;
+                    }
                 } else { // operatorType == Type.NOT_EQUAL
-                    boolResult = !leftResult.getValue().equals(rightResult.getValue());
+                    if (leftResult.getValue() != null && rightResult.getValue() != null) {
+                        boolResult = leftResult.getValue().equals(rightResult.getValue());
+                    } else {
+                        boolResult = false;
+                    }
                 }
 
                 result = boolResult ? "TRUE" : "FALSE";
@@ -432,15 +447,19 @@ public class SemanticAnalyzer {
         } else if (condition instanceof VariableNode) {
             VariableNode variableNode = (VariableNode) condition;
 
-            visitVariableNode(variableNode, null, true);
-
             Symbol symbol = symbolTable.lookup(variableNode.getName());
+
+            visitVariableNode(variableNode, symbol.getType(), true);
 
             return new EvaluationResult(symbol.getType(), symbol.getValue());
 
         } else if (condition instanceof LiteralNode) {
 
             LiteralNode literalNode = (LiteralNode) condition;
+
+            checkValidDataType(literalNode.getDataType(), literalNode.getValue().getLexeme(),
+                    literalNode.getPosition());
+
             return new EvaluationResult(literalNode.getDataType(), literalNode.getValue().getLexeme());
 
         } else if (condition instanceof UnaryNode) {
@@ -456,9 +475,45 @@ public class SemanticAnalyzer {
 
                     return new EvaluationResult(Type.BOOL, result);
                 } else {
-                    error("Invalid operand type for operator. Expected BOOL but got " + operandResult.getType(),
+                    error("Invalid operand type for 'NOT': expected 'BOOL', but got '" + operandResult.getType()
+                            + "'", condition.getPosition());
+                }
+            } else if (unaryNode.getOperator().getType() == Type.NEGATIVE) {
+                if (operandResult.getType() == Type.INT) {
+
+                    int resultValue = Integer.parseInt(operandResult.getValue()) * -1;
+
+                    return new EvaluationResult(Type.INT, String.valueOf(resultValue));
+
+                } else if (operandResult.getType() == Type.FLOAT) {
+
+                    double resultValue = Double.parseDouble(operandResult.getValue()) * -1;
+
+                    return new EvaluationResult(Type.FLOAT, String.valueOf(resultValue));
+                } else {
+                    error("Invalid operand type for NEGATIVE '-'. Expected INT or FLOAT but got "
+                            + operandResult.getType(),
                             condition.getPosition());
                 }
+            } else if (unaryNode.getOperator().getType() == Type.POSITIVE) {
+                if (operandResult.getType() == Type.INT) {
+
+                    int resultValue = Integer.parseInt(operandResult.getValue());
+
+                    return new EvaluationResult(Type.INT, String.valueOf(resultValue));
+
+                } else if (operandResult.getType() == Type.FLOAT) {
+
+                    double resultValue = Double.parseDouble(operandResult.getValue());
+
+                    return new EvaluationResult(Type.FLOAT, String.valueOf(resultValue));
+                } else {
+                    error("Invalid operand type for POSITIVE '+'. Expected INT or FLOAT but got "
+                            + operandResult.getType(),
+                            condition.getPosition());
+                }
+            } else {
+                error("Invalid unary operator", condition.getPosition());
             }
         } else {
             error("Invalid condition", condition.getPosition());
@@ -481,7 +536,10 @@ public class SemanticAnalyzer {
 
     // Visit a for node
     private void visitForNode(ForNode node) {
-        visitAssignmentNode(node.getInitialization());
+
+        if (node.getInitialization() != null) {
+            visitAssignmentNode(node.getInitialization());
+        }
 
         if (evaluateExpression(node.getCondition()).getType() != Type.BOOL) {
             error("Invalid type in condition. Expected BOOL but got " + evaluateExpression(node.getCondition()),
@@ -548,12 +606,14 @@ public class SemanticAnalyzer {
 
     // Report an error
     private void error(String message, Position position) {
-        // System.err.println("Error at " + position + ": " + message);
-        // System.exit(1);
+        System.err.println("Semantics Error: " + message + " at Line " +
+                position.getLine() + " and Column " + position.getColumn());
+        System.exit(1);
 
         // for debugging purposes so we know where the error is
         // Remove when checking
-        throw new RuntimeException("Semantics error " + ": " + message + " at Line " + position.getLine()
-                + " and Column " + position.getColumn());
+        // throw new RuntimeException("Semantics error " + ": " + message + " at Line "
+        // + position.getLine()
+        // + " and Column " + position.getColumn());
     }
 }

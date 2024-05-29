@@ -25,13 +25,9 @@ public class Interpreter {
 
     public void interpret() {
 
-        for (Symbol s : symbolTable.getSymbols().values()) {
-            System.out.println(s.getName() + " " + s.getType() + " " + s.getValue());
-        }
-
         List<StatementNode> statements = program.getStatements();
 
-        System.out.println("\n\n\n\n\nPROGRAM RESULTS");
+        System.out.println("\n\nPROGRAM RESULTS\n\n");
 
         for (int i = 0; i < statements.size(); i++) {
 
@@ -78,7 +74,7 @@ public class Interpreter {
                 LiteralNode literal = (LiteralNode) assignment.getExpression();
 
                 if (s.getType() != literal.getDataType()) {
-                    error("Type mismatch. Assigning a " + literal.getDataType() + " to a " + s.getType(),
+                    error("Type mismatch. Assigning a " + literal.getDataType() + " datatype to a " + s.getType(),
                             assignment.getVariable().getPosition());
                 }
 
@@ -94,7 +90,7 @@ public class Interpreter {
                     LiteralNode literal = (LiteralNode) unary.getOperand();
 
                     if (s.getType() != literal.getDataType()) {
-                        error("Type mismatch. Assigning a " + literal.getDataType() + " to a " + s.getType(),
+                        error("Type mismatch. Assigning a " + literal.getDataType() + " datatype to a " + s.getType(),
                                 assignment.getVariable().getPosition());
                     }
 
@@ -115,7 +111,7 @@ public class Interpreter {
                     Symbol operand = symbolTable.lookup(((VariableNode) unary.getOperand()).getName());
 
                     if (s.getType() != operand.getType()) {
-                        error("Type mismatch. Assigning a " + operand.getType() + " to a " + s.getType(),
+                        error("Type mismatch. Assigning a " + operand.getType() + " datatype to a " + s.getType(),
                                 assignment.getVariable().getPosition());
                     }
 
@@ -292,7 +288,7 @@ public class Interpreter {
                     try {
                         stack.push(Integer.parseInt(lexeme));
                     } catch (NumberFormatException e) {
-                        stack.push(lexeme.charAt(0));
+                        stack.push(lexeme);
                     }
                 }
 
@@ -312,13 +308,41 @@ public class Interpreter {
                     error("Undefined variable: " + lexeme, token.getPosition());
                 }
             } else {
+
                 switch (token.getType()) {
+
                     case ADD:
                     case SUBTRACT:
                     case MULTIPLY:
                     case DIVIDE:
                     case MODULO:
+
+                        if (stack.size() < 2) {
+                            error("Invalid expression. Missing operands.", token.getPosition());
+                        }
+
+                        if (stack.peek() instanceof Boolean) {
+                            error("Invalid expression. Cannot " + token.getType() + " a BOOL",
+                                    token.getPosition());
+                        }
+
+                        if (stack.peek() instanceof String && stack.peek().toString().length() == 1) {
+                            error("Invalid expression. Cannot " + token.getType() + " a CHAR",
+                                    token.getPosition());
+                        }
+
                         Number right = getNumber(stack.pop());
+
+                        if (stack.peek() instanceof Boolean) {
+                            error("Invalid expression. Cannot " + token.getType() + " a BOOL",
+                                    token.getPosition());
+                        }
+
+                        if (stack.peek() instanceof String && stack.peek().toString().length() == 1) {
+                            error("Invalid expression. Cannot " + token.getType() + " a CHAR",
+                                    token.getPosition());
+                        }
+
                         Number left = getNumber(stack.pop());
                         Number result = calculate(left, right, token);
                         stack.push(result);
@@ -365,6 +389,7 @@ public class Interpreter {
                         }
                         break;
                     case NOT_EQUAL:
+
                         Object rightNotEqual = stack.pop();
                         Object leftNotEqual = stack.pop();
                         if (leftNotEqual instanceof Number && rightNotEqual instanceof Number) {
@@ -392,10 +417,18 @@ public class Interpreter {
                         stack.push(!(boolean) stack.pop());
                         break;
                     case POSITIVE:
-                        stack.push(stack.pop());
+                        if (stack.peek() instanceof Integer) {
+                            stack.push((int) stack.pop());
+                        } else {
+                            stack.push((double) stack.pop());
+                        }
                         break;
                     case NEGATIVE:
-                        stack.push(-(double) stack.pop());
+                        if (stack.peek() instanceof Integer) {
+                            stack.push(-(int) stack.pop());
+                        } else {
+                            stack.push(-(double) stack.pop());
+                        }
                         break;
                     default:
                         error("Unknown operator: " + lexeme, token.getPosition());
@@ -405,6 +438,7 @@ public class Interpreter {
         }
 
         Object result = stack.pop();
+
         if (result instanceof Boolean) {
             return (boolean) result ? "TRUE" : "FALSE";
         } else {
@@ -443,9 +477,9 @@ public class Interpreter {
                 ExpressionNode expression = expressions.get(currentIndexExpression);
                 String result = evaluateExpression(expression);
 
-                if (result.equals("\"TRUE\"")) {
+                if (result.equals("TRUE")) {
                     result = "TRUE";
-                } else if (result.equals("\"FALSE\"")) {
+                } else if (result.equals("FALSE")) {
                     result = "FALSE";
                 }
 
@@ -473,7 +507,10 @@ public class Interpreter {
         Scanner scanner = new Scanner(System.in);
 
         for (Token identifier : scanStatement.getIdentifiers()) {
-            System.out.print(identifier.getLexeme() + ": ");
+
+            Symbol s = symbolTable.lookup(identifier.getLexeme());
+
+            System.out.print(s.getType() + " " + s.getName() + ": ");
             String input = scanner.nextLine();
 
             // Convert to a Data Type
@@ -484,12 +521,17 @@ public class Interpreter {
                 inputDataType = Type.INT;
             } else if (input.matches("[-+]?[0-9]+(\\.[0-9]+)?")) {
                 inputDataType = Type.FLOAT;
-            } else if (input.matches("[a-zA-Z]")) {
+
+            } else if (input.matches("'[a-zA-Z0-9]'")) {
+
+                // could be replace with else if (input.matches("'[a-zA-Z0-9.,;:'\"!?-_]'"))
+
                 inputDataType = Type.CHAR;
-            } else if (input.equals("TRUE") || input.equals("FALSE")) {
+            } else if (input.equals("\"TRUE\"") || input.equals("\"FALSE\"")) {
                 inputDataType = Type.BOOL;
             } else {
-                error("Invalid input", null);
+                error("Invalid input entered. Couldn't be converted to a suitable data type",
+                        scanStatement.getPosition());
             }
 
             Symbol symbol = symbolTable.lookup(identifier.getLexeme());
@@ -499,10 +541,24 @@ public class Interpreter {
                         scanStatement.getPosition());
             }
 
+            if (inputDataType == Type.INT) {
+                if (input.contains(".")) {
+                    String newValue = input.substring(0, input.indexOf("."));
+                    input = newValue;
+                }
+            } else if (inputDataType == Type.BOOL) {
+                if (input.equals("\"TRUE\"")) {
+                    input = "TRUE";
+                } else {
+                    input = "FALSE";
+                }
+            }
+
             symbol.setValue(input);
         }
 
         scanner.close();
+
     }
 
     private void interpretIf(List<StatementNode> ifStatements) {
@@ -517,7 +573,7 @@ public class Interpreter {
 
             String conditionResult = evaluateExpression(condition);
 
-            if (conditionResult.equals("\"TRUE\"")) {
+            if (conditionResult.equals("TRUE")) {
                 // Execute the statements in the current branch if the condition is true
                 for (StatementNode branchStatement : ifBranchStatements) {
                     interpretStatement(branchStatement);
@@ -538,7 +594,7 @@ public class Interpreter {
 
             String conditionResult = evaluateExpression(condition);
 
-            if (conditionResult.equals("\"TRUE\"")) {
+            if (conditionResult.equals("TRUE")) {
 
                 for (StatementNode branchStatement : ifElseBranchStatements) {
                     interpretStatement(branchStatement);
@@ -632,7 +688,7 @@ public class Interpreter {
 
         boolean breakFlag = false;
 
-        while (result == "\"TRUE\"") {
+        while (result == "TRUE") {
 
             for (int i = 0; i < statements.size(); i++) {
 
@@ -663,7 +719,7 @@ public class Interpreter {
                 }
 
                 if (statements.get(i) instanceof ContinueNode) {
-                    continue;
+                    break;
                 }
 
                 interpretStatement(statements.get(i));
@@ -727,9 +783,9 @@ public class Interpreter {
     }
 
     private void error(String message, Position position) {
-        // System.err.println("Runtime Error: " + message + " " + position);
-        // System.exit(1);
+        System.err.println("Runtime Error: " + message + " at Line " +
+                position.getLine() + " and Column " + position.getColumn() + "\n");
 
-        throw new RuntimeException("Runtime Error: " + message + " " + position);
+        System.exit(1);
     }
 }

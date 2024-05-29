@@ -366,8 +366,6 @@ public class Lexer {
                     new Position(position.getLine(), position.getColumn()));
         }
 
-        System.out.println("Literal: " + literal.toString());
-
         if (literal.toString().equals("\"TRUE\"")) {
             return new Token(Type.LITERAL, "TRUE",
                     new Position(position.getLine(), position.getColumn()));
@@ -383,11 +381,13 @@ public class Lexer {
                     new Position(position.getLine(), position.getColumn()));
         }
 
-        if (literal.toString().startsWith("\'") && literal.toString().endsWith("\'")) {
-            String literalWithoutQuotes = literal.toString().substring(1, literal.toString().length() - 1);
-            return new Token(Type.LITERAL, literalWithoutQuotes,
-                    new Position(position.getLine(), position.getColumn()));
-        }
+        // if (literal.toString().startsWith("\'") && literal.toString().endsWith("\'"))
+        // {
+        // String literalWithoutQuotes = literal.toString().substring(1,
+        // literal.toString().length() - 1);
+        // return new Token(Type.LITERAL, literalWithoutQuotes,
+        // new Position(position.getLine(), position.getColumn()));
+        // }
 
         return new Token(Type.LITERAL, literal.toString(), new Position(position.getLine(), position.getColumn()));
     }
@@ -466,6 +466,8 @@ public class Lexer {
                                 position.getColumn())));
                 position.add(1);
                 counter++;
+            } else if (input.charAt(counter) == '\'') {
+                tokens.add(tokenizeLiteral());
             }
 
             // Tokenize quotation marks and string literal
@@ -711,8 +713,6 @@ public class Lexer {
             }
         } else {
             newIndentLevel = 0;
-
-            System.out.println("New Indent Level: " + newIndentLevel + " Indent Level: " + indentLevel);
 
             if (newIndentLevel < indentLevel) {
                 while (newIndentLevel < indentLevel) {
