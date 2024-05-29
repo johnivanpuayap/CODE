@@ -38,7 +38,6 @@ public class Lexer {
                 tokens.add(new Token(Type.DISPLAY, "DISPLAY", new Position(position.getLine(), position.getColumn())));
                 position.add("DISPLAY".length());
                 counter += "DISPLAY".length();
-                tokens = tokenizeDisplay(tokens);
             } else if (input.startsWith("SCAN", counter)) {
                 tokens.add(new Token(Type.SCAN, "SCAN", new Position(position.getLine(), position.getColumn())));
                 position.add("SCAN".length());
@@ -366,169 +365,207 @@ public class Lexer {
                     new Position(position.getLine(), position.getColumn()));
         }
 
-        if (literal.toString() == "\"TRUE\"") {
+        System.out.println("Literal: " + literal.toString());
+
+        if (literal.toString().equals("\"TRUE\"")) {
             return new Token(Type.LITERAL, "TRUE",
                     new Position(position.getLine(), position.getColumn()));
-        } else if (literal.toString() == "\"FALSE\"") {
+        }
+
+        if (literal.toString().equals("\"FALSE\"")) {
             return new Token(Type.LITERAL, "FALSE",
+                    new Position(position.getLine(), position.getColumn()));
+        }
+
+        if (literal.toString().startsWith("\"") && literal.toString().endsWith("\"")) {
+            return new Token(Type.STRING_LITERAL, literal.toString(),
+                    new Position(position.getLine(), position.getColumn()));
+        }
+
+        if (literal.toString().startsWith("\'") && literal.toString().endsWith("\'")) {
+            String literalWithoutQuotes = literal.toString().substring(1, literal.toString().length() - 1);
+            return new Token(Type.LITERAL, literalWithoutQuotes,
                     new Position(position.getLine(), position.getColumn()));
         }
 
         return new Token(Type.LITERAL, literal.toString(), new Position(position.getLine(), position.getColumn()));
     }
 
-    private List<Token> tokenizeDisplay(List<Token> tokens) {
+    // private List<Token> tokenizeDisplay(List<Token> tokens) {
 
-        // Parse the display string
-        if (input.charAt(counter) == ':') {
-            tokens.add(new Token(Type.COLON, ":", new Position(position.getLine(), position.getColumn())));
-            position.add(1);
-            counter++;
-        }
+    // // Parse the display string
+    // if (input.charAt(counter) == ':') {
+    // tokens.add(new Token(Type.COLON, ":", new Position(position.getLine(),
+    // position.getColumn())));
+    // position.add(1);
+    // counter++;
+    // }
 
-        // Skip trailing whitespace
-        while (counter < input.length() && input.charAt(counter) == ' ') {
-            position.add(1);
-            counter++;
-        }
+    // // Skip trailing whitespace
+    // while (counter < input.length() && input.charAt(counter) == ' ') {
+    // position.add(1);
+    // counter++;
+    // }
 
-        // Parse the concatenated string and variables
-        while (counter < input.length() && input.charAt(counter) != '\n') {
+    // // Parse the concatenated string and variables
+    // while (counter < input.length() && input.charAt(counter) != '\n') {
 
-            // Tokenize the concatenation operator
-            if (input.charAt(counter) == '&') {
-                tokens.add(new Token(Type.CONCATENATION, "&", new Position(position.getLine(), position.getColumn())));
-                position.add(1);
-                counter++;
+    // // Tokenize the concatenation operator
+    // if (input.charAt(counter) == '&') {
+    // tokens.add(new Token(Type.CONCATENATION, "&", new
+    // Position(position.getLine(), position.getColumn())));
+    // position.add(1);
+    // counter++;
 
-                // Tokenize newline character
-            } else if (input.charAt(counter) == '$') {
-                tokens.add(new Token(Type.NEXT_LINE, "$", new Position(position.getLine(), position.getColumn())));
-                position.add(1);
-                counter++;
+    // // Tokenize newline character
+    // } else if (input.charAt(counter) == '$') {
+    // tokens.add(new Token(Type.NEXT_LINE, "$", new Position(position.getLine(),
+    // position.getColumn())));
+    // position.add(1);
+    // counter++;
 
-            } else if (input.charAt(counter) == '[') {
+    // } else if (input.charAt(counter) == '[') {
 
-                tokens.add(
-                        new Token(Type.ESCAPE_CODE_OPEN, "[", new Position(position.getLine(), position.getColumn())));
-                position.add(1);
-                counter++;
+    // tokens.add(
+    // new Token(Type.ESCAPE_CODE_OPEN, "[", new Position(position.getLine(),
+    // position.getColumn())));
+    // position.add(1);
+    // counter++;
 
-                if (input.charAt(counter) == '[' && input.charAt(counter + 1) == ']') {
-                    tokens.add(new Token(Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)),
-                            new Position(position.getLine(), position.getColumn())));
-                    position.add(1);
-                    counter++;
-                } else if (input.charAt(counter) == ']' && input.charAt(counter + 1) == ']') {
-                    tokens.add(new Token(Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)),
-                            new Position(position.getLine(), position.getColumn())));
-                    position.add(1);
-                    counter++;
-                } else {
-                    while (input.charAt(counter) != ']') {
+    // if (input.charAt(counter) == '[' && input.charAt(counter + 1) == ']') {
+    // tokens.add(new Token(Type.SPECIAL_CHARACTER,
+    // Character.toString(input.charAt(counter)),
+    // new Position(position.getLine(), position.getColumn())));
+    // position.add(1);
+    // counter++;
+    // } else if (input.charAt(counter) == ']' && input.charAt(counter + 1) == ']')
+    // {
+    // tokens.add(new Token(Type.SPECIAL_CHARACTER,
+    // Character.toString(input.charAt(counter)),
+    // new Position(position.getLine(), position.getColumn())));
+    // position.add(1);
+    // counter++;
+    // } else {
+    // while (input.charAt(counter) != ']') {
 
-                        // Skip trailing whitespace
-                        while (counter < input.length() && input.charAt(counter) == ' ') {
-                            position.add(1);
-                            counter++;
-                        }
+    // // Skip trailing whitespace
+    // while (counter < input.length() && input.charAt(counter) == ' ') {
+    // position.add(1);
+    // counter++;
+    // }
 
-                        tokens.add(new Token(Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)),
-                                new Position(position.getLine(), position.getColumn())));
-                        position.add(1);
-                        counter++;
-                    }
-                }
+    // tokens.add(new Token(Type.SPECIAL_CHARACTER,
+    // Character.toString(input.charAt(counter)),
+    // new Position(position.getLine(), position.getColumn())));
+    // position.add(1);
+    // counter++;
+    // }
+    // }
 
-                tokens.add(
-                        new Token(Type.ESCAPE_CODE_CLOSE, "]", new Position(position.getLine(), position.getColumn())));
-                position.add(1);
-                counter++;
-            }
+    // tokens.add(
+    // new Token(Type.ESCAPE_CODE_CLOSE, "]", new Position(position.getLine(),
+    // position.getColumn())));
+    // position.add(1);
+    // counter++;
+    // }
 
-            // Tokenize quotation marks and string literal
-            else if (input.charAt(counter) == '"') {
-                tokens.add(new Token(Type.DELIMITER, Character.toString('"'),
-                        new Position(position.getLine(), position.getColumn())));
-                position.add(1);
-                counter++;
+    // // Tokenize quotation marks and string literal
+    // else if (input.charAt(counter) == '"') {
+    // tokens.add(new Token(Type.DELIMITER, Character.toString('"'),
+    // new Position(position.getLine(), position.getColumn())));
+    // position.add(1);
+    // counter++;
 
-                // Parse and tokenize the string literal
-                StringBuilder stringLiteral = new StringBuilder();
-                while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != '&') {
-                    if (input.charAt(counter) == '"') {
-                        tokens.add(new Token(Type.STRING_LITERAL, stringLiteral.toString(),
-                                new Position(position.getLine(), position.getColumn())));
-                        tokens.add(new Token(Type.DELIMITER, Character.toString('"'),
-                                new Position(position.getLine(), position.getColumn())));
-                        position.add(1);
-                        counter++;
-                        break;
-                    }
-                    stringLiteral.append(input.charAt(counter));
-                    counter++;
-                    position.add(1);
-                }
-            }
-            // Tokenize Number Literals
-            else if (Character.isDigit(input.charAt(counter))) {
-                StringBuilder number = new StringBuilder();
-                while (counter < input.length() && Character.isDigit(input.charAt(counter))) {
-                    number.append(input.charAt(counter));
-                    counter++;
-                    position.add(1);
-                }
-                tokens.add(new Token(Type.LITERAL, number.toString(),
-                        new Position(position.getLine(), position.getColumn())));
-                continue;
-            } else if (input.charAt(counter) == '+') {
-                tokens.add(new Token(Type.ADD, "+", new Position(position.getLine(), position.getColumn())));
-                counter++;
-                continue;
-            } else if (input.charAt(counter) == '-') {
-                tokens.add(new Token(Type.SUBTRACT, "-", new Position(position.getLine(), position.getColumn())));
-                counter++;
-                continue;
-            } else if (input.charAt(counter) == '*') {
-                tokens.add(new Token(Type.MULTIPLY, "*", new Position(position.getLine(), position.getColumn())));
-                counter++;
-                continue;
-            } else if (input.charAt(counter) == '/') {
-                tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(), position.getColumn())));
-                counter++;
-                continue;
-            } else if (input.charAt(counter) == '%') {
-                tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(), position.getColumn())));
-                counter++;
-                continue;
-            }
+    // // Parse and tokenize the string literal
+    // StringBuilder stringLiteral = new StringBuilder();
+    // while (counter < input.length() && input.charAt(counter) != '\n' &&
+    // input.charAt(counter) != '&') {
+    // if (input.charAt(counter) == '"') {
+    // tokens.add(new Token(Type.STRING_LITERAL, stringLiteral.toString(),
+    // new Position(position.getLine(), position.getColumn())));
+    // tokens.add(new Token(Type.DELIMITER, Character.toString('"'),
+    // new Position(position.getLine(), position.getColumn())));
+    // position.add(1);
+    // counter++;
+    // break;
+    // }
+    // stringLiteral.append(input.charAt(counter));
+    // counter++;
+    // position.add(1);
+    // }
+    // }
+    // // Tokenize Number Literals
+    // else if (Character.isDigit(input.charAt(counter))) {
 
-            else {
-                if (Character.isWhitespace(input.charAt(counter))) {
-                    counter++;
-                    position.add(1);
-                    continue;
-                }
-                // Tokenize Identifiers
-                // Parse the variable name
-                StringBuilder variableName = new StringBuilder();
-                while (counter < input.length() && !Character.isWhitespace(input.charAt(counter))
-                        && input.charAt(counter) != '&' && input.charAt(counter) != '\n' && input.charAt(counter) != '+'
-                        && input.charAt(counter) != '-' && input.charAt(counter) != '*' && input.charAt(counter) != '/'
-                        && input.charAt(counter) != '%' && input.charAt(counter) != '<' && input.charAt(counter) != '>'
-                        && input.charAt(counter) != '(' && input.charAt(counter) != ')'
-                        && input.charAt(counter) != '=') {
-                    variableName.append(input.charAt(counter));
-                    counter++;
-                    position.add(1);
-                }
-                tokens.add(new Token(Type.IDENTIFIER, variableName.toString(),
-                        new Position(position.getLine(), position.getColumn())));
-            }
-        }
+    // StringBuilder number = new StringBuilder();
 
-        return tokens;
-    }
+    // while (counter < input.length() &&
+    // (Character.isDigit(input.charAt(counter)) || input.charAt(counter) == '.')) {
+    // number.append(input.charAt(counter));
+    // counter++;
+    // position.add(1);
+    // }
+
+    // tokens.add(new Token(Type.LITERAL, number.toString(),
+    // new Position(position.getLine(), position.getColumn())));
+    // continue;
+    // } else if (input.charAt(counter) == '+') {
+    // tokens.add(new Token(Type.ADD, "+", new Position(position.getLine(),
+    // position.getColumn())));
+    // counter++;
+    // continue;
+    // } else if (input.charAt(counter) == '-') {
+    // tokens.add(new Token(Type.SUBTRACT, "-", new Position(position.getLine(),
+    // position.getColumn())));
+    // counter++;
+    // continue;
+    // } else if (input.charAt(counter) == '*') {
+    // tokens.add(new Token(Type.MULTIPLY, "*", new Position(position.getLine(),
+    // position.getColumn())));
+    // counter++;
+    // continue;
+    // } else if (input.charAt(counter) == '/') {
+    // tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(),
+    // position.getColumn())));
+    // counter++;
+    // continue;
+    // } else if (input.charAt(counter) == '%') {
+    // tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(),
+    // position.getColumn())));
+    // counter++;
+    // continue;
+    // } else
+
+    // else {
+    // if (Character.isWhitespace(input.charAt(counter))) {
+    // counter++;
+    // position.add(1);
+    // continue;
+    // }
+    // // Tokenize Identifiers
+    // // Parse the variable name
+    // StringBuilder variableName = new StringBuilder();
+    // while (counter < input.length() &&
+    // !Character.isWhitespace(input.charAt(counter))
+    // && input.charAt(counter) != '&' && input.charAt(counter) != '\n' &&
+    // input.charAt(counter) != '+'
+    // && input.charAt(counter) != '-' && input.charAt(counter) != '*' &&
+    // input.charAt(counter) != '/'
+    // && input.charAt(counter) != '%' && input.charAt(counter) != '<' &&
+    // input.charAt(counter) != '>'
+    // && input.charAt(counter) != '(' && input.charAt(counter) != ')'
+    // && input.charAt(counter) != '=') {
+    // variableName.append(input.charAt(counter));
+    // counter++;
+    // position.add(1);
+    // }
+    // tokens.add(new Token(Type.IDENTIFIER, variableName.toString(),
+    // new Position(position.getLine(), position.getColumn())));
+    // }
+    // }
+
+    // return tokens;
+    // }
 
     private List<Token> checkIndentLevel(Position position) {
 

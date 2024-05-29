@@ -1,5 +1,12 @@
 BEGIN CODE
-    INT a = 5
-    a = 12
-    DISPLAY: a+1.0
+    INT a = 5, c= 2
+    CHAR b = 'a'
+    IF (a+c == 6)
+    BEGIN IF
+        DISPLAY: b
+    END IF
+    ELSE
+    BEGIN IF
+        DISPLAY: 'd'
+    END IF
 END CODE

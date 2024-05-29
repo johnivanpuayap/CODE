@@ -117,6 +117,16 @@ public class Parser {
                 } else {
                     Token literal = consume(Type.LITERAL, "Expected literal after assignment token");
 
+                    if (!literal.getLexeme().matches("[0-9]+") &&
+                            !literal.getLexeme().equalsIgnoreCase("TRUE") &&
+                            !literal.getLexeme().equalsIgnoreCase("FALSE") &&
+                            !literal.getLexeme().matches("[0-9]*\\.?[0-9]+")) {
+
+                        if (literal.getLexeme().length() > 1) {
+                            error("Invalid character literal", literal);
+                        }
+                    }
+
                     variables.add(new VariableDeclarationNode(dataType, identifier,
                             new Token(Type.LITERAL, literal.getLexeme(), null)));
                 }
@@ -483,7 +493,7 @@ public class Parser {
             ExpressionNode expression = parsePrimary();
             return new UnaryNode(operatorToken, expression);
         } else {
-            error("Expect primary expression.", peek());
+            error("Expected an expression but got " + peek().getLexeme() + ".", peek());
         }
 
         return null;
@@ -496,7 +506,7 @@ public class Parser {
         List<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
         while (peek().getType() != Type.NEWLINE) {
-            
+
             Token currentToken = peek();
             System.out.println("Current Token: " + currentToken);
 
@@ -515,13 +525,17 @@ public class Parser {
 
             else if (match(Type.IDENTIFIER)) {
 
-                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION &&
-                                                arguments.getLast().getType() != Type.ADD &&
-                                                arguments.getLast().getType() != Type.SUBTRACT &&
-                                                arguments.getLast().getType() != Type.MULTIPLY &&
-                                                arguments.getLast().getType() != Type.DIVIDE &&
-                                                arguments.getLast().getType() != Type.MODULO) {
-                    error("Can't add another argument without concatenation", previous());
+                if (arguments.size() != 0) {
+                    Type prev = arguments.getLast().getType();
+
+                    if (prev != Type.CONCATENATION &&
+                            prev != Type.ADD &&
+                            prev != Type.SUBTRACT &&
+                            prev != Type.MULTIPLY &&
+                            prev != Type.DIVIDE &&
+                            prev != Type.MODULO) {
+                        error("Can't add another argument without concatenation", previous());
+                    }
                 }
 
                 arguments.add(previous());
@@ -558,27 +572,53 @@ public class Parser {
             }
 
             else if (match(Type.LITERAL)) {
-                
-                Token currentArgument = arguments.getLast();
 
-                if (arguments.size() != 0 && (currentArgument.getType() != Type.CONCATENATION &&
-                                                currentArgument.getType() != Type.ADD &&
-                                                currentArgument.getType() != Type.SUBTRACT &&
-                                                currentArgument.getType() != Type.MULTIPLY &&
-                                                currentArgument.getType() != Type.DIVIDE &&
-                                                currentArgument.getType() != Type.MODULO)) {
-                    error("Can't add another number literal without concatenation or arithmetic operation", previous());
+                if (arguments.size() != 0) {
+
+                    Type prev = arguments.getLast().getType();
+
+                    if (prev != Type.CONCATENATION &&
+                            prev != Type.ADD &&
+                            prev != Type.SUBTRACT &&
+                            prev != Type.MULTIPLY &&
+                            prev != Type.DIVIDE &&
+                            prev != Type.MODULO &&
+                            prev != Type.GREATER &&
+                            prev != Type.LESS &&
+                            prev != Type.GREATER_EQUAL &&
+                            prev != Type.LESS_EQUAL &&
+                            prev != Type.NOT_EQUAL &&
+                            prev != Type.EQUAL &&
+                            prev != Type.AND &&
+                            prev != Type.OR) {
+                        error("Can't add another number literal without concatenation or arithmetic operation",
+                                previous());
+                    }
                 }
-                
+
+                Token literal = previous();
+
+                if (!literal.getLexeme().matches("[0-9]+") &&
+                        !literal.getLexeme().equalsIgnoreCase("TRUE") &&
+                        !literal.getLexeme().equalsIgnoreCase("FALSE") &&
+                        !literal.getLexeme().matches("[0-9]*\\.?[0-9]+")) {
+
+                    if (literal.getLexeme().length() > 1) {
+                        error("Invalid character literal", literal);
+                    }
+                }
+
                 arguments.add(previous());
             }
 
-            else if (currentToken.getType() == Type.ADD || currentToken.getType() == Type.SUBTRACT || 
-                        currentToken.getType() == Type.MULTIPLY || currentToken.getType() == Type.DIVIDE || 
-                        currentToken.getType() == Type.MODULO) {
-                
-                if (arguments.size() == 0 && arguments.getLast().getType() != Type.LITERAL && arguments.getLast().getType() != Type.IDENTIFIER) {
-                    error("Can't perform arithmetic operation without a left-side identifier or number literal", previous());
+            else if (currentToken.getType() == Type.ADD || currentToken.getType() == Type.SUBTRACT ||
+                    currentToken.getType() == Type.MULTIPLY || currentToken.getType() == Type.DIVIDE ||
+                    currentToken.getType() == Type.MODULO) {
+
+                if (arguments.size() == 0 && arguments.getLast().getType() != Type.LITERAL
+                        && arguments.getLast().getType() != Type.IDENTIFIER) {
+                    error("Can't perform arithmetic operation without a left-side identifier or number literal",
+                            previous());
                 }
 
                 currentTokenIndex--;
@@ -591,11 +631,65 @@ public class Parser {
                     sb.append(token.getLexeme() + " ");
                 }
 
-                arguments.add(new Token(Type.EXPRESSION, sb.toString(), expression.getToken(expression.countTokens() - 1).getPosition()));
+                arguments.add(new Token(Type.EXPRESSION, sb.toString(),
+                        expression.getToken(expression.countTokens() - 1).getPosition()));
             }
 
-            else if (match(Type.NEXT_LINE)) {
-                
+            else if (currentToken.getType() == Type.GREATER || currentToken.getType() == Type.LESS ||
+                    currentToken.getType() == Type.GREATER_EQUAL || currentToken.getType() == Type.LESS_EQUAL ||
+                    currentToken.getType() == Type.NOT_EQUAL || currentToken.getType() == Type.EQUAL) {
+
+                if (arguments.size() == 0 && arguments.getLast().getType() != Type.LITERAL
+                        && arguments.getLast().getType() != Type.IDENTIFIER) {
+                    error("Can't perform logical operation without a left-side identifier or number literal",
+                            previous());
+                }
+
+                if (arguments.getLast().getType() == Type.STRING_LITERAL) {
+                    error("Operation on string literals are not supported", previous());
+                }
+
+                currentTokenIndex--;
+                arguments.remove(arguments.size() - 1);
+                ExpressionNode expression = parseExpression();
+                expressions.add(expression);
+
+                StringBuilder sb = new StringBuilder();
+                for (Token token : expression.getTokens()) {
+                    sb.append(token.getLexeme() + " ");
+                }
+
+                arguments.add(new Token(Type.EXPRESSION, sb.toString(),
+                        expression.getToken(expression.countTokens() - 1).getPosition()));
+            }
+
+            else if (match(Type.NOT)) {
+
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
+                    error("Can't add another argument without concatenation", previous());
+                }
+
+                Token notToken = previous();
+
+                ExpressionNode operand = null;
+
+                if (match(Type.IDENTIFIER)) {
+                    operand = new VariableNode(previous());
+                } else if (match(Type.LITERAL)) {
+                    operand = new LiteralNode(previous());
+                } else {
+                    error("Expected an identifier or literal after NOT operator", previous());
+                }
+
+                ExpressionNode expression = new UnaryNode(notToken, operand);
+                expressions.add(expression);
+
+                arguments.add(new Token(Type.EXPRESSION, expression.toString(),
+                        expression.getToken(expression.countTokens() - 1).getPosition()));
+            }
+
+            else if (match(Type.STRING_LITERAL) || match(Type.SPECIAL_CHARACTER) || match(Type.COLON)
+                    || match(Type.NEXT_LINE)) {
                 if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION) {
                     error("Can't add another argument without concatenation", previous());
                 }
@@ -814,11 +908,13 @@ public class Parser {
     }
 
     private void error(String message, Token token) {
-        // System.err.println("Syntax error " + token + ": " + message);
+        // System.err.println("Syntax error: " + message + " at Line " +
+        // token.getPosition().getLine()
+        // + " and Column " + token.getPosition().getColumn());
         // System.exit(1);
 
-        throw new RuntimeException("Syntax error " + ": " + message + " at Line " + token.getPosition().getLine()
-                + " and column " + token.getPosition().getColumn());
+        throw new RuntimeException("Syntax error: " + message + " at Line " + token.getPosition().getLine()
+                + " and Column " + token.getPosition().getColumn());
 
     }
 

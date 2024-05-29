@@ -163,7 +163,7 @@ public class SemanticAnalyzer {
             IfNode ifNode = (IfNode) node;
 
             if (evaluateExpression(ifNode.getCondition()).getType() != Type.BOOL) {
-                error("Invalid type in condition. Expected BOOL" + evaluateExpression(ifNode.getCondition()),
+                error("Expected a BOOL expression in if condition",
                         ifNode.getCondition().getPosition());
             }
 
@@ -420,10 +420,6 @@ public class SemanticAnalyzer {
                 Float.parseFloat(value);
             } catch (NumberFormatException e) {
                 error("Invalid value for FLOAT datatype", position);
-            }
-        } else if (type == Type.CHAR) {
-            if (value.length() != 3 || value.charAt(0) != '\'' || value.charAt(2) != '\'') {
-                error("Invalid value for CHAR datatype", position);
             }
         } else if (type == Type.BOOL) {
             if (!value.equals("\"TRUE\"") && !value.equals("\"FALSE\"")) {

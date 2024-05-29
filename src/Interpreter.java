@@ -209,6 +209,10 @@ public class Interpreter {
 
                 if (token.getLexeme().contains(".")) {
                     stack.push(Double.valueOf(lexeme));
+                } else if (token.getLexeme().equals("TRUE") || token.getLexeme().equals("FALSE")) {
+                    stack.push(Boolean.valueOf(lexeme));
+                } else if (token.getLexeme().length() == 1) {
+                    stack.push(lexeme.charAt(0));
                 } else {
                     stack.push(Integer.valueOf(lexeme));
                 }
@@ -230,72 +234,72 @@ public class Interpreter {
             } else {
                 switch (token.getType()) {
                     case ADD:
-
-                        Number left;
-                        if (stack.peek() instanceof Integer) {
-                            left = (Integer) stack.pop();
-                        } else {
-                            left = (Double) stack.pop();
-                        }
-
-                        Number right;
-                        if (stack.peek() instanceof Integer) {
-                            right = (Integer) stack.pop();
-                        } else {
-                            right = (Double) stack.pop();
-                        }
-
-                        Number result;
-                        if (left instanceof Double || right instanceof Double) {
-                            result = left.doubleValue() + right.doubleValue();
-                        } else {
-                            result = left.intValue() + right.intValue();
-                        }
-
-                        stack.push(result);
-
-                        break;
                     case SUBTRACT:
-                        double subtractor = (double) stack.pop();
-                        stack.push((double) stack.pop() - subtractor);
-                        break;
                     case MULTIPLY:
-                        stack.push((double) stack.pop() * (double) stack.pop());
-                        break;
                     case DIVIDE:
-                        double divisor = (double) stack.pop();
-                        if (divisor != 0.0) {
-                            stack.push((double) stack.pop() / divisor);
-                        } else {
-                            error("Cannot divide by zero", token.getPosition());
-                        }
-                        break;
                     case MODULO:
-                        stack.push((double) stack.pop() % (double) stack.pop());
+                        Number right = getNumber(stack.pop());
+                        Number left = getNumber(stack.pop());
+                        Number result = calculate(left, right, token);
+                        stack.push(result);
                         break;
                     case LESS:
-                        double rightLess = (double) stack.pop();
-                        stack.push((double) stack.pop() < rightLess);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() < right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() < right.doubleValue()));
+                        }
                         break;
                     case GREATER:
-                        double rightGreater = (double) stack.pop();
-                        stack.push((double) stack.pop() > rightGreater);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() > right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() > right.doubleValue()));
+                        }
                         break;
                     case LESS_EQUAL:
-                        double rightLessEqual = (double) stack.pop();
-                        stack.push((double) stack.pop() <= rightLessEqual);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() <= right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() <= right.doubleValue()));
+                        }
                         break;
                     case GREATER_EQUAL:
-                        double rightGreaterEqual = (double) stack.pop();
-                        stack.push((double) stack.pop() >= rightGreaterEqual);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() >= right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() >= right.doubleValue()));
+                        }
                         break;
                     case NOT_EQUAL:
-                        double rightNotEqual = (double) stack.pop();
-                        stack.push(!stack.pop().equals(rightNotEqual));
+                        Object rightNotEqual = stack.pop();
+                        Object leftNotEqual = stack.pop();
+                        if (leftNotEqual instanceof Number && rightNotEqual instanceof Number) {
+                            stack.push(!leftNotEqual.equals(rightNotEqual));
+                        } else {
+                            stack.push(!leftNotEqual.toString().equals(rightNotEqual.toString()));
+                        }
                         break;
                     case EQUAL:
-                        double rightEqual = (double) stack.pop();
-                        stack.push(stack.pop().equals(rightEqual));
+                        Object rightEqual = stack.pop();
+                        Object leftEqual = stack.pop();
+                        if (leftEqual instanceof Number && rightEqual instanceof Number) {
+                            stack.push(leftEqual.equals(rightEqual));
+                        } else {
+                            stack.push(leftEqual.toString().equals(rightEqual.toString()));
+                        }
                         break;
                     case AND:
                         stack.push(((boolean) stack.pop() && (boolean) stack.pop()));
@@ -357,6 +361,12 @@ public class Interpreter {
             if (token.getType() == Type.EXPRESSION) {
                 ExpressionNode expression = expressions.get(currentIndexExpression);
                 String result = evaluateExpression(expression);
+
+                if (result.equals("\"TRUE\"")) {
+                    result = "TRUE";
+                } else if (result.equals("\"FALSE\"")) {
+                    result = "FALSE";
+                }
 
                 System.out.print(result);
 
@@ -584,6 +594,51 @@ public class Interpreter {
             interpretStatement(update);
 
             result = evaluateExpression(condition);
+        }
+    }
+
+    private Number calculate(Number left, Number right, Token token) {
+        if (left instanceof Double || right instanceof Double) {
+            switch (token.getType()) {
+                case Type.ADD:
+                    return left.doubleValue() + right.doubleValue();
+                case Type.SUBTRACT:
+                    return left.doubleValue() - right.doubleValue();
+                case Type.MULTIPLY:
+                    return left.doubleValue() * right.doubleValue();
+                case Type.DIVIDE:
+                    if (right.doubleValue() == 0) {
+                        error("Cannot divide by zero", token.getPosition());
+                    }
+                    return left.doubleValue() / right.doubleValue();
+                default:
+                    error("Unknown operator: " + token.getLexeme(), token.getPosition());
+            }
+        } else {
+            switch (token.getType()) {
+                case Type.ADD:
+                    return left.intValue() + right.intValue();
+                case Type.SUBTRACT:
+                    return left.intValue() - right.intValue();
+                case Type.MULTIPLY:
+                    return left.intValue() * right.intValue();
+                case Type.DIVIDE:
+                    if (right.intValue() == 0) {
+                        error("Cannot divide by zero", token.getPosition());
+                    }
+                    return left.intValue() / right.intValue();
+                default:
+                    error("Unknown operator: " + token.getLexeme(), token.getPosition());
+            }
+        }
+        return 0;
+    }
+
+    private Number getNumber(Object number) {
+        if (number instanceof Integer) {
+            return (Integer) number;
+        } else {
+            return (Double) number;
         }
     }
 
