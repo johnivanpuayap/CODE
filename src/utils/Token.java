@@ -1,7 +1,7 @@
 package src.utils;
 
 public class Token {
-    
+
     private Type type;
     private String lexeme;
     private Position position;
@@ -26,11 +26,10 @@ public class Token {
 
     @Override
     public String toString() {
-        if(
-            type == Type.LITERAL || type == Type.SPECIAL_CHARACTER) {
-            return "<" + type + ", " + "Value: "  + lexeme + ">" + position;   
-        } else if(type == Type.IDENTIFIER) {
-            return "<" + type + ", " + "Name: "  + lexeme + "> " + position;
+        if (type == Type.LITERAL || type == Type.SPECIAL_CHARACTER) {
+            return "<" + type + ", " + "Value: " + lexeme + ">" + position;
+        } else if (type == Type.IDENTIFIER) {
+            return "<" + type + ", " + "Name: " + lexeme + "> " + position;
         } else {
             return "<" + type + ">" + position;
         }

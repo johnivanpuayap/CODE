@@ -1,6 +1,7 @@
 package src;
 
 import java.util.Stack;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -23,6 +24,11 @@ public class Interpreter {
     }
 
     public void interpret() {
+
+        for (Symbol s : symbolTable.getSymbols().values()) {
+            System.out.println(s.getName() + " " + s.getType() + " " + s.getValue());
+        }
+
         List<StatementNode> statements = program.getStatements();
 
         System.out.println("\n\n\n\n\nPROGRAM RESULTS");
@@ -94,7 +100,7 @@ public class Interpreter {
 
                     if (unary.getOperator().getType() == Type.NOT) {
 
-                        if (literal.getValue().equals("TRUE")) {
+                        if (literal.toString().equals("TRUE")) {
                             s.setValue("FALSE");
                         } else {
                             s.setValue("TRUE");
@@ -122,9 +128,38 @@ public class Interpreter {
                         }
 
                     } else if (unary.getOperator().getType() == Type.NEGATIVE) {
-                        s.setValue("-" + operand.getValue());
-                    } else {
-                        s.setValue(operand.getValue());
+
+                        if (operand.getType() == Type.INT) {
+                            int value = Integer.parseInt(operand.getValue()) * -1;
+                            s.setValue(String.valueOf(value));
+
+                        } else {
+                            double value = Double.parseDouble(operand.getValue()) * -1;
+
+                            s.setValue(String.valueOf(value));
+                        }
+                    }
+                } else if (unary.getOperand() instanceof ExpressionNode) {
+
+                    String result = evaluateExpression((ExpressionNode) unary.getOperand());
+
+                    if (unary.getOperator().getType() == Type.NOT) {
+
+                        if (result.equals("TRUE")) {
+                            s.setValue("FALSE");
+                        } else {
+                            s.setValue("TRUE");
+                        }
+
+                    } else if (unary.getOperator().getType() == Type.NEGATIVE) {
+
+                        if (result.contains(".")) {
+                            double value = Double.parseDouble(result) * -1;
+                            s.setValue(String.valueOf(value));
+                        } else {
+                            int value = Integer.parseInt(result) * -1;
+                            s.setValue(String.valueOf(value));
+                        }
                     }
                 }
 
@@ -150,8 +185,8 @@ public class Interpreter {
                 }
 
                 symbol.setValue(value);
-
             }
+
         } else if (statement instanceof DisplayNode) {
             displayError = false;
             interpretDisplay((DisplayNode) statement);
@@ -168,6 +203,7 @@ public class Interpreter {
     public String evaluateExpression(ExpressionNode expression) {
         List<Token> tokens = expression.getTokens();
         List<Token> postfixExpression = infixToPostfix(tokens);
+
         return evaluatePostfix(postfixExpression);
     }
 
@@ -248,23 +284,23 @@ public class Interpreter {
             String lexeme = token.getLexeme();
 
             if (token.getType() == Type.LITERAL) {
-
                 if (token.getLexeme().contains(".")) {
                     stack.push(Double.valueOf(lexeme));
                 } else if (token.getLexeme().equals("TRUE") || token.getLexeme().equals("FALSE")) {
                     stack.push(Boolean.valueOf(lexeme));
-                } else if (token.getLexeme().length() == 1) {
-                    stack.push(lexeme.charAt(0));
                 } else {
-                    // Convert the integer to a double before pushing it to the stack
-                    stack.push(Double.valueOf(Integer.parseInt(lexeme)));
+                    try {
+                        stack.push(Integer.parseInt(lexeme));
+                    } catch (NumberFormatException e) {
+                        stack.push(lexeme.charAt(0));
+                    }
                 }
+
             } else if (token.getType() == Type.IDENTIFIER) {
                 if (symbolTable.lookup(lexeme) != null) {
 
                     if (symbolTable.lookup(lexeme).getType() == Type.INT) {
-                        // Convert the integer to a double before pushing it to the stack
-                        stack.push(Double.valueOf(Integer.parseInt(symbolTable.lookup(lexeme).getValue())));
+                        stack.push(Integer.parseInt(symbolTable.lookup(lexeme).getValue()));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.FLOAT) {
                         stack.push(Double.parseDouble(symbolTable.lookup(lexeme).getValue()));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.BOOL) {
@@ -306,6 +342,7 @@ public class Interpreter {
                         } else {
                             stack.push((left.doubleValue() > right.doubleValue()));
                         }
+
                         break;
                     case LESS_EQUAL:
                         right = getNumber(stack.pop());
@@ -369,7 +406,7 @@ public class Interpreter {
 
         Object result = stack.pop();
         if (result instanceof Boolean) {
-            return (boolean) result ? "\"TRUE\"" : "\"FALSE\"";
+            return (boolean) result ? "TRUE" : "FALSE";
         } else {
             return result.toString();
         }
@@ -536,7 +573,7 @@ public class Interpreter {
 
         boolean breakFlag = false;
 
-        while (result.equals("\"TRUE\"")) {
+        while (result.equals("TRUE")) {
 
             for (int i = 0; i < statements.size(); i++) {
 
@@ -567,7 +604,7 @@ public class Interpreter {
                 }
 
                 if (statements.get(i) instanceof ContinueNode) {
-                    continue;
+                    break;
                 }
 
                 interpretStatement(statements.get(i));
@@ -679,15 +716,20 @@ public class Interpreter {
     }
 
     private Number getNumber(Object number) {
+
         if (number instanceof Integer) {
             return (Integer) number;
-        } else {
+        } else if (number instanceof Double) {
             return (Double) number;
+        } else {
+            return null;
         }
     }
 
     private void error(String message, Position position) {
-        System.err.println("Runtime Error: " + message + " " + position);
-        System.exit(1);
+        // System.err.println("Runtime Error: " + message + " " + position);
+        // System.exit(1);
+
+        throw new RuntimeException("Runtime Error: " + message + " " + position);
     }
 }

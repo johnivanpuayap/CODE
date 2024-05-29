@@ -97,25 +97,18 @@ public class Parser {
         List<VariableDeclarationNode> variables = new ArrayList<>();
 
         do {
-            Token identifier = consume(Type.IDENTIFIER, "Expected identifier");
-            String variableName = identifier.getLexeme();
-
-            if (declaredVariableNames.contains(variableName)) {
-                error("Variable " + variableName + " is already declared", identifier);
-            }
-
-            declaredVariableNames.add(variableName);
+            Token identifier = consume(Type.IDENTIFIER, "Expected an identifier but got a/an" + peek().getType());
 
             if (match(Type.ASSIGNMENT)) {
                 Token unary = null;
                 if (match(Type.NEGATIVE) || match(Type.POSITIVE)) {
                     unary = previous();
-                    Token literal = consume(Type.LITERAL, "Expected literal after assignment token");
+                    Token literal = consume(Type.LITERAL, "Expected literal after assignment");
 
                     variables.add(new VariableDeclarationNode(dataType, identifier,
                             new Token(Type.LITERAL, unary.getLexeme() + literal.getLexeme(), null)));
                 } else {
-                    Token literal = consume(Type.LITERAL, "Expected literal after assignment token");
+                    Token literal = consume(Type.LITERAL, "Expected literal after assignment");
 
                     if (!literal.getLexeme().matches("[0-9]+") &&
                             !literal.getLexeme().equalsIgnoreCase("TRUE") &&
@@ -148,10 +141,8 @@ public class Parser {
 
         while (!match(Type.EOF) && !(currentTokenIndex >= tokens.size())) {
 
-            System.out.println("Current Token: " + peek());
-
             if (match(Type.INT) || match(Type.CHAR) || match(Type.FLOAT) || match(Type.BOOL)) {
-                error("Found a variable declaration after the executable code", previous());
+                error("Found a variable declaration in the executable code", previous());
             }
 
             if (match(Type.IDENTIFIER)) {
@@ -166,8 +157,6 @@ public class Parser {
                             || peekNext(counter).getType() == Type.MULTIPLY
                             || peekNext(counter).getType() == Type.DIVIDE
                             || peekNext(counter).getType() == Type.MODULO) {
-
-                        System.out.println("Current Token: " + peek());
 
                         statements.add(parseArithmeticStatement());
                         checkForNewline();
@@ -184,8 +173,6 @@ public class Parser {
                             peekNext(counter).getType() == Type.OR ||
                             peekNext(counter).getType() == Type.NOT) {
                         statements.add(parseLogicalStatement());
-
-                        System.out.println("Currnet Token: " + peek());
 
                         checkForNewline();
                         isAssignment = false;
@@ -226,11 +213,11 @@ public class Parser {
             }
 
             if (match(Type.ELSE_IF)) {
-                error("Found an ELSE_IF block without an IF block", previous());
+                error("Found an ELSE IF statement without an IF statement", previous());
             }
 
             if (match(Type.ELSE)) {
-                error("Found an ELSE_IF block without an IF block", previous());
+                error("Found an ELSE statement without an IF statement", previous());
             }
 
             if (match(Type.FOR)) {
@@ -268,13 +255,13 @@ public class Parser {
                             || peekNext(1).getType() == Type.END_FOR) {
                         return statements;
                     } else {
-                        error("Invalid Indentation found", peek());
+                        error("Invalid indentation found", peek());
                     }
                 } else {
                     if (peekNext(1).getType() == Type.END_CODE) {
                         return statements;
                     } else {
-                        error("Invalid Indentation found", peek());
+                        error("Invalid indentation found", peek());
                     }
                 }
             }
@@ -303,7 +290,9 @@ public class Parser {
         VariableNode identifier = new VariableNode(identifierToken);
 
         if (!match(Type.ASSIGNMENT)) {
-            error("Expected an assignment token.", peek());
+            error("While parsing an assignment statement, expected assignment '=' but got '" + peek().getType()
+                    + "'.",
+                    peek());
         }
 
         if (peekNext(1).getType() != Type.ASSIGNMENT) {
@@ -327,15 +316,16 @@ public class Parser {
 
         } else {
 
-            System.out.println("Found a chained assignment: " + identifierToken.getLexeme());
-
             List<Token> variableTokens = new ArrayList<>();
             variableTokens.add(identifierToken);
 
             do {
 
-                if (peek().getType() != Type.IDENTIFIER && peek().getType() != Type.LITERAL) {
-                    error("Expected an identifier or literal after an assigment token.", identifierToken);
+                if (peek().getType() != Type.IDENTIFIER && peek().getType() != Type.LITERAL
+                        && peek().getType() != Type.NEGATIVE && peek().getType() != Type.POSITIVE
+                        && peek().getType() != Type.NOT) {
+                    error("Expected an identifier or literal or unary operator after an assigment '=' operator.",
+                            identifierToken);
                 }
 
                 if (match(Type.IDENTIFIER)) {
@@ -362,10 +352,8 @@ public class Parser {
 
                     Token var = previous();
 
-                    System.out.println("\n\n\n Added a Literal: " + var.getLexeme());
-
                     if (peek().getType() == Type.ASSIGNMENT) {
-                        error("Can't assign value to a Literal" + var, var);
+                        error("Can't assign value to a Literal.", var);
                     }
 
                     for (Token token : variableTokens) {
@@ -379,12 +367,47 @@ public class Parser {
                         assignments.add(new AssignmentNode(left, right));
                     }
 
+                } else if (match(Type.NOT) || match(Type.POSITIVE) || match(Type.NEGATIVE)) {
+
+                    Token UnaryOperator = previous();
+
+                    if (peek().getType() == Type.ASSIGNMENT) {
+                        error("Can't assign value to a NOT operator.", UnaryOperator);
+                    }
+
+                    if (match(Type.IDENTIFIER)) {
+
+                        Token unaryOperand = previous();
+
+                        for (Token token : variableTokens) {
+                            System.out.println("Variable: " + token.getLexeme());
+
+                            VariableNode left = new VariableNode(token);
+                            UnaryNode right = new UnaryNode(UnaryOperator, new VariableNode(unaryOperand));
+
+                            assignments.add(new AssignmentNode(left, right));
+                        }
+                    } else if (match(Type.LITERAL)) {
+
+                        Token unaryOperand = previous();
+
+                        for (Token token : variableTokens) {
+                            VariableNode left = new VariableNode(token);
+                            UnaryNode right = new UnaryNode(UnaryOperator, new LiteralNode(unaryOperand));
+
+                            assignments.add(new AssignmentNode(left, right));
+                        }
+                    } else {
+                        error("Expected an identifier or literal after a unary operator", identifierToken);
+
+                    }
                 }
             } while (match(Type.ASSIGNMENT));
 
         }
 
         return assignments;
+
     }
 
     private AssignmentNode parseArithmeticStatement() {
@@ -504,7 +527,7 @@ public class Parser {
             ExpressionNode expression = parsePrimary();
             return new UnaryNode(operatorToken, expression);
         } else {
-            error("Expected an expression but got " + peek().getLexeme() + ".", peek());
+            error("Expected an expression but got " + peek().getType() + ".", peek());
         }
 
         return null;
@@ -743,82 +766,88 @@ public class Parser {
         System.out.println("Parsing If Statement");
 
         // Expect '('
-        consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'IF' keyword");
+        consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'IF' keyword but got " + peek().getType());
         // Parse the conditional expression
         ExpressionNode ifCondition = parseExpression();
 
         // Expect ')'
-        consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
+        consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression but got " + peek().getType());
 
-        consume(Type.NEWLINE, "Expected new line before the BEGIN IF statement");
+        consume(Type.NEWLINE, "Expected new line before the BEGIN IF statement but got " + peek().getType());
 
-        consume(Type.BEGIN_IF, "Expected 'BEGIN IF' after the conditional expression");
+        consume(Type.BEGIN_IF, "Expected 'BEGIN IF' after the conditional expression but got " + peek().getType());
 
-        consume(Type.NEWLINE, "Expected new line after the BEGIN IF statement");
+        consume(Type.NEWLINE, "Expected new line after the BEGIN IF statement but got " + peek().getType());
 
-        consume(Type.INDENT, "Expected INDENT after the BEGIN IF statement");
+        consume(Type.INDENT, "Expected INDENT after the BEGIN IF statement but got " + peek().getType());
 
         // Parse the body of the if statement
         List<StatementNode> body = parseStatements(true, false);
 
-        consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
+        consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement but got " + peek().getType());
 
-        consume(Type.END_IF, "Expected 'END IF' after the body of the if statement");
+        consume(Type.END_IF, "Expected 'END IF' after the body of the if statement but got " + peek().getType());
 
-        consume(Type.NEWLINE, "Expected new line after the END IF statement");
+        consume(Type.NEWLINE, "Expected new line after the END IF statement but got " + peek().getType());
 
         ifStatements.add(new IfNode(ifCondition, body, token.getPosition()));
 
         while (match(Type.ELSE_IF)) {
 
-            Token elseIfToken = previous();
+            Token ifElseToken = previous();
 
-            consume(Type.LEFT_PARENTHESIS, "Expected '(', after 'ELSE IF' keyword");
+            consume(Type.LEFT_PARENTHESIS, "Expected a '(', after 'ELSE IF' keyword but got " + peek().getType());
             // Parse the conditional expression
-            ExpressionNode elseIfCondition = parseExpression();
+            ExpressionNode ifElseCondition = parseExpression();
 
             // Expect ')'
-            consume(Type.RIGHT_PARENTHESIS, "Expected ')', after the conditional expression");
+            consume(Type.RIGHT_PARENTHESIS,
+                    "Expected a ')', after the conditional expression but got " + peek().getType());
 
-            consume(Type.NEWLINE, "Expected new line after the ELSE IF statement");
+            consume(Type.NEWLINE, "Expected a new line after the ELSE IF statement but got " + peek().getType());
 
-            consume(Type.BEGIN_IF, "Expected 'BEGIN ELSE IF' after the conditional expression");
+            consume(Type.BEGIN_IF,
+                    "Expected a 'BEGIN IF' after the conditional expression but got " + peek().getType());
+            consume(Type.NEWLINE, "Expected a NEW LINE after the BEGIN IF statement but got " + peek().getType());
 
-            consume(Type.NEWLINE, "Expected new line after the BEGIN ELSE IF statement");
-
-            consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE IF statement");
+            consume(Type.INDENT, "Expected an INDENTION after the BEGIN IF statement but got " + peek().getType());
 
             // Parse the body of the if statement
-            List<StatementNode> elseIfBody = parseStatements(true, false);
+            List<StatementNode> ifElseBody = parseStatements(true, false);
 
-            consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
+            consume(Type.DEDENT,
+                    "Expected DEDENTION after the body of the IF ELSE statement but got " + peek().getType());
 
-            consume(Type.END_IF, "Expected 'END ELSE IF' after the body of the if statement");
+            consume(Type.END_IF,
+                    "Expected an 'END ELSE' after the body of the IF ELSE statement but got " + peek().getType());
 
-            consume(Type.NEWLINE, "Expected new line after the END IF statement");
+            consume(Type.NEWLINE, "Expected a new line after the END IF statement but got " + peek().getType());
 
-            ifStatements.add(new ElseIfNode(elseIfCondition, elseIfBody, elseIfToken.getPosition()));
+            ifStatements.add(new ElseIfNode(ifElseCondition, ifElseBody, ifElseToken.getPosition()));
         }
 
         if (match(Type.ELSE)) {
 
             Token elseToken = previous();
 
-            consume(Type.NEWLINE, "Expected new line after the END IF statement");
-            consume(Type.BEGIN_IF, "Expected 'BEGIN ELSE' after the conditional expression");
+            consume(Type.NEWLINE, "Expected a new line after the END IF statement but got " + peek().getType());
+            consume(Type.BEGIN_IF,
+                    "Expected a 'BEGIN ELSE' after the conditional expression but got " + peek().getType());
 
-            consume(Type.NEWLINE, "Expected new line after the BEGIN ELSE statement");
+            consume(Type.NEWLINE, "Expected a new line after the BEGIN ELSE statement but got " + peek().getType());
 
-            consume(Type.INDENT, "Expected INDENT after the BEGIN ELSE statement");
+            consume(Type.INDENT, "Expected an INDENTION after the BEGIN ELSE statement but got " + peek().getType());
 
             // Parse the body of the if statement
             List<StatementNode> elseBody = parseStatements(true, false);
 
-            consume(Type.DEDENT, "Expected DEDENTION after the body of the if statement");
+            consume(Type.DEDENT,
+                    "Expected a DEDENTION after the body of the if statement but got " + peek().getType());
 
-            consume(Type.END_IF, "Expected 'END ELSE' after the body of the if statement");
+            consume(Type.END_IF,
+                    "Expected an 'END ELSE' after the body of the if statement but got " + peek().getType());
 
-            consume(Type.NEWLINE, "Expected new line after the END IF statement");
+            consume(Type.NEWLINE, "Expected a new line after the END IF statement but got " + peek().getType());
 
             ifStatements.add(new ElseNode(elseBody, elseToken.getPosition()));
         }

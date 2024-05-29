@@ -640,6 +640,10 @@ public class Lexer {
 
     private List<Token> checkIndentLevel(Position position) {
 
+        if (input.charAt(counter) == '#') {
+            return null;
+        }
+
         int spaces = 0, tabs = 0, newIndentLevel;
         int temp = counter;
         List<Token> indentTokens = new ArrayList<>();

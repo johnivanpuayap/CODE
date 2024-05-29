@@ -31,6 +31,7 @@ public class SemanticAnalyzer {
         for (VariableDeclarationNode declaration : programNode.getDeclarations()) {
 
             Symbol symbol = new Symbol(declaration.getType(), declaration.getName(), declaration.getValue());
+            ;
 
             checkUsingReservedKeyword(declaration.getName(), declaration.getPosition());
             checkValidVariableName(declaration.getName(), declaration.getPosition());
@@ -40,11 +41,11 @@ public class SemanticAnalyzer {
             }
 
             if (!symbolTable.insert(symbol)) {
-                error("Variable '" + declaration.getName() + "' is already declared", declaration.getPosition());
+                error("Variable '" + declaration.getName() + "' was already declared", declaration.getPosition());
             }
         }
 
-        initialSymbolTable = symbolTable;
+        initialSymbolTable = symbolTable.copy();
 
         for (StatementNode statement : programNode.getStatements()) {
             visit(statement);
@@ -146,31 +147,64 @@ public class SemanticAnalyzer {
 
                     Symbol rightSymbol = symbolTable.lookup(((VariableNode) operand).getName());
 
-                    String prefix = "";
                     if (unaryNode.getOperator().getType() == Type.NEGATIVE) {
-                        prefix = "-";
+                        if (rightSymbol.getType() == Type.INT) {
+                            int value = Integer.parseInt(rightSymbol.getValue()) * -1;
+                            leftSymbol.setValue(String.valueOf(value));
+
+                        } else if (rightSymbol.getType() == Type.FLOAT) {
+                            double value = Double.parseDouble(rightSymbol.getValue()) * -1;
+
+                            leftSymbol.setValue(String.valueOf(value));
+                        } else {
+                            error("Invalid operation. Cannot negate a " + rightSymbol.getType(),
+                                    expressionNode.getPosition());
+                        }
+                    } else {
+                        if (rightSymbol.getType() != Type.INT && rightSymbol.getType() != Type.FLOAT) {
+                            error("Invalid operation. Expected an INT or FLOAT after a unary operator "
+                                    + rightSymbol.getType() + " datatype.",
+                                    operand.getPosition());
+                        }
                     }
 
-                    leftSymbol.setValue(prefix + rightSymbol.getValue());
+                    leftSymbol.setValue(rightSymbol.getValue());
 
                 } else if (operand instanceof LiteralNode) {
 
-                    if (leftSymbol.getType() != ((LiteralNode) operand).getDataType()) {
+                    LiteralNode rightLiteral = (LiteralNode) operand;
+
+                    if (leftSymbol.getType() != rightLiteral.getDataType()) {
                         error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
                                 + ((LiteralNode) operand).getDataType(), expressionNode.getPosition());
                     }
 
-                    String prefix = "";
                     if (unaryNode.getOperator().getType() == Type.NEGATIVE) {
-                        prefix = "-";
+                        if (rightLiteral.getDataType() == Type.INT) {
+                            int value = Integer.parseInt(rightLiteral.toString()) * -1;
+                            leftSymbol.setValue(String.valueOf(value));
+
+                        } else if (rightLiteral.getDataType() == Type.FLOAT) {
+                            double value = Double.parseDouble(rightLiteral.toString()) * -1;
+
+                            leftSymbol.setValue(String.valueOf(value));
+                        } else {
+                            error("Invalid operation. Cannot negate a " + rightLiteral.getDataType(),
+                                    expressionNode.getPosition());
+                        }
+                    } else {
+                        if (rightLiteral.getDataType() != Type.INT && rightLiteral.getDataType() != Type.FLOAT) {
+
+                            error("Invalid operation. Cannot negate a " + rightLiteral.getDataType() + " datatype.",
+                                    rightLiteral.getPosition());
+                        }
                     }
 
-                    leftSymbol.setValue(prefix + ((LiteralNode) operand).getValue().getLexeme());
+                    leftSymbol.setValue(((LiteralNode) operand).getValue().getLexeme());
                 }
-            }
-        }
 
-        else {
+            }
+        } else {
 
             EvaluationResult result = evaluateExpression(expressionNode);
 

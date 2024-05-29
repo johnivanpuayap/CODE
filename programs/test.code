@@ -1,6 +1,7 @@
 BEGIN CODE
-    BOOL xyz, abc="TRUE"
-    xyz= NOT abc
-
-    DISPLAY: [[] & xyz & []]
+    INT x, y, z=5
+    CHAR a_1='n'
+    BOOL t="TRUE"
+    x=y=4
+    DISPLAY: x & t & z & $ & a_1 & [#] & "last"
 END CODE

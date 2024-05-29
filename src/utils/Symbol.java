@@ -44,4 +44,9 @@ public class Symbol {
     public void setInitialized(boolean initialized) {
         this.initialized = initialized;
     }
+
+    // Copy constructor or a copy method for deep copying
+    public Symbol copy() {
+        return new Symbol(this.type, this.name, this.value);
+    }
 }
