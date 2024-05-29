@@ -100,9 +100,9 @@ public class Parser {
             Token identifier = consume(Type.IDENTIFIER, "Expected identifier");
             String variableName = identifier.getLexeme();
 
-            if (declaredVariableNames.contains(variableName)) {
-                error("Variable " + variableName + " is already declared", identifier);
-            }
+            // if (declaredVariableNames.contains(variableName)) {
+            //     error("Variable " + variableName + " is already declared", identifier);
+            // }
 
             declaredVariableNames.add(variableName);
 
