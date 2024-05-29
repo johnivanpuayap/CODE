@@ -1,6 +1,7 @@
 package src;
 
 import java.util.Stack;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -23,9 +24,10 @@ public class Interpreter {
     }
 
     public void interpret() {
+
         List<StatementNode> statements = program.getStatements();
 
-        System.out.println("\n\n\n\n\nPROGRAM RESULTS");
+        System.out.println("\n\nPROGRAM RESULTS\n\n");
 
         for (int i = 0; i < statements.size(); i++) {
 
@@ -64,6 +66,7 @@ public class Interpreter {
         if (statement instanceof AssignmentNode) {
 
             AssignmentNode assignment = (AssignmentNode) statement;
+
             if (assignment.getExpression() instanceof LiteralNode) {
 
                 Symbol s = symbolTable.lookup(assignment.getVariable().getName());
@@ -71,20 +74,90 @@ public class Interpreter {
                 LiteralNode literal = (LiteralNode) assignment.getExpression();
 
                 if (s.getType() != literal.getDataType()) {
-                    error("Type mismatch. Assigning a " + literal.getDataType() + " to a " + s.getType(),
+                    error("Type mismatch. Assigning a " + literal.getDataType() + " datatype to a " + s.getType(),
                             assignment.getVariable().getPosition());
                 }
 
                 s.setValue(literal.toString());
 
             } else if (assignment.getExpression() instanceof UnaryNode) {
+
                 Symbol s = symbolTable.lookup(assignment.getVariable().getName());
 
-                if (s.getType() != Type.FLOAT || s.getType() != Type.INT) {
-                    error("Type mismatch. Assigning a Number to a ", assignment.getVariable().getPosition());
-                }
+                UnaryNode unary = (UnaryNode) assignment.getExpression();
 
-                s.setValue(assignment.getExpression().toString());
+                if (unary.getOperand() instanceof LiteralNode) {
+                    LiteralNode literal = (LiteralNode) unary.getOperand();
+
+                    if (s.getType() != literal.getDataType()) {
+                        error("Type mismatch. Assigning a " + literal.getDataType() + " datatype to a " + s.getType(),
+                                assignment.getVariable().getPosition());
+                    }
+
+                    if (unary.getOperator().getType() == Type.NOT) {
+
+                        if (literal.toString().equals("TRUE")) {
+                            s.setValue("FALSE");
+                        } else {
+                            s.setValue("TRUE");
+                        }
+
+                    } else if (unary.getOperator().getType() == Type.NEGATIVE) {
+                        s.setValue("-" + unary.getOperand().toString());
+                    } else {
+                        s.setValue(unary.getOperand().toString());
+                    }
+                } else if (unary.getOperand() instanceof VariableNode) {
+                    Symbol operand = symbolTable.lookup(((VariableNode) unary.getOperand()).getName());
+
+                    if (s.getType() != operand.getType()) {
+                        error("Type mismatch. Assigning a " + operand.getType() + " datatype to a " + s.getType(),
+                                assignment.getVariable().getPosition());
+                    }
+
+                    if (unary.getOperator().getType() == Type.NOT) {
+
+                        if (operand.getValue().equals("TRUE")) {
+                            s.setValue("FALSE");
+                        } else {
+                            s.setValue("TRUE");
+                        }
+
+                    } else if (unary.getOperator().getType() == Type.NEGATIVE) {
+
+                        if (operand.getType() == Type.INT) {
+                            int value = Integer.parseInt(operand.getValue()) * -1;
+                            s.setValue(String.valueOf(value));
+
+                        } else {
+                            double value = Double.parseDouble(operand.getValue()) * -1;
+
+                            s.setValue(String.valueOf(value));
+                        }
+                    }
+                } else if (unary.getOperand() instanceof ExpressionNode) {
+
+                    String result = evaluateExpression((ExpressionNode) unary.getOperand());
+
+                    if (unary.getOperator().getType() == Type.NOT) {
+
+                        if (result.equals("TRUE")) {
+                            s.setValue("FALSE");
+                        } else {
+                            s.setValue("TRUE");
+                        }
+
+                    } else if (unary.getOperator().getType() == Type.NEGATIVE) {
+
+                        if (result.contains(".")) {
+                            double value = Double.parseDouble(result) * -1;
+                            s.setValue(String.valueOf(value));
+                        } else {
+                            int value = Integer.parseInt(result) * -1;
+                            s.setValue(String.valueOf(value));
+                        }
+                    }
+                }
 
             } else if (assignment.getExpression() instanceof VariableNode) {
 
@@ -108,8 +181,8 @@ public class Interpreter {
                 }
 
                 symbol.setValue(value);
-
             }
+
         } else if (statement instanceof DisplayNode) {
             displayError = false;
             interpretDisplay((DisplayNode) statement);
@@ -126,6 +199,7 @@ public class Interpreter {
     public String evaluateExpression(ExpressionNode expression) {
         List<Token> tokens = expression.getTokens();
         List<Token> postfixExpression = infixToPostfix(tokens);
+
         return evaluatePostfix(postfixExpression);
     }
 
@@ -206,13 +280,18 @@ public class Interpreter {
             String lexeme = token.getLexeme();
 
             if (token.getType() == Type.LITERAL) {
-
                 if (token.getLexeme().contains(".")) {
                     stack.push(Double.valueOf(lexeme));
+                } else if (token.getLexeme().equals("TRUE") || token.getLexeme().equals("FALSE")) {
+                    stack.push(Boolean.valueOf(lexeme));
                 } else {
-                    // Convert the integer to a double before pushing it to the stack
-                    stack.push(Double.valueOf(Integer.parseInt(lexeme)));
+                    try {
+                        stack.push(Integer.parseInt(lexeme));
+                    } catch (NumberFormatException e) {
+                        stack.push(lexeme);
+                    }
                 }
+
             } else if (token.getType() == Type.IDENTIFIER) {
                 if (symbolTable.lookup(lexeme) != null) {
 
@@ -230,74 +309,104 @@ public class Interpreter {
                     error("Undefined variable: " + lexeme, token.getPosition());
                 }
             } else {
+
                 switch (token.getType()) {
+
                     case ADD:
-
-                        Number left;
-                        if (stack.peek() instanceof Integer) {
-                            left = (Integer) stack.pop();
-                        } else {
-                            left = (Double) stack.pop();
-                        }
-
-                        Number right;
-                        if (stack.peek() instanceof Integer) {
-                            right = (Integer) stack.pop();
-                        } else {
-                            right = (Double) stack.pop();
-                        }
-
-                        Number result;
-                        if (left instanceof Double || right instanceof Double) {
-                            result = left.doubleValue() + right.doubleValue();
-                        } else {
-                            result = left.intValue() + right.intValue();
-                        }
-
-                        stack.push(result);
-
-                        break;
                     case SUBTRACT:
-                        double subtractor = (double) stack.pop();
-                        stack.push((double) stack.pop() - subtractor);
-                        break;
                     case MULTIPLY:
-                        stack.push((double) stack.pop() * (double) stack.pop());
-                        break;
                     case DIVIDE:
-                        double divisor = (double) stack.pop();
-                        if (divisor != 0.0) {
-                            stack.push((double) stack.pop() / divisor);
-                        } else {
-                            error("Cannot divide by zero", token.getPosition());
-                        }
-                        break;
                     case MODULO:
-                        stack.push((double) stack.pop() % (double) stack.pop());
+
+                        if (stack.size() < 2) {
+                            error("Invalid expression. Missing operands.", token.getPosition());
+                        }
+
+                        if (stack.peek() instanceof Boolean) {
+                            error("Invalid expression. Cannot " + token.getType() + " a BOOL",
+                                    token.getPosition());
+                        }
+
+                        if (stack.peek() instanceof String && stack.peek().toString().length() == 1) {
+                            error("Invalid expression. Cannot " + token.getType() + " a CHAR",
+                                    token.getPosition());
+                        }
+
+                        Number right = getNumber(stack.pop());
+
+                        if (stack.peek() instanceof Boolean) {
+                            error("Invalid expression. Cannot " + token.getType() + " a BOOL",
+                                    token.getPosition());
+                        }
+
+                        if (stack.peek() instanceof String && stack.peek().toString().length() == 1) {
+                            error("Invalid expression. Cannot " + token.getType() + " a CHAR",
+                                    token.getPosition());
+                        }
+
+                        Number left = getNumber(stack.pop());
+                        Number result = calculate(left, right, token);
+                        stack.push(result);
                         break;
                     case LESS:
-                        double rightLess = (double) stack.pop();
-                        stack.push((double) stack.pop() < rightLess);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() < right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() < right.doubleValue()));
+                        }
                         break;
                     case GREATER:
-                        double rightGreater = (double) stack.pop();
-                        stack.push((double) stack.pop() > rightGreater);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() > right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() > right.doubleValue()));
+                        }
+
                         break;
                     case LESS_EQUAL:
-                        double rightLessEqual = (double) stack.pop();
-                        stack.push((double) stack.pop() <= rightLessEqual);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() <= right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() <= right.doubleValue()));
+                        }
                         break;
                     case GREATER_EQUAL:
-                        double rightGreaterEqual = (double) stack.pop();
-                        stack.push((double) stack.pop() >= rightGreaterEqual);
+                        right = getNumber(stack.pop());
+                        left = getNumber(stack.pop());
+
+                        if (left instanceof Integer && right instanceof Integer) {
+                            stack.push((left.intValue() >= right.intValue()));
+                        } else {
+                            stack.push((left.doubleValue() >= right.doubleValue()));
+                        }
                         break;
                     case NOT_EQUAL:
-                        double rightNotEqual = (double) stack.pop();
-                        stack.push(!stack.pop().equals(rightNotEqual));
+
+                        Object rightNotEqual = stack.pop();
+                        Object leftNotEqual = stack.pop();
+                        if (leftNotEqual instanceof Number && rightNotEqual instanceof Number) {
+                            stack.push(!leftNotEqual.equals(rightNotEqual));
+                        } else {
+                            stack.push(!leftNotEqual.toString().equals(rightNotEqual.toString()));
+                        }
                         break;
                     case EQUAL:
-                        double rightEqual = (double) stack.pop();
-                        stack.push(stack.pop().equals(rightEqual));
+                        Object rightEqual = stack.pop();
+                        Object leftEqual = stack.pop();
+                        if (leftEqual instanceof Number && rightEqual instanceof Number) {
+                            stack.push(leftEqual.equals(rightEqual));
+                        } else {
+                            stack.push(leftEqual.toString().equals(rightEqual.toString()));
+                        }
                         break;
                     case AND:
                         stack.push(((boolean) stack.pop() && (boolean) stack.pop()));
@@ -309,10 +418,18 @@ public class Interpreter {
                         stack.push(!(boolean) stack.pop());
                         break;
                     case POSITIVE:
-                        stack.push(stack.pop());
+                        if (stack.peek() instanceof Integer) {
+                            stack.push((int) stack.pop());
+                        } else {
+                            stack.push((double) stack.pop());
+                        }
                         break;
                     case NEGATIVE:
-                        stack.push(-(double) stack.pop());
+                        if (stack.peek() instanceof Integer) {
+                            stack.push(-(int) stack.pop());
+                        } else {
+                            stack.push(-(double) stack.pop());
+                        }
                         break;
                     default:
                         error("Unknown operator: " + lexeme, token.getPosition());
@@ -322,8 +439,9 @@ public class Interpreter {
         }
 
         Object result = stack.pop();
+
         if (result instanceof Boolean) {
-            return (boolean) result ? "\"TRUE\"" : "\"FALSE\"";
+            return (boolean) result ? "TRUE" : "FALSE";
         } else {
             return result.toString();
         }
@@ -360,6 +478,12 @@ public class Interpreter {
                 ExpressionNode expression = expressions.get(currentIndexExpression);
                 String result = evaluateExpression(expression);
 
+                if (result.equals("TRUE")) {
+                    result = "TRUE";
+                } else if (result.equals("FALSE")) {
+                    result = "FALSE";
+                }
+
                 System.out.print(result);
 
                 currentIndexExpression++;
@@ -384,7 +508,10 @@ public class Interpreter {
         Scanner scanner = new Scanner(System.in);
 
         for (Token identifier : scanStatement.getIdentifiers()) {
-            System.out.print(identifier.getLexeme() + ": ");
+
+            Symbol s = symbolTable.lookup(identifier.getLexeme());
+
+            System.out.print(s.getType() + " " + s.getName() + ": ");
             String input = scanner.nextLine();
 
             // Convert to a Data Type
@@ -395,12 +522,17 @@ public class Interpreter {
                 inputDataType = Type.INT;
             } else if (input.matches("[-+]?[0-9]+(\\.[0-9]+)?")) {
                 inputDataType = Type.FLOAT;
-            } else if (input.matches("[a-zA-Z]")) {
+
+            } else if (input.matches("'[a-zA-Z0-9]'")) {
+
+                // could be replace with else if (input.matches("'[a-zA-Z0-9.,;:'\"!?-_]'"))
+
                 inputDataType = Type.CHAR;
-            } else if (input.equals("TRUE") || input.equals("FALSE")) {
+            } else if (input.equals("\"TRUE\"") || input.equals("\"FALSE\"")) {
                 inputDataType = Type.BOOL;
             } else {
-                error("Invalid input", null);
+                error("Invalid input entered. Couldn't be converted to a suitable data type",
+                        scanStatement.getPosition());
             }
 
             Symbol symbol = symbolTable.lookup(identifier.getLexeme());
@@ -410,10 +542,24 @@ public class Interpreter {
                         scanStatement.getPosition());
             }
 
+            if (inputDataType == Type.INT) {
+                if (input.contains(".")) {
+                    String newValue = input.substring(0, input.indexOf("."));
+                    input = newValue;
+                }
+            } else if (inputDataType == Type.BOOL) {
+                if (input.equals("\"TRUE\"")) {
+                    input = "TRUE";
+                } else {
+                    input = "FALSE";
+                }
+            }
+
             symbol.setValue(input);
         }
 
         scanner.close();
+
     }
 
     private void interpretIf(List<StatementNode> ifStatements) {
@@ -428,7 +574,7 @@ public class Interpreter {
 
             String conditionResult = evaluateExpression(condition);
 
-            if (conditionResult.equals("\"TRUE\"")) {
+            if (conditionResult.equals("TRUE")) {
                 // Execute the statements in the current branch if the condition is true
                 for (StatementNode branchStatement : ifBranchStatements) {
                     interpretStatement(branchStatement);
@@ -449,7 +595,7 @@ public class Interpreter {
 
             String conditionResult = evaluateExpression(condition);
 
-            if (conditionResult.equals("\"TRUE\"")) {
+            if (conditionResult.equals("TRUE")) {
 
                 for (StatementNode branchStatement : ifElseBranchStatements) {
                     interpretStatement(branchStatement);
@@ -484,7 +630,7 @@ public class Interpreter {
 
         boolean breakFlag = false;
 
-        while (result.equals("\"TRUE\"")) {
+        while (result.equals("TRUE")) {
 
             for (int i = 0; i < statements.size(); i++) {
 
@@ -515,7 +661,7 @@ public class Interpreter {
                 }
 
                 if (statements.get(i) instanceof ContinueNode) {
-                    continue;
+                    break;
                 }
 
                 interpretStatement(statements.get(i));
@@ -543,7 +689,7 @@ public class Interpreter {
 
         boolean breakFlag = false;
 
-        while (result == "\"TRUE\"") {
+        while (result == "TRUE") {
 
             for (int i = 0; i < statements.size(); i++) {
 
@@ -574,7 +720,7 @@ public class Interpreter {
                 }
 
                 if (statements.get(i) instanceof ContinueNode) {
-                    continue;
+                    break;
                 }
 
                 interpretStatement(statements.get(i));
@@ -589,8 +735,58 @@ public class Interpreter {
         }
     }
 
+    private Number calculate(Number left, Number right, Token token) {
+        if (left instanceof Double || right instanceof Double) {
+            switch (token.getType()) {
+                case Type.ADD:
+                    return left.doubleValue() + right.doubleValue();
+                case Type.SUBTRACT:
+                    return left.doubleValue() - right.doubleValue();
+                case Type.MULTIPLY:
+                    return left.doubleValue() * right.doubleValue();
+                case Type.DIVIDE:
+                    if (right.doubleValue() == 0) {
+                        error("Cannot divide by zero", token.getPosition());
+                    }
+                    return left.doubleValue() / right.doubleValue();
+                default:
+                    error("Unknown operator: " + token.getLexeme(), token.getPosition());
+            }
+        } else {
+            switch (token.getType()) {
+                case Type.ADD:
+                    return left.intValue() + right.intValue();
+                case Type.SUBTRACT:
+                    return left.intValue() - right.intValue();
+                case Type.MULTIPLY:
+                    return left.intValue() * right.intValue();
+                case Type.DIVIDE:
+                    if (right.intValue() == 0) {
+                        error("Cannot divide by zero", token.getPosition());
+                    }
+                    return left.intValue() / right.intValue();
+                default:
+                    error("Unknown operator: " + token.getLexeme(), token.getPosition());
+            }
+        }
+        return 0;
+    }
+
+    private Number getNumber(Object number) {
+
+        if (number instanceof Integer) {
+            return (Integer) number;
+        } else if (number instanceof Double) {
+            return (Double) number;
+        } else {
+            return null;
+        }
+    }
+
     private void error(String message, Position position) {
-        System.err.println("Runtime Error: " + message + " " + position);
+        System.err.println("Runtime Error: " + message + " at Line " +
+                position.getLine() + " and Column " + position.getColumn() + "\n");
+
         System.exit(1);
     }
 }

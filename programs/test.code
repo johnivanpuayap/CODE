@@ -1,5 +1,21 @@
 BEGIN CODE
-    INT a = 5
-    a = 12
-    DISPLAY: a+1.0
+    INT a, b, c, abc
+    SCAN: abc
+    IF (abc == 15)
+    BEGIN IF
+        a = 1
+    END IF
+    ELSE IF (abc == 12)
+    BEGIN IF
+        a = 2
+    END IF
+    ELSE IF (abc == 13)
+    BEGIN IF
+        a = 4
+    END IF
+    ELSE 
+    BEGIN IF
+        a = 3
+    END IF
+    DISPLAY: a
 END CODE

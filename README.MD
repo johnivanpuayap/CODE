@@ -69,10 +69,10 @@ Final Project Presentation
 - [x] Check Display to put an error when accessing an array that was not initialized
 - [x] Fix error when there are blank lines between code
 - [x] Better error handling for conditional statements
-- [ ] Check if the conditions in a while, if and else if is returning a BOOL
+- [x] Check if the conditions in a while, if and else if is returning a BOOL
 
-- [ ] Improve Error Handling
-- [ ] Improve Parser
+- [x] Improve Error Handling
+- [x] Improve Parser
 - [ ] Improve Semantics Analyzer
 
 # Additional Features
@@ -80,7 +80,6 @@ Final Project Presentation
 - [x] For Loops
 - [x] BREAK
 - [x] CONTINUE
-- [ ]
 
 Note: Since it was stated in the program specifications that all variable declaration is found after BEGIN CODE, our for loop should not declare a new variable, the format is like this
 

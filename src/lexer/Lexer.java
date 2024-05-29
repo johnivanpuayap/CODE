@@ -366,13 +366,28 @@ public class Lexer {
                     new Position(position.getLine(), position.getColumn()));
         }
 
-        if (literal.toString() == "\"TRUE\"") {
+        if (literal.toString().equals("\"TRUE\"")) {
             return new Token(Type.LITERAL, "TRUE",
                     new Position(position.getLine(), position.getColumn()));
-        } else if (literal.toString() == "\"FALSE\"") {
+        }
+
+        if ((literal.toString().equals("\"FALSE\""))) {
             return new Token(Type.LITERAL, "FALSE",
                     new Position(position.getLine(), position.getColumn()));
         }
+
+        if (literal.toString().startsWith("\"") && literal.toString().endsWith("\"")) {
+            return new Token(Type.STRING_LITERAL, literal.toString(),
+                    new Position(position.getLine(), position.getColumn()));
+        }
+
+        // if (literal.toString().startsWith("\'") && literal.toString().endsWith("\'"))
+        // {
+        // String literalWithoutQuotes = literal.toString().substring(1,
+        // literal.toString().length() - 1);
+        // return new Token(Type.LITERAL, literalWithoutQuotes,
+        // new Position(position.getLine(), position.getColumn()));
+        // }
 
         return new Token(Type.LITERAL, literal.toString(), new Position(position.getLine(), position.getColumn()));
     }
@@ -381,7 +396,8 @@ public class Lexer {
 
         // Parse the display string
         if (input.charAt(counter) == ':') {
-            tokens.add(new Token(Type.COLON, ":", new Position(position.getLine(), position.getColumn())));
+            tokens.add(new Token(Type.COLON, ":", new Position(position.getLine(),
+                    position.getColumn())));
             position.add(1);
             counter++;
         }
@@ -403,24 +419,28 @@ public class Lexer {
 
                 // Tokenize newline character
             } else if (input.charAt(counter) == '$') {
-                tokens.add(new Token(Type.NEXT_LINE, "$", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Type.NEXT_LINE, "$", new Position(position.getLine(),
+                        position.getColumn())));
                 position.add(1);
                 counter++;
 
             } else if (input.charAt(counter) == '[') {
 
                 tokens.add(
-                        new Token(Type.ESCAPE_CODE_OPEN, "[", new Position(position.getLine(), position.getColumn())));
+                        new Token(Type.ESCAPE_CODE_OPEN, "[", new Position(position.getLine(),
+                                position.getColumn())));
                 position.add(1);
                 counter++;
 
                 if (input.charAt(counter) == '[' && input.charAt(counter + 1) == ']') {
-                    tokens.add(new Token(Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)),
+                    tokens.add(new Token(Type.SPECIAL_CHARACTER,
+                            Character.toString(input.charAt(counter)),
                             new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter++;
                 } else if (input.charAt(counter) == ']' && input.charAt(counter + 1) == ']') {
-                    tokens.add(new Token(Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)),
+                    tokens.add(new Token(Type.SPECIAL_CHARACTER,
+                            Character.toString(input.charAt(counter)),
                             new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter++;
@@ -433,7 +453,8 @@ public class Lexer {
                             counter++;
                         }
 
-                        tokens.add(new Token(Type.SPECIAL_CHARACTER, Character.toString(input.charAt(counter)),
+                        tokens.add(new Token(Type.SPECIAL_CHARACTER,
+                                Character.toString(input.charAt(counter)),
                                 new Position(position.getLine(), position.getColumn())));
                         position.add(1);
                         counter++;
@@ -441,9 +462,12 @@ public class Lexer {
                 }
 
                 tokens.add(
-                        new Token(Type.ESCAPE_CODE_CLOSE, "]", new Position(position.getLine(), position.getColumn())));
+                        new Token(Type.ESCAPE_CODE_CLOSE, "]", new Position(position.getLine(),
+                                position.getColumn())));
                 position.add(1);
                 counter++;
+            } else if (input.charAt(counter) == '\'') {
+                tokens.add(tokenizeLiteral());
             }
 
             // Tokenize quotation marks and string literal
@@ -455,7 +479,8 @@ public class Lexer {
 
                 // Parse and tokenize the string literal
                 StringBuilder stringLiteral = new StringBuilder();
-                while (counter < input.length() && input.charAt(counter) != '\n' && input.charAt(counter) != '&') {
+                while (counter < input.length() && input.charAt(counter) != '\n' &&
+                        input.charAt(counter) != '&') {
                     if (input.charAt(counter) == '"') {
                         tokens.add(new Token(Type.STRING_LITERAL, stringLiteral.toString(),
                                 new Position(position.getLine(), position.getColumn())));
@@ -472,38 +497,119 @@ public class Lexer {
             }
             // Tokenize Number Literals
             else if (Character.isDigit(input.charAt(counter))) {
+
                 StringBuilder number = new StringBuilder();
-                while (counter < input.length() && Character.isDigit(input.charAt(counter))) {
+
+                while (counter < input.length() &&
+                        (Character.isDigit(input.charAt(counter)) || input.charAt(counter) == '.')) {
                     number.append(input.charAt(counter));
                     counter++;
                     position.add(1);
                 }
+
                 tokens.add(new Token(Type.LITERAL, number.toString(),
                         new Position(position.getLine(), position.getColumn())));
                 continue;
             } else if (input.charAt(counter) == '+') {
-                tokens.add(new Token(Type.ADD, "+", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Type.ADD, "+", new Position(position.getLine(),
+                        position.getColumn())));
                 counter++;
                 continue;
             } else if (input.charAt(counter) == '-') {
-                tokens.add(new Token(Type.SUBTRACT, "-", new Position(position.getLine(), position.getColumn())));
+
+                Type last = tokens.get(tokens.size() - 1).getType();
+
+                if (last == Type.ADD || last == Type.SUBTRACT || last == Type.MULTIPLY || last == Type.DIVIDE
+                        || last == Type.MODULO || last == Type.GREATER || last == Type.LESS || last == Type.ASSIGNMENT
+                        || last == Type.EQUAL || last == Type.GREATER_EQUAL || last == Type.LESS_EQUAL
+                        || last == Type.NOT_EQUAL || last == Type.AND || last == Type.OR || last == Type.NOT
+                        || last == Type.NEGATIVE || last == Type.POSITIVE || last == Type.LEFT_PARENTHESIS) {
+                    tokens.add(new Token(Type.NEGATIVE, "-", new Position(position.getLine(),
+                            position.getColumn())));
+                    counter++;
+                }
+
+                tokens.add(new Token(Type.SUBTRACT, "-", new Position(position.getLine(),
+                        position.getColumn())));
                 counter++;
                 continue;
             } else if (input.charAt(counter) == '*') {
-                tokens.add(new Token(Type.MULTIPLY, "*", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Type.MULTIPLY, "*", new Position(position.getLine(),
+                        position.getColumn())));
                 counter++;
                 continue;
             } else if (input.charAt(counter) == '/') {
-                tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(),
+                        position.getColumn())));
                 counter++;
                 continue;
             } else if (input.charAt(counter) == '%') {
-                tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(), position.getColumn())));
+                tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(),
+                        position.getColumn())));
                 counter++;
                 continue;
-            }
+            } else if (input.charAt(counter) == '>') {
+                if (input.charAt(counter + 1) == '=') {
+                    tokens.add(new Token(Type.GREATER_EQUAL, ">=",
+                            new Position(position.getLine(), position.getColumn())));
+                    position.add(2);
+                    counter += 2;
+                } else {
+                    tokens.add(new Token(Type.GREATER, ">", new Position(position.getLine(), position.getColumn())));
+                    position.add(1);
+                    counter++;
+                }
+            } else if (input.charAt(counter) == '<') {
+                if (input.charAt(counter + 1) == '=') {
+                    tokens.add(new Token(Type.LESS_EQUAL, "<=",
+                            new Position(position.getLine(), position.getColumn())));
+                    position.add(2);
+                    counter += 2;
+                } else if (input.charAt(counter + 1) == '>') {
+                    tokens.add(new Token(Type.NOT_EQUAL, "<>",
+                            new Position(position.getLine(), position.getColumn())));
+                    position.add(2);
+                    counter += 2;
+                } else {
+                    tokens.add(new Token(Type.LESS, "<", new Position(position.getLine(), position.getColumn())));
+                    position.add(1);
+                    counter++;
 
-            else {
+                }
+            } else if (input.charAt(counter) == '=') {
+                if (input.charAt(counter + 1) == '=') {
+                    tokens.add(new Token(Type.EQUAL, "==",
+                            new Position(position.getLine(), position.getColumn())));
+                    position.add(2);
+                    counter += 2;
+                } else {
+                    tokens.add(new Token(Type.ASSIGNMENT, "=", new Position(position.getLine(), position.getColumn())));
+                    position.add(1);
+                    counter++;
+                }
+            } else if (input.startsWith("AND", counter)) {
+                tokens.add(new Token(Type.AND, "AND", new Position(position.getLine(), position.getColumn())));
+                position.add("AND".length());
+                counter += "AND".length();
+            } else if (input.startsWith("OR", counter)) {
+                tokens.add(new Token(Type.OR, "OR", new Position(position.getLine(), position.getColumn())));
+                position.add("OR".length());
+                counter += "OR".length();
+            } else if (input.startsWith("NOT", counter)) {
+                tokens.add(new Token(Type.NOT, "NOT", new Position(position.getLine(), position.getColumn())));
+                position.add("NOT".length());
+                counter += "NOT".length();
+            } else if (input.charAt(counter) == '(') {
+                tokens.add(
+                        new Token(Type.LEFT_PARENTHESIS, "(", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
+            } else if (input.charAt(counter) == ')') {
+                tokens.add(
+                        new Token(Type.RIGHT_PARENTHESIS, ")", new Position(position.getLine(), position.getColumn())));
+                position.add(1);
+                counter++;
+            } else {
                 if (Character.isWhitespace(input.charAt(counter))) {
                     counter++;
                     position.add(1);
@@ -534,10 +640,14 @@ public class Lexer {
                 // Tokenize Identifiers
                 // Parse the variable name
                 StringBuilder variableName = new StringBuilder();
-                while (counter < input.length() && !Character.isWhitespace(input.charAt(counter))
-                        && input.charAt(counter) != '&' && input.charAt(counter) != '\n' && input.charAt(counter) != '+'
-                        && input.charAt(counter) != '-' && input.charAt(counter) != '*' && input.charAt(counter) != '/'
-                        && input.charAt(counter) != '%' && input.charAt(counter) != '<' && input.charAt(counter) != '>'
+                while (counter < input.length() &&
+                        !Character.isWhitespace(input.charAt(counter))
+                        && input.charAt(counter) != '&' && input.charAt(counter) != '\n' &&
+                        input.charAt(counter) != '+'
+                        && input.charAt(counter) != '-' && input.charAt(counter) != '*' &&
+                        input.charAt(counter) != '/'
+                        && input.charAt(counter) != '%' && input.charAt(counter) != '<' &&
+                        input.charAt(counter) != '>'
                         && input.charAt(counter) != '(' && input.charAt(counter) != ')'
                         && input.charAt(counter) != '=') {
                     variableName.append(input.charAt(counter));
@@ -553,6 +663,10 @@ public class Lexer {
     }
 
     private List<Token> checkIndentLevel(Position position) {
+
+        if (input.charAt(counter) == '#') {
+            return null;
+        }
 
         int spaces = 0, tabs = 0, newIndentLevel;
         int temp = counter;
@@ -621,8 +735,6 @@ public class Lexer {
             }
         } else {
             newIndentLevel = 0;
-
-            System.out.println("New Indent Level: " + newIndentLevel + " Indent Level: " + indentLevel);
 
             if (newIndentLevel < indentLevel) {
                 while (newIndentLevel < indentLevel) {

@@ -16,7 +16,7 @@ public class SymbolTable {
         if (symbols.containsKey(symbol.name)) {
             return false;
         }
-        
+
         symbols.put(symbol.name, symbol);
         return true;
     }
@@ -27,7 +27,11 @@ public class SymbolTable {
 
     public SymbolTable copy() {
         SymbolTable newTable = new SymbolTable();
-        newTable.symbols = new HashMap<>(symbols);
+        for (Map.Entry<String, Symbol> entry : symbols.entrySet()) {
+            String newKey = new String(entry.getKey()); // Deep copy key if necessary, assuming keys are strings
+            Symbol newValue = entry.getValue().copy(); // Deep copy value
+            newTable.symbols.put(newKey, newValue);
+        }
         return newTable;
     }
 

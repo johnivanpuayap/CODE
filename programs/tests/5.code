@@ -1,4 +1,5 @@
 BEGIN CODE
-	INT x = -5
+	INT x, y=-5
+	x = -y
 	DISPLAY: x
 END CODE

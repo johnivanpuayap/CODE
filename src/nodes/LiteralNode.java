@@ -27,12 +27,10 @@ public class LiteralNode extends ExpressionNode {
             return Type.INT;
         } else if (lexeme.matches("[0-9]+\\.[0-9]+")) {
             return Type.FLOAT;
-        } else if (lexeme.matches("'[^']*'")) { // Updated regex for characters
-            return Type.CHAR;
-        } else if (lexeme.equals("\"TRUE\"") || lexeme.equals("\"FALSE\"")) {
+        } else if (lexeme.equals("TRUE") || lexeme.equals("FALSE")) {
             return Type.BOOL;
-        } else if (lexeme.matches("\".*\"")) {
-            return Type.STRING_LITERAL;
+        } else if (lexeme.length() == 3 && lexeme.charAt(0) == '\'' && lexeme.charAt(2) == '\'') {
+            return Type.CHAR;
         }
 
         return null;
