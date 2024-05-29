@@ -296,7 +296,8 @@ public class Interpreter {
                 if (symbolTable.lookup(lexeme) != null) {
 
                     if (symbolTable.lookup(lexeme).getType() == Type.INT) {
-                        stack.push(Integer.parseInt(symbolTable.lookup(lexeme).getValue()));
+                        // Convert the integer to a double before pushing it to the stack
+                        stack.push(Double.valueOf(Integer.parseInt(symbolTable.lookup(lexeme).getValue())));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.FLOAT) {
                         stack.push(Double.parseDouble(symbolTable.lookup(lexeme).getValue()));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.BOOL) {

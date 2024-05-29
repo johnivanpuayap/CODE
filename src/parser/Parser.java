@@ -135,6 +135,8 @@ public class Parser {
 
         while (!match(Type.EOF) && !(currentTokenIndex >= tokens.size())) {
 
+            System.out.println("Current Token: " + peek());
+
             if (match(Type.INT) || match(Type.CHAR) || match(Type.FLOAT) || match(Type.BOOL)) {
                 error("Found a variable declaration in the executable code", previous());
             }
@@ -556,17 +558,16 @@ public class Parser {
 
             else if (match(Type.IDENTIFIER)) {
 
-                if (arguments.size() != 0) {
-                    Type prev = arguments.getLast().getType();
-
-                    if (prev != Type.CONCATENATION &&
-                            prev != Type.ADD &&
-                            prev != Type.SUBTRACT &&
-                            prev != Type.MULTIPLY &&
-                            prev != Type.DIVIDE &&
-                            prev != Type.MODULO) {
-                        error("Can't add another argument without concatenation", previous());
-                    }
+                if (arguments.size() != 0 && arguments.getLast().getType() != Type.CONCATENATION &&
+                        arguments.getLast().getType() != Type.ADD &&
+                        arguments.getLast().getType() != Type.SUBTRACT &&
+                        arguments.getLast().getType() != Type.MULTIPLY &&
+                        arguments.getLast().getType() != Type.DIVIDE &&
+                        arguments.getLast().getType() != Type.MODULO &&
+                        arguments.getLast().getType() != Type.AND &&
+                        arguments.getLast().getType() != Type.OR &&
+                        arguments.getLast().getType() != Type.NOT) {
+                    error("Can't add another argument without concatenation", previous());
                 }
 
                 arguments.add(previous());

@@ -76,11 +76,17 @@ public class SemanticAnalyzer {
         VariableNode variableNode = node.getVariable();
         ExpressionNode expressionNode = node.getExpression();
 
+        Class<?> clazz = expressionNode.getClass();
+
         // We pass the type of the variable to the visitVariableNode method since we
         // don't need to check the type of the variable
         visitVariableNode(variableNode, null, false);
 
         Symbol leftSymbol = symbolTable.lookup(node.getVariable().getName());
+
+        if (expressionNode != null) {
+            leftSymbol.setInitialized(true);
+        }
 
         if (expressionNode instanceof VariableNode) {
 
@@ -99,123 +105,6 @@ public class SemanticAnalyzer {
             }
 
             leftSymbol.setValue(((LiteralNode) expressionNode).getValue().getLexeme());
-        } else if (expressionNode instanceof UnaryNode) {
-
-            UnaryNode unaryNode = (UnaryNode) expressionNode;
-
-            if (unaryNode.getOperator().getType() == Type.NOT) {
-
-                if (leftSymbol.getType() != Type.BOOL) {
-                    error("Invalid assignment. Left Symbol is an " + leftSymbol.getType() + " datatype.",
-                            expressionNode.getPosition());
-                }
-
-                ExpressionNode operand = unaryNode.getOperand();
-
-                if (operand instanceof VariableNode) {
-                    visitVariableNode((VariableNode) operand, leftSymbol.getType(), true);
-
-                    Symbol rightSymbol = symbolTable.lookup(((VariableNode) operand).getName());
-
-                    if (rightSymbol.getType() != Type.BOOL) {
-                        error("Invalid NOT operation. Expected BOOL but got" + rightSymbol.getType(),
-                                expressionNode.getPosition());
-                    }
-
-                    if (rightSymbol.getValue().equals("TRUE")) {
-                        leftSymbol.setValue("FALSE");
-                    } else {
-                        leftSymbol.setValue("TRUE");
-                    }
-                } else if (operand instanceof LiteralNode) {
-
-                    if (leftSymbol.getType() != ((LiteralNode) operand).getDataType()) {
-                        error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
-                                + ((LiteralNode) operand).getDataType(), expressionNode.getPosition());
-                    }
-
-                    boolean result = !Boolean.parseBoolean(((LiteralNode) operand).getValue().getLexeme());
-
-                    leftSymbol.setValue(String.valueOf(result).toUpperCase());
-                }
-
-            } else {
-
-                ExpressionNode operand = unaryNode.getOperand();
-
-                if (operand instanceof VariableNode) {
-                    visitVariableNode((VariableNode) operand, leftSymbol.getType(), true);
-
-                    Symbol rightSymbol = symbolTable.lookup(((VariableNode) operand).getName());
-
-                    if (unaryNode.getOperator().getType() == Type.NEGATIVE) {
-                        if (rightSymbol.getType() == Type.INT) {
-                            int value = Integer.parseInt(rightSymbol.getValue()) * -1;
-                            leftSymbol.setValue(String.valueOf(value));
-
-                        } else if (rightSymbol.getType() == Type.FLOAT) {
-                            double value = Double.parseDouble(rightSymbol.getValue()) * -1;
-
-                            leftSymbol.setValue(String.valueOf(value));
-                        } else {
-                            error("Invalid operation. Cannot negate a " + rightSymbol.getType(),
-                                    expressionNode.getPosition());
-                        }
-                    } else {
-                        if (rightSymbol.getType() != Type.INT && rightSymbol.getType() != Type.FLOAT) {
-                            error("Invalid operation. Expected an INT or FLOAT after a unary operator "
-                                    + rightSymbol.getType() + " datatype.",
-                                    operand.getPosition());
-                        }
-                    }
-
-                    leftSymbol.setValue(rightSymbol.getValue());
-
-                } else if (operand instanceof LiteralNode) {
-
-                    LiteralNode rightLiteral = (LiteralNode) operand;
-
-                    if (leftSymbol.getType() != rightLiteral.getDataType()) {
-                        error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
-                                + ((LiteralNode) operand).getDataType(), expressionNode.getPosition());
-                    }
-
-                    if (unaryNode.getOperator().getType() == Type.NEGATIVE) {
-                        if (rightLiteral.getDataType() == Type.INT) {
-                            int value = Integer.parseInt(rightLiteral.toString()) * -1;
-                            leftSymbol.setValue(String.valueOf(value));
-
-                        } else if (rightLiteral.getDataType() == Type.FLOAT) {
-                            double value = Double.parseDouble(rightLiteral.toString()) * -1;
-
-                            leftSymbol.setValue(String.valueOf(value));
-                        } else {
-                            error("Invalid operation. Cannot negate a " + rightLiteral.getDataType(),
-                                    expressionNode.getPosition());
-                        }
-                    } else {
-                        if (rightLiteral.getDataType() != Type.INT && rightLiteral.getDataType() != Type.FLOAT) {
-
-                            error("Invalid operation. Cannot negate a " + rightLiteral.getDataType() + " datatype.",
-                                    rightLiteral.getPosition());
-                        }
-                    }
-
-                    leftSymbol.setValue(((LiteralNode) operand).getValue().getLexeme());
-                }
-
-            }
-        } else {
-
-            EvaluationResult result = evaluateExpression(expressionNode);
-
-            if (leftSymbol.getType() != result.getType()) {
-                error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
-                        + result.getType(),
-                        expressionNode.getPosition());
-            }
-
-            leftSymbol.setValue(result.getValue());
         }
     }
 
