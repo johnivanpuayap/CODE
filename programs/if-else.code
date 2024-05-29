@@ -5,8 +5,8 @@ BEGIN CODE
     BEGIN IF
         WHILE (a < abc)
         BEGIN WHILE
-            DISPLAY: a / 1
-            a = a + 1
+            DISPLAY: a + a
+            a = a + a
         END WHILE
     END IF
 END CODE

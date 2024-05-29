@@ -3,7 +3,6 @@ BEGIN CODE
     WHILE(c > 0)
     BEGIN WHILE
         DISPLAY: c
-        CONTINUE
         c = c - 1
     END WHILE
 END CODE

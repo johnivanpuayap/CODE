@@ -39,7 +39,7 @@ public class Parser {
 
                 while (!match(Type.EOF)) {
                     if (!match(Type.NEWLINE)) {
-                        error("Code should be enclosed within 'BEGIN CODE' and 'END CODE' markers. Found code outside this range.",
+                        error("Found code outside this range. Code should be enclosed within 'BEGIN CODE' and 'END CODE' markers",
                                 peek());
                     }
                 }
@@ -135,8 +135,6 @@ public class Parser {
 
         while (!match(Type.EOF) && !(currentTokenIndex >= tokens.size())) {
 
-            System.out.println("Current Token: " + peek());
-
             if (match(Type.INT) || match(Type.CHAR) || match(Type.FLOAT) || match(Type.BOOL)) {
                 error("Found a variable declaration in the executable code", previous());
             }
@@ -170,6 +168,7 @@ public class Parser {
                             peekNext(counter).getType() == Type.AND ||
                             peekNext(counter).getType() == Type.OR ||
                             peekNext(counter).getType() == Type.NOT) {
+
                         statements.add(parseLogicalStatement());
 
                         consume(Type.NEWLINE,
@@ -669,7 +668,8 @@ public class Parser {
 
             else if (peek().getType() == Type.GREATER || peek().getType() == Type.LESS ||
                     peek().getType() == Type.GREATER_EQUAL || peek().getType() == Type.LESS_EQUAL ||
-                    peek().getType() == Type.NOT_EQUAL || peek().getType() == Type.EQUAL) {
+                    peek().getType() == Type.NOT_EQUAL || peek().getType() == Type.EQUAL ||
+                    peek().getType() == Type.AND || peek().getType() == Type.OR) {
 
                 if (arguments.size() == 0 && arguments.getLast().getType() != Type.LITERAL
                         && arguments.getLast().getType() != Type.IDENTIFIER) {

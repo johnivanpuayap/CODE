@@ -664,7 +664,7 @@ public class Lexer {
 
     private List<Token> checkIndentLevel(Position position) {
 
-        if (input.charAt(counter) == '#') {
+        if (counter < input.length() && input.charAt(counter) == '#') {
             return null;
         }
 

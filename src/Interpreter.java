@@ -297,7 +297,7 @@ public class Interpreter {
 
                     if (symbolTable.lookup(lexeme).getType() == Type.INT) {
                         // Convert the integer to a double before pushing it to the stack
-                        stack.push(Double.valueOf(Integer.parseInt(symbolTable.lookup(lexeme).getValue())));
+                        stack.push(Integer.valueOf(Integer.parseInt(symbolTable.lookup(lexeme).getValue())));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.FLOAT) {
                         stack.push(Double.parseDouble(symbolTable.lookup(lexeme).getValue()));
                     } else if (symbolTable.lookup(lexeme).getType() == Type.BOOL) {
@@ -390,7 +390,6 @@ public class Interpreter {
                         }
                         break;
                     case NOT_EQUAL:
-
                         Object rightNotEqual = stack.pop();
                         Object leftNotEqual = stack.pop();
                         if (leftNotEqual instanceof Number && rightNotEqual instanceof Number) {
@@ -402,6 +401,7 @@ public class Interpreter {
                     case EQUAL:
                         Object rightEqual = stack.pop();
                         Object leftEqual = stack.pop();
+
                         if (leftEqual instanceof Number && rightEqual instanceof Number) {
                             stack.push(leftEqual.equals(rightEqual));
                         } else {
