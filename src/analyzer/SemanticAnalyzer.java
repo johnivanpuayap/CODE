@@ -8,10 +8,7 @@ import src.utils.SymbolTable;
 import src.utils.Token;
 import src.utils.Type;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,11 +71,17 @@ public class SemanticAnalyzer {
         VariableNode variableNode = node.getVariable();
         ExpressionNode expressionNode = node.getExpression();
 
+        Class<?> clazz = expressionNode.getClass();
+
         // We pass the type of the variable to the visitVariableNode method since we
         // don't need to check the type of the variable
         visitVariableNode(variableNode, null, false);
 
         Symbol leftSymbol = symbolTable.lookup(node.getVariable().getName());
+
+        if (expressionNode != null) {
+            leftSymbol.setInitialized(true);
+        }
 
         if (expressionNode instanceof VariableNode) {
 
@@ -97,6 +100,27 @@ public class SemanticAnalyzer {
             }
 
             leftSymbol.setValue(((LiteralNode) expressionNode).getValue().getLexeme());
+
+        } else if (expressionNode instanceof BinaryNode) {
+            
+            Queue<ExpressionNode> queue = new LinkedList<>();
+            queue.add(expressionNode);
+
+            while (!queue.isEmpty()) {
+                ExpressionNode current = queue.poll();
+
+                if (current instanceof BinaryNode) {
+                    queue.add(((BinaryNode) current).getLeft());
+                    queue.add(((BinaryNode) current).getRight());
+                } else if (current instanceof LiteralNode) {
+                    if (leftSymbol.getType() != ((LiteralNode) current).getDataType()) {
+                        error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
+                                + ((LiteralNode) current).getDataType(), current.getPosition());
+                    }
+                } else if (current instanceof VariableNode) {
+                    visitVariableNode((VariableNode) current, leftSymbol.getType(), true);
+                }
+            }
         }
     }
 

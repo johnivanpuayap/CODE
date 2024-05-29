@@ -31,6 +31,8 @@ public class LiteralNode extends ExpressionNode {
             return Type.CHAR;
         } else if (lexeme.equals("\"TRUE\"") || lexeme.equals("\"FALSE\"")) {
             return Type.BOOL;
+        } else if (lexeme.matches("\".*\"")) {
+            return Type.STRING_LITERAL;
         }
 
         return null;
