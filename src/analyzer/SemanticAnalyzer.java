@@ -97,6 +97,90 @@ public class SemanticAnalyzer {
             }
 
             leftSymbol.setValue(((LiteralNode) expressionNode).getValue().getLexeme());
+        } else if (expressionNode instanceof UnaryNode) {
+
+            UnaryNode unaryNode = (UnaryNode) expressionNode;
+
+            if (unaryNode.getOperator().getType() == Type.NOT) {
+
+                if (leftSymbol.getType() != Type.BOOL) {
+                    error("Invalid assignment. Left Symbol is an " + leftSymbol.getType() + " datatype.",
+                            expressionNode.getPosition());
+                }
+
+                ExpressionNode operand = unaryNode.getOperand();
+
+                if (operand instanceof VariableNode) {
+                    visitVariableNode((VariableNode) operand, leftSymbol.getType(), true);
+
+                    Symbol rightSymbol = symbolTable.lookup(((VariableNode) operand).getName());
+
+                    if (rightSymbol.getType() != Type.BOOL) {
+                        error("Invalid NOT operation. Expected BOOL but got" + rightSymbol.getType(),
+                                expressionNode.getPosition());
+                    }
+
+                    if (rightSymbol.getValue().equals("TRUE")) {
+                        leftSymbol.setValue("FALSE");
+                    } else {
+                        leftSymbol.setValue("TRUE");
+                    }
+                } else if (operand instanceof LiteralNode) {
+
+                    if (leftSymbol.getType() != ((LiteralNode) operand).getDataType()) {
+                        error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
+                                + ((LiteralNode) operand).getDataType(), expressionNode.getPosition());
+                    }
+
+                    boolean result = !Boolean.parseBoolean(((LiteralNode) operand).getValue().getLexeme());
+
+                    leftSymbol.setValue(String.valueOf(result).toUpperCase());
+                }
+
+            } else {
+
+                ExpressionNode operand = unaryNode.getOperand();
+
+                if (operand instanceof VariableNode) {
+                    visitVariableNode((VariableNode) operand, leftSymbol.getType(), true);
+
+                    Symbol rightSymbol = symbolTable.lookup(((VariableNode) operand).getName());
+
+                    String prefix = "";
+                    if (unaryNode.getOperator().getType() == Type.NEGATIVE) {
+                        prefix = "-";
+                    }
+
+                    leftSymbol.setValue(prefix + rightSymbol.getValue());
+
+                } else if (operand instanceof LiteralNode) {
+
+                    if (leftSymbol.getType() != ((LiteralNode) operand).getDataType()) {
+                        error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
+                                + ((LiteralNode) operand).getDataType(), expressionNode.getPosition());
+                    }
+
+                    String prefix = "";
+                    if (unaryNode.getOperator().getType() == Type.NEGATIVE) {
+                        prefix = "-";
+                    }
+
+                    leftSymbol.setValue(prefix + ((LiteralNode) operand).getValue().getLexeme());
+                }
+            }
+        }
+
+        else {
+
+            EvaluationResult result = evaluateExpression(expressionNode);
+
+            if (leftSymbol.getType() != result.getType()) {
+                error("Invalid type in assignment. Left is " + leftSymbol.getType() + " and right is "
+                        + result.getType(),
+                        expressionNode.getPosition());
+            }
+
+            leftSymbol.setValue(result.getValue());
         }
     }
 
@@ -422,7 +506,7 @@ public class SemanticAnalyzer {
                 error("Invalid value for FLOAT datatype", position);
             }
         } else if (type == Type.BOOL) {
-            if (!value.equals("\"TRUE\"") && !value.equals("\"FALSE\"")) {
+            if (!value.equals("TRUE") && !value.equals("FALSE")) {
                 error("Invalid value for BOOL datatype", position);
             }
         }

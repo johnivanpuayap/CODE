@@ -1,12 +1,6 @@
 BEGIN CODE
-    INT a = 5, c= 2
-    CHAR b = 'a'
-    IF (a+c == 6)
-    BEGIN IF
-        DISPLAY: b
-    END IF
-    ELSE
-    BEGIN IF
-        DISPLAY: 'd'
-    END IF
+    BOOL xyz, abc="TRUE"
+    xyz= NOT abc
+
+    DISPLAY: [[] & xyz & []]
 END CODE

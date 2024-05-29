@@ -312,8 +312,17 @@ public class Parser {
                 assignments.add(new AssignmentNode(identifier, new VariableNode(previous())));
             } else if (match(Type.LITERAL)) {
                 assignments.add(new AssignmentNode(identifier, new LiteralNode(previous())));
-            } else {
-                error("Expected an identifier or literal after an assignment token.", identifierToken);
+            } else if (match(Type.NEGATIVE) || match(Type.POSITIVE) || match(Type.NOT)) {
+
+                Token unary = previous();
+
+                if (match(Type.IDENTIFIER)) {
+                    assignments.add(new AssignmentNode(identifier, new UnaryNode(unary, new VariableNode(previous()))));
+                } else if (match(Type.LITERAL)) {
+                    assignments.add(new AssignmentNode(identifier, new UnaryNode(unary, new LiteralNode(previous()))));
+                } else {
+                    error("Expected an identifier or literal after a unary operator", identifierToken);
+                }
             }
 
         } else {

@@ -64,6 +64,7 @@ public class Interpreter {
         if (statement instanceof AssignmentNode) {
 
             AssignmentNode assignment = (AssignmentNode) statement;
+
             if (assignment.getExpression() instanceof LiteralNode) {
 
                 Symbol s = symbolTable.lookup(assignment.getVariable().getName());
@@ -78,13 +79,54 @@ public class Interpreter {
                 s.setValue(literal.toString());
 
             } else if (assignment.getExpression() instanceof UnaryNode) {
+
                 Symbol s = symbolTable.lookup(assignment.getVariable().getName());
 
-                if (s.getType() != Type.FLOAT || s.getType() != Type.INT) {
-                    error("Type mismatch. Assigning a Number to a ", assignment.getVariable().getPosition());
-                }
+                UnaryNode unary = (UnaryNode) assignment.getExpression();
 
-                s.setValue(assignment.getExpression().toString());
+                if (unary.getOperand() instanceof LiteralNode) {
+                    LiteralNode literal = (LiteralNode) unary.getOperand();
+
+                    if (s.getType() != literal.getDataType()) {
+                        error("Type mismatch. Assigning a " + literal.getDataType() + " to a " + s.getType(),
+                                assignment.getVariable().getPosition());
+                    }
+
+                    if (unary.getOperator().getType() == Type.NOT) {
+
+                        if (literal.getValue().equals("TRUE")) {
+                            s.setValue("FALSE");
+                        } else {
+                            s.setValue("TRUE");
+                        }
+
+                    } else if (unary.getOperator().getType() == Type.NEGATIVE) {
+                        s.setValue("-" + unary.getOperand().toString());
+                    } else {
+                        s.setValue(unary.getOperand().toString());
+                    }
+                } else if (unary.getOperand() instanceof VariableNode) {
+                    Symbol operand = symbolTable.lookup(((VariableNode) unary.getOperand()).getName());
+
+                    if (s.getType() != operand.getType()) {
+                        error("Type mismatch. Assigning a " + operand.getType() + " to a " + s.getType(),
+                                assignment.getVariable().getPosition());
+                    }
+
+                    if (unary.getOperator().getType() == Type.NOT) {
+
+                        if (operand.getValue().equals("TRUE")) {
+                            s.setValue("FALSE");
+                        } else {
+                            s.setValue("TRUE");
+                        }
+
+                    } else if (unary.getOperator().getType() == Type.NEGATIVE) {
+                        s.setValue("-" + operand.getValue());
+                    } else {
+                        s.setValue(operand.getValue());
+                    }
+                }
 
             } else if (assignment.getExpression() instanceof VariableNode) {
 
