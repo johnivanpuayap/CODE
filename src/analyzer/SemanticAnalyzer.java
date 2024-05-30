@@ -7,8 +7,6 @@ import src.utils.Symbol;
 import src.utils.SymbolTable;
 import src.utils.Token;
 import src.utils.Type;
-
-import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -279,10 +277,10 @@ public class SemanticAnalyzer {
                     error("Invalid operation. Right operand must be a number", null);
                 }
 
+                double right = Double.parseDouble(rightResult.getValue());
                 double left = Double.parseDouble(leftResult.getValue());
-                double right = Double.parseDouble(leftResult.getValue());
 
-                boolean boolResult;
+                boolean boolResult = false;
                 if (operatorType == Type.GREATER) {
                     boolResult = left > right;
                 } else if (operatorType == Type.LESS) {

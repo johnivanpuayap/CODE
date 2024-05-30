@@ -27,8 +27,6 @@ public class Interpreter {
 
         List<StatementNode> statements = program.getStatements();
 
-        System.out.println("\n\nPROGRAM RESULTS\n\n");
-
         for (int i = 0; i < statements.size(); i++) {
 
             StatementNode statement = statements.get(i);
@@ -512,7 +510,7 @@ public class Interpreter {
             Symbol s = symbolTable.lookup(identifier.getLexeme());
 
             System.out.print(s.getType() + " " + s.getName() + ": ");
-            String input = scanner.nextLine();
+            String input = scanner.next();
 
             // Convert to a Data Type
 

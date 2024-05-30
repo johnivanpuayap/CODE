@@ -9,10 +9,13 @@
     - AssignmentNode
     - DisplayNode
     - ScanNode
-    - IfStatementNode
-    - ElseIfStatementNode
-    - ElseStatementNode
-    - WhileStatementNode
+
+  Control Structures
+
+  - IfStatementNode
+  - ElseIfStatementNode
+  - ElseStatementNode
+  - WhileStatementNode
 
   - ExpressionNode
     - LogicalExpressionNode

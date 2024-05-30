@@ -616,8 +616,6 @@ public class Lexer {
                     continue;
                 }
 
-                System.out.println(input);
-
                 if (input.substring(counter).startsWith("AND")) {
                     tokens.add(new Token(Type.AND, "AND", new Position(position.getLine(), position.getColumn())));
                     position.add("AND".length());
@@ -711,8 +709,6 @@ public class Lexer {
                 }
             }
         } else if (tabs > 0) {
-
-            System.out.println("Found a tab");
 
             newIndentLevel = tabs;
 

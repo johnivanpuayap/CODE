@@ -109,7 +109,7 @@ public class Parser {
                             !literal.getLexeme().equalsIgnoreCase("FALSE") &&
                             !literal.getLexeme().matches("[0-9]*\\.?[0-9]+")) {
 
-                        if (literal.getLexeme().length() > 1) {
+                        if (literal.getLexeme().length() > 3) {
                             error("Invalid character literal", literal);
                         }
                     }
@@ -634,7 +634,7 @@ public class Parser {
                         !literal.getLexeme().equalsIgnoreCase("FALSE") &&
                         !literal.getLexeme().matches("[0-9]*\\.?[0-9]+")) {
 
-                    if (literal.getLexeme().length() > 1) {
+                    if (literal.getLexeme().length() > 3) {
                         error("Invalid character literal", literal);
                     }
                 }

@@ -45,36 +45,6 @@ We will use the same symbol table that we use on semantic analysis in the interp
 - Throw the syntax, semantics and runtime errors early in the function
 - Do not throw an exception, print the error and exit the code. (But for easier debugging, you chose to throw exception)
 
-# TODO
-
-Final Project Presentation
-
-- [ ] Operations in Display
-- [x] Conditional Expression
-- [x] Tabs and Spaces for Indention
-- [x] WHILE Loops
-- [x] Test Case 1
-- [x] Test Case 2
-- [x] Test Case 3
-- [x] Test Case 4
-- [x] Test Case 5
-- [x] Test Case 6
-- [x] Test Case 7
-- [x] Test Case 8
-- [x] Test Case 9
-- [x] Test Case 10
-- [x] Test Case 11
-- [x] Test Case 12
-- [x] Improved Logical and Arithmetic Expressions
-- [x] Check Display to put an error when accessing an array that was not initialized
-- [x] Fix error when there are blank lines between code
-- [x] Better error handling for conditional statements
-- [x] Check if the conditions in a while, if and else if is returning a BOOL
-
-- [x] Improve Error Handling
-- [x] Improve Parser
-- [ ] Improve Semantics Analyzer
-
 # Additional Features
 
 - [x] For Loops

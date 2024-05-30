@@ -1,6 +1,6 @@
 BEGIN CODE
-    INT a=1, b, c, abc = 15
-    DISPLAY: abc
+    INT a=1, b, c, abc
+    SCAN: abc
     IF (abc == 15)
     BEGIN IF
         WHILE (a < abc)

@@ -13,7 +13,7 @@
             "request": "launch",
             "mainClass": "App",
             "projectName": "CODE_33f30762",
-            "args": ["programs\\while.code"] // Add your arguments here
+            "args": ["programs\\tests\\1.code"] // Add your arguments here
         },
         {
             "type": "java",
