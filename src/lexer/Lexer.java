@@ -29,141 +29,172 @@ public class Lexer {
                         new Position(position.getLine(), position.getColumn())));
                 position.add("BEGIN CODE".length());
                 counter += "BEGIN CODE".length();
-            } else if (input.startsWith("END CODE", counter)) {
+            }
+            else if (input.startsWith("END CODE", counter)) {
                 tokens.add(
                         new Token(Type.END_CODE, "END CODE", new Position(position.getLine(), position.getColumn())));
                 position.add("END CODE".length());
                 counter += "END CODE".length();
-            } else if (input.startsWith("DISPLAY", counter)) {
+            }
+            else if (input.startsWith("DISPLAY", counter)) {
                 tokens.add(new Token(Type.DISPLAY, "DISPLAY", new Position(position.getLine(), position.getColumn())));
                 position.add("DISPLAY".length());
                 counter += "DISPLAY".length();
                 tokens = tokenizeDisplay(tokens);
-            } else if (input.startsWith("SCAN", counter)) {
+            }
+            else if (input.startsWith("SCAN", counter)) {
                 tokens.add(new Token(Type.SCAN, "SCAN", new Position(position.getLine(), position.getColumn())));
                 position.add("SCAN".length());
                 counter += "SCAN".length();
-            } else if (input.startsWith("AND", counter)) {
+            }
+            else if (input.startsWith("AND", counter)) {
                 tokens.add(new Token(Type.AND, "AND", new Position(position.getLine(), position.getColumn())));
                 position.add("AND".length());
                 counter += "AND".length();
-            } else if (input.startsWith("OR", counter)) {
+            }
+            else if (input.startsWith("OR", counter)) {
                 tokens.add(new Token(Type.OR, "OR", new Position(position.getLine(), position.getColumn())));
                 position.add("OR".length());
                 counter += "OR".length();
-            } else if (input.startsWith("NOT", counter)) {
+            }
+            else if (input.startsWith("NOT", counter)) {
                 tokens.add(new Token(Type.NOT, "NOT", new Position(position.getLine(), position.getColumn())));
                 position.add("NOT".length());
                 counter += "NOT".length();
-            } else if (input.startsWith("IF", counter)) {
+            }
+            else if (input.startsWith("IF", counter)) {
                 tokens.add(new Token(Type.IF, "IF", new Position(position.getLine(), position.getColumn())));
                 position.add("IF".length());
                 counter += "IF".length();
-            } else if (input.startsWith("ELSE IF", counter)) {
+            }
+            else if (input.startsWith("ELSE IF", counter)) {
                 tokens.add(new Token(Type.ELSE_IF, "ELSE IF", new Position(position.getLine(), position.getColumn())));
                 position.add("ELSE IF".length());
                 counter += "ELSE IF".length();
-            } else if (input.startsWith("ELSE", counter)) {
+            }
+            else if (input.startsWith("ELSE", counter)) {
                 tokens.add(new Token(Type.ELSE, "ELSE", new Position(position.getLine(), position.getColumn())));
                 position.add("ELSE".length());
                 counter += "ELSE".length();
-            } else if (input.startsWith("BEGIN IF", counter)) {
+            }
+            else if (input.startsWith("BEGIN IF", counter)) {
                 tokens.add(
                         new Token(Type.BEGIN_IF, "BEGIN IF", new Position(position.getLine(), position.getColumn())));
                 position.add("BEGIN IF".length());
                 counter += "BEGIN IF".length();
-            } else if (input.startsWith("END IF", counter)) {
+            }
+            else if (input.startsWith("END IF", counter)) {
                 tokens.add(new Token(Type.END_IF, "END IF", new Position(position.getLine(), position.getColumn())));
                 position.add("END IF".length());
                 counter += "END IF".length();
-            } else if (input.startsWith("WHILE", counter)) {
+            }
+            else if (input.startsWith("WHILE", counter)) {
                 tokens.add(new Token(Type.WHILE, "WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("WHILE".length());
                 counter += "WHILE".length();
-            } else if (input.startsWith("BEGIN WHILE", counter)) {
+            }
+            else if (input.startsWith("BEGIN WHILE", counter)) {
                 tokens.add(new Token(Type.BEGIN_WHILE, "BEGIN WHILE",
                         new Position(position.getLine(), position.getColumn())));
                 position.add("BEGIN WHILE".length());
                 counter += "BEGIN WHILE".length();
-            } else if (input.startsWith("END WHILE", counter)) {
+            }
+            else if (input.startsWith("END WHILE", counter)) {
                 tokens.add(
                         new Token(Type.END_WHILE, "END WHILE", new Position(position.getLine(), position.getColumn())));
                 position.add("END WHILE".length());
                 counter += "END WHILE".length();
-            } else if (input.startsWith("FOR", counter)) {
+            }
+            else if (input.startsWith("FOR", counter)) {
                 tokens.add(new Token(Type.FOR, "FOR", new Position(position.getLine(), position.getColumn())));
                 position.add("FOR".length());
                 counter += "FOR".length();
-            } else if (input.startsWith("BEGIN FOR", counter)) {
+            }
+            else if (input.startsWith("BEGIN FOR", counter)) {
                 tokens.add(new Token(Type.BEGIN_FOR, "BEGIN FOR",
                         new Position(position.getLine(), position.getColumn())));
                 position.add("BEGIN FOR".length());
                 counter += "BEGIN FOR".length();
-            } else if (input.startsWith("END FOR", counter)) {
+            }
+            else if (input.startsWith("END FOR", counter)) {
                 tokens.add(
                         new Token(Type.END_FOR, "END FOR", new Position(position.getLine(), position.getColumn())));
                 position.add("END FOR".length());
                 counter += "END FOR".length();
-            } else if (input.startsWith("CONTINUE", counter)) {
+            }
+            else if (input.startsWith("CONTINUE", counter)) {
                 tokens.add(
                         new Token(Type.CONTINUE, "CONTINUE", new Position(position.getLine(), position.getColumn())));
                 position.add("CONTINUE".length());
                 counter += "CONTINUE".length();
-            } else if (input.startsWith("BREAK", counter)) {
+            }
+            else if (input.startsWith("BREAK", counter)) {
                 tokens.add(new Token(Type.BREAK, "BREAK", new Position(position.getLine(), position.getColumn())));
                 position.add("BREAK".length());
                 counter += "BREAK".length();
-            } else if (currentChar == '=') {
+            }
+            else if (currentChar == '=') {
                 if (input.charAt(counter + 1) == '=') {
                     tokens.add(new Token(Type.EQUAL, "==", new Position(position.getLine(), position.getColumn())));
-                    position.add(2);
+                    position.add("==".length());
                     counter += 2;
                 } else {
                     tokens.add(new Token(Type.ASSIGNMENT, "=", new Position(position.getLine(), position.getColumn())));
                     position.add(1);
                     counter++;
                 }
-            } else if (currentChar == ':') {
+            }
+            else if (currentChar == ':') {
                 tokens.add(new Token(Type.COLON, ":", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == ',') {
+            }
+            else if (currentChar == ',') {
                 tokens.add(new Token(Type.COMMA, ",", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '\'') {
+            }
+            else if (currentChar == '\'') {
                 tokens.add(tokenizeLiteral());
-            } else if (currentChar == '\"') {
+            }
+            else if (currentChar == '\"') {
                 tokens.add(tokenizeLiteral());
-            } else if (currentChar == '&') {
+            }
+            else if (currentChar == '&') {
                 tokens.add(new Token(Type.CONCATENATION, "$", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '$') {
+            }
+            else if (currentChar == '$') {
                 tokens.add(new Token(Type.NEXT_LINE, "$", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '(') {
+            }
+            else if (currentChar == '(') {
                 tokens.add(
                         new Token(Type.LEFT_PARENTHESIS, "(", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == ')') {
+            }
+            else if (currentChar == ')') {
                 tokens.add(
                         new Token(Type.RIGHT_PARENTHESIS, ")", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '[') {
+            }
+            else if (currentChar == '[') {
                 tokens.add(
-                        new Token(Type.ESCAPE_CODE_OPEN, ")", new Position(position.getLine(), position.getColumn())));
+                        new Token(Type.ESCAPE_CODE_OPEN, "[", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '[') {
+            }
+            else if (currentChar == ']') {
                 tokens.add(
-                        new Token(Type.ESCAPE_CODE_CLOSE, ")", new Position(position.getLine(), position.getColumn())));
+                        new Token(Type.ESCAPE_CODE_CLOSE, "]", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '+') {
+            }
+            else if (currentChar == '+') {
                 Token latest_token = tokens.get(tokens.size() - 1);
                 if (latest_token.getType() == Type.ADD ||
                         latest_token.getType() == Type.SUBTRACT ||
@@ -191,7 +222,8 @@ public class Lexer {
                     position.add(1);
                     counter++;
                 }
-            } else if (currentChar == '-') {
+            }
+            else if (currentChar == '-') {
                 Token latest_token = tokens.get(tokens.size() - 1);
                 if (latest_token.getType() == Type.ADD ||
                         latest_token.getType() == Type.SUBTRACT ||
@@ -218,19 +250,23 @@ public class Lexer {
                     position.add(1);
                     counter++;
                 }
-            } else if (currentChar == '*') {
+            }
+            else if (currentChar == '*') {
                 tokens.add(new Token(Type.MULTIPLY, "*", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '/') {
+            }
+            else if (currentChar == '/') {
                 tokens.add(new Token(Type.DIVIDE, "/", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '%') {
+            }
+            else if (currentChar == '%') {
                 tokens.add(new Token(Type.MODULO, "%", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '>') {
+            }
+            else if (currentChar == '>') {
                 if (input.charAt(counter + 1) == '=') {
                     tokens.add(new Token(Type.GREATER_EQUAL, ">=",
                             new Position(position.getLine(), position.getColumn())));
@@ -241,7 +277,8 @@ public class Lexer {
                     position.add(1);
                     counter++;
                 }
-            } else if (currentChar == '<') {
+            }
+            else if (currentChar == '<') {
                 if (input.charAt(counter + 1) == '=') {
                     tokens.add(
                             new Token(Type.LESS_EQUAL, "<=", new Position(position.getLine(), position.getColumn())));
@@ -257,7 +294,8 @@ public class Lexer {
                     counter++;
                 }
 
-            } else if (currentChar == '#') {
+            }
+            else if (currentChar == '#') {
 
                 // Skip comments
 
@@ -274,11 +312,13 @@ public class Lexer {
                 if (indents != null) {
                     tokens.addAll(indents);
                 }
-            } else if (currentChar == ';') {
+            }
+            else if (currentChar == ';') {
                 tokens.add(new Token(Type.DELIMITER, ";", new Position(position.getLine(), position.getColumn())));
                 position.add(1);
                 counter++;
-            } else if (currentChar == '\n') {
+            }
+            else if (currentChar == '\n') {
 
                 if (input.charAt(counter - 1) == '\n' || tokens.get(tokens.size() - 1).getType() == Type.NEWLINE) {
                     counter++;
@@ -298,15 +338,17 @@ public class Lexer {
                 }
 
             }
-
             else if (Character.isLetter(currentChar) || currentChar == '_') {
                 tokens.add(tokenizeIdentifier());
-            } else if (Character.isDigit(currentChar)) {
+            }
+            else if (Character.isDigit(currentChar)) {
                 tokens.add(tokenizeLiteral());
-            } else if (Character.isWhitespace(currentChar)) {
+            }
+            else if (Character.isWhitespace(currentChar)) {
                 position.add(1);
                 counter++;
-            } else {
+            }
+            else {
                 System.err.println("Lexer Error: Invalid character found: " + currentChar
                         + new Position(position.getLine(), position.getColumn()));
                 System.exit(1);
@@ -380,14 +422,6 @@ public class Lexer {
             return new Token(Type.STRING_LITERAL, literal.toString(),
                     new Position(position.getLine(), position.getColumn()));
         }
-
-        // if (literal.toString().startsWith("\'") && literal.toString().endsWith("\'"))
-        // {
-        // String literalWithoutQuotes = literal.toString().substring(1,
-        // literal.toString().length() - 1);
-        // return new Token(Type.LITERAL, literalWithoutQuotes,
-        // new Position(position.getLine(), position.getColumn()));
-        // }
 
         return new Token(Type.LITERAL, literal.toString(), new Position(position.getLine(), position.getColumn()));
     }
